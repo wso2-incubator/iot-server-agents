@@ -31,11 +31,11 @@ void pushDigitalPinData(){
     
     while (httpClient.available()) {
       char response = httpClient.read();
-      Serial.print(response);
+//      Serial.print(response);
     }
     
-    Serial.println();
-    Serial.println("-------------------------------");
+//    Serial.println();
+//    Serial.println("-------------------------------");
     delay(1000);
   }
 }
@@ -65,11 +65,11 @@ void pushAnalogPinData(){
     
     while (httpClient.available()) {
       char response = httpClient.read();
-      Serial.print(response);
+//      Serial.print(response);
     }
     
-    Serial.println();
-    Serial.println("-------------------------------");
+//    Serial.println();
+//    Serial.println("-------------------------------");
     delay(1000);
   }
 }

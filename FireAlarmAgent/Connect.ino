@@ -43,7 +43,7 @@ void setupResource(){
   String port = String(SERVICE_PORT);
   
   host = "Host: " + hostIP + ":" + port;      
-  Serial.println(host);
+//  Serial.println(host);
   
   jsonPayLoad = String(OWNER_JSON);
   jsonPayLoad += String(DEVICE_OWNER);
@@ -51,9 +51,9 @@ void setupResource(){
   jsonPayLoad += String(DEVICE_ID);
   jsonPayLoad += String(REPLY_JSON);
 
-  Serial.print("JSON Payload: ");
-  Serial.println(jsonPayLoad);
-  Serial.println("-------------------------------");
+//  Serial.print("JSON Payload: ");
+//  Serial.println(jsonPayLoad);
+//  Serial.println("-------------------------------");
 }
 
 

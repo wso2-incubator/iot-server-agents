@@ -1,6 +1,7 @@
-void readControls() {
+String readControls() {
+  String responseMsg;
   String resource = " " + String(SERVICE_EPOINT) + String(READ_CONTROLS) + String(DEVICE_OWNER) + "/" + String(DEVICE_ID) + " ";
-
+  
   httpClient.print(HTTP_GET);
   httpClient.print(resource);
   httpClient.println(HTTP_VERSION);
@@ -10,13 +11,14 @@ void readControls() {
   
   while (httpClient.available()) {
     char response = httpClient.read();
-    Serial.print(response);
+    responseMsg += response;
   }
   
-  Serial.println();
-  Serial.println("-------------------------------");
+//  Serial.print(responseMsg);
+//  Serial.println();
+//  Serial.println("-------------------------------");
   delay(1000);
-
+  return responseMsg; 
 }
 
 void reply(String replyMsg) {
@@ -37,11 +39,14 @@ void reply(String replyMsg) {
   
   while (httpClient.available()) {
     char response = httpClient.read();
-    Serial.print(response);
+//    Serial.print(response);
   }
   
-  Serial.println();
-  Serial.println("-------------------------------");
+//  Serial.println();
+//  Serial.println("-------------------------------");
   delay(1000);
-
 }
+
+
+
+

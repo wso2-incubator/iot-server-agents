@@ -17,10 +17,6 @@
 #define DEVICE_TYPE "FireAlarm"
 #define DEVICE_ID  "xxxxxxxx"
 
-#define TEMP_PIN 3
-#define BULB_PIN 4
-#define FAN_PIN 5
-
 #define PUSH_ALARM_DATA "pushalarmdata"
 #define READ_CONTROLS "readcontrols/"
 #define REPLY "reply"
@@ -33,13 +29,23 @@
 #define VALUE_JSON "\",\"value\":\""
 #define END_JSON "\"}"
 
-
 #define SERVICE_PORT 9763 
 #define SERVICE_EPOINT "/WSO2ConnectedDevices/FireAlarmController/" 
                                         // pushalarmdata - application/json - {"owner":"","deviceId":"","replyMessage":"","time":"","key":"","value":""}
                                         // readcontrols/{owner}/{deviceId}
                                         // reply - application/json - {"owner":"","deviceId":"","replyMessage":""}
+
+#define TEMP_PIN 3
+#define BULB_PIN 4
+#define FAN_PIN 5
+
 #define POLL_INTERVAL 1000
+
+enum {
+  TEMPERATURE,
+  BULB,
+  FAN
+};
 
 #endif
 
