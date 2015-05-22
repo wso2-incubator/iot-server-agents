@@ -12,7 +12,7 @@ String host, jsonPayLoad, replyMsg;
 
 
 void setup() {
-  Serial.begin(9600);
+//  Serial.begin(9600);
   pinMode(BULB_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
   connectHttp();
@@ -22,6 +22,7 @@ void setup() {
 void loop() {
   if (httpClient.connected()) {    
     pushDigitalPinData();
+
     delay(POLL_INTERVAL);
     
     String responseMsg = readControls();    
@@ -41,19 +42,31 @@ void loop() {
       }    
     } 
     
-    delay(POLL_INTERVAL);
+//    delay(POLL_INTERVAL);
 
   } else {
-    Serial.println("client not found...");
-    Serial.println("disconnecting.");
+//    Serial.println("client not found...");
+//    Serial.println("disconnecting.");
     httpClient.stop();
     connectHttp();
 
   }  
-  
-
 }
 
+
+String getDataType(int pin){
+  switch(pin){
+    case TEMP_PIN:
+      return "Temperature";
+    case BULB_PIN:
+      return "Bulb";
+    case FAN_PIN:
+      return "Fan";
+    default:
+      return String(pin);
+  }
+
+}
 
 String switchBulb() {
     if (digitalRead(BULB_PIN) == HIGH) {

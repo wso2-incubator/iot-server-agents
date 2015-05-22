@@ -41,12 +41,6 @@
 
 #define POLL_INTERVAL 1000
 
-enum {
-  TEMPERATURE,
-  BULB,
-  FAN
-};
-
 #endif
 
 

@@ -4,19 +4,19 @@ void pushDigitalPinData(){
 
     String payLoad = jsonPayLoad + "DigitalPinData";
     payLoad = payLoad + String(TIME_JSON) + "9999";
-    payLoad = payLoad + String(KEY_JSON) + digitalPins[pin];
+    payLoad = payLoad + String(KEY_JSON) + getDataType(digitalPins[pin]);
     payLoad += String(VALUE_JSON);
     
     
-    
-    if ( digitalRead(digitalPins[pin]) == HIGH) {
-      payLoad += "HIGH ";
-    } else if ( digitalRead(digitalPins[pin]) == LOW) {
-      payLoad += "LOW ";
+    if ( digitalPins[pin] == TEMP_PIN ) {
+      payLoad += String(getTemperature());
+    } else if ( digitalRead(digitalPins[pin]) == HIGH ) {
+      payLoad += "ON";
+    } else if ( digitalRead(digitalPins[pin]) == LOW ) {
+      payLoad += "OFF";
     }
 
     payLoad = payLoad + String(END_JSON);
-    
     httpClient.print(HTTP_POST);
     httpClient.print(resource);
     httpClient.println(HTTP_VERSION);
@@ -47,7 +47,7 @@ void pushAnalogPinData(){
        
     String payLoad = jsonPayLoad + "AnalogPinData";
     payLoad = payLoad + String(TIME_JSON) + "9999";
-    payLoad = payLoad + String(KEY_JSON) + analogPins[pin];
+    payLoad = payLoad + String(KEY_JSON) + getDataType(analogPins[pin]);
     payLoad = payLoad + String(VALUE_JSON) + analogRead(analogPins[pin]);
     payLoad = payLoad + String(END_JSON);
 
@@ -73,3 +73,6 @@ void pushAnalogPinData(){
     delay(1000);
   }
 }
+
+
+
