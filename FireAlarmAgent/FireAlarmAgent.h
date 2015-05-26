@@ -39,7 +39,9 @@
 #define BULB_PIN 4
 #define FAN_PIN 5
 
+#define DEBUG false
 #define POLL_INTERVAL 1000
+
 
 #endif
 
