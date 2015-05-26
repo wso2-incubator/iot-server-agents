@@ -1,9 +1,6 @@
 #include "FireAlarmWifiAgent.h"
 
 #include <Adafruit_CC3000.h>
-//#include <ccspi.h>
-//#include <string.h>
-//#include "utility/debug.h"
 #include <SPI.h>
 #include "dht.h"
 
@@ -34,6 +31,30 @@ void loop() {
     int index = responseMsg.lastIndexOf(":");
     int newLine = responseMsg.lastIndexOf("\n");
     String subStrn = responseMsg.substring(index + 1);
+    responseMsg = responseMsg.substring(newLine + 1, index); 
+    
+//    if (subStrn.equals("IN")) {
+//      int temperature =  (uint8_t)getTemperature();
+//      replyMsg = "Temperature is " + String(temperature) + " C";
+//      reply();    
+//    } else if (subStrn.equalsIgnoreCase("ON")) {
+//      if (responseMsg.equals("BULB")) {
+//        digitalWrite(BULB_PIN, HIGH);
+//        replyMsg = "Bulb was switched ON";
+//      } else if (responseMsg.equals("FAN")) {
+//        digitalWrite(FAN_PIN, HIGH);
+//        replyMsg = "Buzzer was switched ON";
+//      }  
+//    } else if (subStrn.equalsIgnoreCase("OFF")) {
+//      if (responseMsg.equals("BULB")) {
+//        digitalWrite(BULB_PIN, LOW);
+//        replyMsg = "Bulb was switched OFF";
+//      } else if (responseMsg.equals("FAN")) {
+//        digitalWrite(FAN_PIN, LOW);
+//        replyMsg = "Buzzer was switched OFF";
+//      }  
+//    }
+
 
     if (subStrn.equals("IN")) {
       responseMsg = responseMsg.substring(newLine + 1, index); 
@@ -53,7 +74,7 @@ void loop() {
       Serial.println("disconnecting.");
     }
     
-    httpClient.stop();
+    httpClient.close();
     connectHttp();
 
   }  
