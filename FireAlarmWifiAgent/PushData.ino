@@ -1,6 +1,6 @@
 void pushDigitalPinData(){
   for ( int pin = 0; pin < (sizeof(digitalPins)/sizeof(int)); pin++) {
-    String payLoad = jsonPayLoad + "DigitalPinData";
+    String payLoad = "DigitalPinData";
     payLoad = payLoad + "\",\"time\":\"" + "9999";
     payLoad = payLoad + "\",\"key\":\"" + getDataType(digitalPins[pin]);
     payLoad = payLoad +  "\",\"value\":\"";
@@ -23,7 +23,7 @@ void pushDigitalPinData(){
     httpClient.fastrprint(F("Content-Type: application/json")); httpClient.fastrprint(F("\n"));   
     httpClient.fastrprint(F("Content-Length: "));
 
-    int payLength = payLoad.length();
+    int payLength = jsonPayLoad.length() + payLoad.length();
     
     httpClient.fastrprint(String(payLength).c_str()); httpClient.fastrprint(F("\n"));
     httpClient.fastrprint(F("\n")); 
@@ -41,11 +41,22 @@ void pushDigitalPinData(){
     
     int chunkSize = 50;
     
-    for (int i = 0; i < payLength; i++) {
-      if ( (i+1)*chunkSize > payLength) {
-        httpClient.print(payLoad.substring(i*chunkSize, payLength));
-        if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, payLength));
-        i = payLength;
+    for (int i = 0; i < jsonPayLoad.length(); i++) {
+      if ( (i+1)*chunkSize > jsonPayLoad.length()) {
+        httpClient.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
+        if(DEBUG) Serial.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
+        i = jsonPayLoad.length();
+      } else {
+        httpClient.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
+        if(DEBUG) Serial.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
+      }
+    } 
+    
+    for (int i = 0; i < payLoad.length(); i++) {
+      if ( (i+1)*chunkSize > payLoad.length()) {
+        httpClient.print(payLoad.substring(i*chunkSize, payLoad.length()));
+        if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, payLoad.length()));
+        i = payLoad.length();
       } else {
         httpClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
         if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
@@ -57,9 +68,11 @@ void pushDigitalPinData(){
    
     delay(1000);
 
-    while (httpClient.available()) {
-      char response = httpClient.read();
-      if(DEBUG) Serial.print(response);
+    if(true) {
+      while (httpClient.available()) {
+        char response = httpClient.read();
+        if(DEBUG) Serial.print(response);
+      }
     }
 
     if(DEBUG)  {
@@ -68,7 +81,7 @@ void pushDigitalPinData(){
     }
     
     payLoad = "";
-    delay(1000);
+//    delay(1000);
   }
 }
 
@@ -122,9 +135,11 @@ void pushAnalogPinData(){
     
     delay(1000);
     
-    while (httpClient.available()) {
-      char response = httpClient.read();
-      if(DEBUG) Serial.print(response);
+    if(true) {
+      while (httpClient.available()) {
+        char response = httpClient.read();
+        if(DEBUG) Serial.print(response);
+      }
     }
     
     if(DEBUG)  {

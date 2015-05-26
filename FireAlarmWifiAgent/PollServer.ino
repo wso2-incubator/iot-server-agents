@@ -10,9 +10,11 @@ String readControls() {
 
   delay(1000);
   
-  while (httpClient.available()) {
-    char response = httpClient.read();
-    responseMsg += response;
+  if (true) {
+    while (httpClient.available()) {
+      char response = httpClient.read();
+      responseMsg += response;
+    }
   }
   
   if(DEBUG) {
@@ -21,9 +23,11 @@ String readControls() {
     Serial.println("-------------------------------");
   }
   
-  delay(1000);
+//  delay(1000);
   return responseMsg; 
 }
+
+
 
 void reply() {
   String payLoad = replyMsg + "\"}";
@@ -84,18 +88,20 @@ void reply() {
     
   delay(1000);
   
-  while (httpClient.available()) {
-    char response = httpClient.read();
-    if(DEBUG) Serial.print(response);
+  if(true) { 
+    while (httpClient.available()) {
+      char response = httpClient.read();
+      if(DEBUG) Serial.print(response);
+    }
   }
- 
+  
   if(DEBUG) {
     Serial.println();
     Serial.println("-------------------------------");
   }
   
   payLoad = "";
-  delay(1000);
+//  delay(1000);
 
 }
 
