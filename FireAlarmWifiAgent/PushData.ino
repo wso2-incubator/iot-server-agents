@@ -1,8 +1,6 @@
 void pushDigitalPinData(){
   for ( int pin = 0; pin < (sizeof(digitalPins)/sizeof(int)); pin++) {
-    String payLoad = "DigitalPinData";
-    payLoad = payLoad + "\",\"time\":\"" + "9999";
-    payLoad = payLoad + "\",\"key\":\"" + getDataType(digitalPins[pin]);
+    String payLoad = getDataType(digitalPins[pin]);
     payLoad = payLoad +  "\",\"value\":\"";
     
     if ( digitalPins[pin] == TEMP_PIN ) {
@@ -13,7 +11,7 @@ void pushDigitalPinData(){
     } else if ( digitalRead(digitalPins[pin]) == LOW ) {
       payLoad += "OFF";
     }
-
+    
     payLoad += "\"}";
 
     httpClient.fastrprint(F("POST "));     
@@ -150,6 +148,23 @@ void pushAnalogPinData(){
     payLoad = "";
     delay(1000);
   }
+}
+
+
+
+
+String getDataType(int pin){
+  switch(pin){
+    case TEMP_PIN:
+      return "TEMP";
+    case BULB_PIN:
+      return "BULB";
+    case FAN_PIN:
+      return "FAN";
+    default:
+      return String(pin);
+  }
+
 }
 
 

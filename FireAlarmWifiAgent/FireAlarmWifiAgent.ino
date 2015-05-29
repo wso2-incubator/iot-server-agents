@@ -14,7 +14,7 @@ Adafruit_CC3000_Client httpClient;
 String host, jsonPayLoad, replyMsg;
 
 void setup() {
-  if(true) Serial.begin(115200); 
+  if(DEBUG) Serial.begin(115200); 
   pinMode(BULB_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
   connectHttp();
@@ -27,7 +27,7 @@ void loop() {
 
     delay(POLL_INTERVAL);
     
-    String responseMsg = readControls();    
+    String responseMsg = readControls();
     int index = responseMsg.lastIndexOf(":");
     int newLine = responseMsg.lastIndexOf("\n");
     String subStrn = responseMsg.substring(index + 1);
@@ -48,7 +48,7 @@ void loop() {
 //    } else if (subStrn.equalsIgnoreCase("OFF")) {
 //      if (responseMsg.equals("BULB")) {
 //        digitalWrite(BULB_PIN, LOW);
-//        replyMsg = "Bulb was switched OFF";
+//        replyMsg = "Bulb was switched OFF";  
 //      } else if (responseMsg.equals("FAN")) {
 //        digitalWrite(FAN_PIN, LOW);
 //        replyMsg = "Buzzer was switched OFF";
@@ -56,9 +56,8 @@ void loop() {
 //    }
 
 
-    if (subStrn.equals("IN")) {
-      responseMsg = responseMsg.substring(newLine + 1, index); 
-      if (responseMsg.equals("TEMP")) {
+    if (subStrn.equals("IN")) { 
+      if (responseMsg.equals("TEMPERATURE")) {
         int temperature =  (uint8_t)getTemperature();
         replyMsg = "Temperature is " + String(temperature) + " C";
         reply();
@@ -81,19 +80,7 @@ void loop() {
 }
 
 
-String getDataType(int pin){
-  switch(pin){
-    case TEMP_PIN:
-      return "Temperature";
-    case BULB_PIN:
-      return "Bulb";
-    case FAN_PIN:
-      return "Fan";
-    default:
-      return String(pin);
-  }
 
-}
 
 String switchBulb() {
     if (digitalRead(BULB_PIN) == HIGH) {

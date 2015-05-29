@@ -28,7 +28,7 @@
 #define DEVICE_ID  "xxxxxxxx"
 
 #define SERVICE_PORT 9763 
-#define SERVICE_EPOINT "/WSO2ConnectedDevices/FireAlarmController/" 
+#define SERVICE_EPOINT "/iotdevices/FireAlarmController/" 
                                         // pushalarmdata - application/json - {"owner":"","deviceId":"","replyMessage":"","time":"","key":"","value":""}
                                         // readcontrols/{owner}/{deviceId}
                                         // reply - application/json - {"owner":"","deviceId":"","replyMessage":""}
