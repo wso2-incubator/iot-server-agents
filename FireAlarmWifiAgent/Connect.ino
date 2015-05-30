@@ -10,7 +10,7 @@
 
 //  uint32_t ip, ddns, ssubnet, ggateway;
 
-//  byte mac[6] = { 0xC0, 0x4A, 0x00, 0x1A, 0x03, 0xF8 };  //mac - c0:4a:00:1a:08:da 
+//  byte mac[6] = { 0xC0, 0x4A, 0x00, 0x1A, 0x08, 0xDA };  //mac - c0:4a:00:1a:08:da 
                                                            //      c0:4a:00:1a:03:f8 
                                                            //      b8:27:eb:88:37:7a
 String connecting = "connecting.... ";
@@ -74,18 +74,21 @@ void connectHttp() {
     delay(1000);
   }
   
-  httpClient = cc3000.connectTCP(sserver, SERVICE_PORT);  //SERVICE_PORT
-  if (httpClient.connected()) {
-    if(CON_DEBUG) Serial.println("Connected to server");
+  pushClient = cc3000.connectTCP(sserver, SERVICE_PORT);  //SERVICE_PORT
+  if (pushClient.connected()) {
+    if(CON_DEBUG) Serial.println("PushClient Connected to server");
   } else {
     cc3000.disconnect(); 
-    if(CON_DEBUG) Serial.println(F("Connection failed"));    
-    
-//    while(!httpClient.connected()){
-//      if(DEBUG) Serial.println("retrying to connect......");
-//      httpClient = cc3000.connectTCP(sserver, SERVICE_PORT);
-//      delay(1000);
-//    }
+    if(CON_DEBUG) Serial.println(F("PushClient Connection failed"));    
+  }
+  
+  
+  pollClient = cc3000.connectTCP(sserver, SERVICE_PORT);  //SERVICE_PORT
+  if (pollClient.connected()) {
+    if(CON_DEBUG) Serial.println("PollClient Connected to server");
+  } else {
+    cc3000.disconnect(); 
+    if(CON_DEBUG) Serial.println(F("PollClient Connection failed"));    
   }
 
   if(CON_DEBUG) Serial.println(F("-------------------------------------"));

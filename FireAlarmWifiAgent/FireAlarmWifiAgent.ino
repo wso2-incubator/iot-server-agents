@@ -3,11 +3,14 @@
 #include <Adafruit_CC3000.h>
 #include <SPI.h>
 #include "dht.h"
+#include <pt.h> 
 
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
                                          SPI_CLOCK_DIVIDER); // you can change this clock speed
 
-Adafruit_CC3000_Client httpClient;
+Adafruit_CC3000_Client pushClient;
+Adafruit_CC3000_Client pollClient;
+static struct pt pushThread;
 
 uint32_t sserver;
 
@@ -24,52 +27,30 @@ byte server[4] = { 10, 100, 7, 38 };
 
 int digitalPins[] = { TEMP_PIN, BULB_PIN, FAN_PIN };
 String host, jsonPayLoad, replyMsg;
+String responseMsg, subStrn;
 
 void setup() {
   if(true) Serial.begin(115200); 
   pinMode(BULB_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
+  
+  PT_INIT(&pushThread);
+  
   connectHttp();
   setupResource();
 }
 
 void loop() {
-  if (httpClient.connected()) { 
- Serial.println("YES");   
+  if (pushClient.connected() && pollClient.connected()) {   
     pushData();                    // batches all the required pin values together and pushes once
+
 //    pushDigitalPinData();        // pushes pin data via multiple calls with a single pin data per call
+//    protothread1(&pushThread, 1000);      // Pushes data and waits for control signals to be received
     delay(POLL_INTERVAL);
     
-    String responseMsg = readControls();
-    int index = responseMsg.lastIndexOf(":");
-    int newLine = responseMsg.lastIndexOf("\n");
-    String subStrn = responseMsg.substring(index + 1);
-    responseMsg = responseMsg.substring(newLine + 1, index); 
+    boolean valid = readControls();
     
-//    if (subStrn.equals("IN")) {
-//      int temperature =  (uint8_t)getTemperature();
-//      replyMsg = "Temperature is " + String(temperature) + " C";
-//      reply();    
-//    } else if (subStrn.equalsIgnoreCase("ON")) {
-//      if (responseMsg.equals("BULB")) {
-//        digitalWrite(BULB_PIN, HIGH);
-//        replyMsg = "Bulb was switched ON";
-//      } else if (responseMsg.equals("FAN")) {
-//        digitalWrite(FAN_PIN, HIGH);
-//        replyMsg = "Buzzer was switched ON";
-//      }  
-//    } else if (subStrn.equalsIgnoreCase("OFF")) {
-//      if (responseMsg.equals("BULB")) {
-//        digitalWrite(BULB_PIN, LOW);
-//        replyMsg = "Bulb was switched OFF";  
-//      } else if (responseMsg.equals("FAN")) {
-//        digitalWrite(FAN_PIN, LOW);
-//        replyMsg = "Buzzer was switched OFF";
-//      }  
-//    }
-
-
-    if (subStrn.equals("IN")) { 
+    if (!valid) {
       if (responseMsg.equals("TEMPERATURE")) {
         int temperature =  (uint8_t)getTemperature();
         replyMsg = "Temperature is " + String(temperature) + " C";
@@ -78,22 +59,20 @@ void loop() {
         replyMsg = "Bulb was switched " + switchBulb();
       } else if (responseMsg.equals("FAN")) {
         replyMsg = "Buzzer was switched " + switchFan();
-      }    
+      } 
     } 
   } else {
-    Serial.println("NO");
     if(DEBUG) {
       Serial.println("client not found...");
       Serial.println("disconnecting.");
     }
-    httpClient.close();
+    pushClient.close();
+    pollClient.close();
     cc3000.disconnect();  
-   Serial.println("TRY"); 
+   
     connectHttp();
   }  
 }
-
-
 
 
 String switchBulb() {
@@ -160,4 +139,18 @@ double getTemperature(){
     Serial.println("-------------------------------");
   }
   return DHT.temperature;
+}
+
+
+static int protothread1(struct pt *pt, int interval) {
+  static unsigned long timestamp = 0;
+  PT_BEGIN(pt);
+  while(1) { // never stop 
+    /* each time the function it is checked whether any control signals are sent
+    *  if so exit this proto thread
+    */
+    PT_WAIT_UNTIL(pt, readControls() );
+    pushData();
+  }
+  PT_END(pt);
 }

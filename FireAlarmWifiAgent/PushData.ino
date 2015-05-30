@@ -26,17 +26,17 @@ void pushData(){
   }
     payLoad += "\"}";
 
-    httpClient.fastrprint(F("POST "));     
-    httpClient.fastrprint(SERVICE_EPOINT); httpClient.fastrprint(F("pushalarmdata"));  
-    httpClient.fastrprint(F(" HTTP/1.1")); httpClient.fastrprint(F("\n"));
-    httpClient.fastrprint(host.c_str()); httpClient.fastrprint(F("\n"));    
-    httpClient.fastrprint(F("Content-Type: application/json")); httpClient.fastrprint(F("\n"));   
-    httpClient.fastrprint(F("Content-Length: "));
+    pushClient.fastrprint(F("POST "));     
+    pushClient.fastrprint(SERVICE_EPOINT); pushClient.fastrprint(F("pushalarmdata"));  
+    pushClient.fastrprint(F(" HTTP/1.1")); pushClient.fastrprint(F("\n"));
+    pushClient.fastrprint(host.c_str()); pushClient.fastrprint(F("\n"));    
+    pushClient.fastrprint(F("Content-Type: application/json")); pushClient.fastrprint(F("\n"));   
+    pushClient.fastrprint(F("Content-Length: "));
 
     int payLength = jsonPayLoad.length() + payLoad.length();
     
-    httpClient.fastrprint(String(payLength).c_str()); httpClient.fastrprint(F("\n"));
-    httpClient.fastrprint(F("\n")); 
+    pushClient.fastrprint(String(payLength).c_str()); pushClient.fastrprint(F("\n"));
+    pushClient.fastrprint(F("\n")); 
          
     if(DEBUG) {
       Serial.print("POST ");
@@ -53,34 +53,34 @@ void pushData(){
     
     for (int i = 0; i < jsonPayLoad.length(); i++) {
       if ( (i+1)*chunkSize > jsonPayLoad.length()) {
-        httpClient.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
+        pushClient.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
         if(DEBUG) Serial.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
         i = jsonPayLoad.length();
       } else {
-        httpClient.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
+        pushClient.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
         if(DEBUG) Serial.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
       }
     } 
     
     for (int i = 0; i < payLoad.length(); i++) {
       if ( (i+1)*chunkSize > payLoad.length()) {
-        httpClient.print(payLoad.substring(i*chunkSize, payLoad.length()));
+        pushClient.print(payLoad.substring(i*chunkSize, payLoad.length()));
         if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, payLoad.length()));
         i = payLoad.length();
       } else {
-        httpClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
+        pushClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
         if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
       }
     } 
     
-    httpClient.fastrprint(F("\n"));
+    pushClient.fastrprint(F("\n"));
     if(DEBUG) Serial.println();
    
     delay(1000);
 
     if(true) { 
-      while (httpClient.available()) {
-        char response = httpClient.read();
+      while (pushClient.available()) {
+        char response = pushClient.read();
         if(DEBUG) Serial.print(response);
       }
     }
@@ -117,17 +117,17 @@ void pushData(){
 //    
 //    payLoad += "\"}";
 //
-//    httpClient.fastrprint(F("POST "));     
-//    httpClient.fastrprint(SERVICE_EPOINT); httpClient.fastrprint(F("pushalarmdata"));  
-//    httpClient.fastrprint(F(" HTTP/1.1")); httpClient.fastrprint(F("\n"));
-//    httpClient.fastrprint(host.c_str()); httpClient.fastrprint(F("\n"));    
-//    httpClient.fastrprint(F("Content-Type: application/json")); httpClient.fastrprint(F("\n"));   
-//    httpClient.fastrprint(F("Content-Length: "));
+//    pushClient.fastrprint(F("POST "));     
+//    pushClient.fastrprint(SERVICE_EPOINT); pushClient.fastrprint(F("pushalarmdata"));  
+//    pushClient.fastrprint(F(" HTTP/1.1")); pushClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(host.c_str()); pushClient.fastrprint(F("\n"));    
+//    pushClient.fastrprint(F("Content-Type: application/json")); pushClient.fastrprint(F("\n"));   
+//    pushClient.fastrprint(F("Content-Length: "));
 //
 //    int payLength = jsonPayLoad.length() + payLoad.length();
 //    
-//    httpClient.fastrprint(String(payLength).c_str()); httpClient.fastrprint(F("\n"));
-//    httpClient.fastrprint(F("\n")); 
+//    pushClient.fastrprint(String(payLength).c_str()); pushClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(F("\n")); 
 //         
 //    if(DEBUG) {
 //      Serial.print("POST ");
@@ -144,34 +144,34 @@ void pushData(){
 //    
 //    for (int i = 0; i < jsonPayLoad.length(); i++) {
 //      if ( (i+1)*chunkSize > jsonPayLoad.length()) {
-//        httpClient.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
+//        pushClient.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
 //        if(DEBUG) Serial.print(jsonPayLoad.substring(i*chunkSize, jsonPayLoad.length()));
 //        i = jsonPayLoad.length();
 //      } else {
-//        httpClient.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
+//        pushClient.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
 //        if(DEBUG) Serial.print(jsonPayLoad.substring(i*chunkSize, (i+1)*chunkSize));
 //      }
 //    } 
 //    
 //    for (int i = 0; i < payLoad.length(); i++) {
 //      if ( (i+1)*chunkSize > payLoad.length()) {
-//        httpClient.print(payLoad.substring(i*chunkSize, payLoad.length()));
+//        pushClient.print(payLoad.substring(i*chunkSize, payLoad.length()));
 //        if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, payLoad.length()));
 //        i = payLoad.length();
 //      } else {
-//        httpClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
+//        pushClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
 //        if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
 //      }
 //    } 
 //    
-//    httpClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(F("\n"));
 //    if(DEBUG) Serial.println();
 //   
 //    delay(1000);
 //
 //    if(true) {     
-//      while (httpClient.available()) {
-//        char response = httpClient.read();
+//      while (pushClient.available()) {
+//        char response = pushClient.read();
 //        if(DEBUG) Serial.print(response);
 //      }
 //    }
@@ -200,17 +200,17 @@ void pushData(){
 //    payLoad = payLoad +  "\",\"value\":\"" + analogRead(analogPins[pin]);
 //    payLoad = payLoad + "\"}";
 //
-//    httpClient.fastrprint(F("POST "));
-//    httpClient.fastrprint(SERVICE_EPOINT); httpClient.fastrprint(F("pushalarmdata")); 
-//    httpClient.fastrprint(F(" HTTP/1.1")); httpClient.fastrprint(F("\n"));
-//    httpClient.fastrprint(host.c_str()); httpClient.fastrprint(F("\n"));
-//    httpClient.fastrprint(F("Content-Type: application/json")); httpClient.fastrprint(F("\n"));
-//    httpClient.fastrprint(F("Content-Length: "));
+//    pushClient.fastrprint(F("POST "));
+//    pushClient.fastrprint(SERVICE_EPOINT); pushClient.fastrprint(F("pushalarmdata")); 
+//    pushClient.fastrprint(F(" HTTP/1.1")); pushClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(host.c_str()); pushClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(F("Content-Type: application/json")); pushClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(F("Content-Length: "));
 //    
 //    int payLength = payLoad.length();
 //    
-//    httpClient.fastrprint(String(payLength).c_str()); httpClient.fastrprint(F("\n"));
-//    httpClient.fastrprint(F("\n")); 
+//    pushClient.fastrprint(String(payLength).c_str()); pushClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(F("\n")); 
 //    
 //    if(DEBUG) {
 //      Serial.print("POST ");
@@ -227,23 +227,23 @@ void pushData(){
 //    
 //    for (int i = 0; i < payLength; i++) {
 //      if ( (i+1)*chunkSize > payLength) {
-//        httpClient.print(payLoad.substring(i*chunkSize, payLength));
+//        pushClient.print(payLoad.substring(i*chunkSize, payLength));
 //        if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, payLength));
 //        i = payLength;
 //      } else {
-//        httpClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
+//        pushClient.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
 //        if(DEBUG) Serial.print(payLoad.substring(i*chunkSize, (i+1)*chunkSize));
 //      }
 //    }
 //    
-//    httpClient.fastrprint(F("\n"));
+//    pushClient.fastrprint(F("\n"));
 //    if(DEBUG) Serial.println();
 //    
 //    delay(1000);
 //    
 //    if(true) {
-//      while (httpClient.available()) {
-//        char response = httpClient.read();
+//      while (pushClient.available()) {
+//        char response = pushClient.read();
 //        if(DEBUG) Serial.print(response);
 //      }
 //    }
