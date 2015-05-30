@@ -13,9 +13,6 @@
 #define ADAFRUIT_CC3000_VBAT  5
 #define ADAFRUIT_CC3000_CS    10
 
-//#define WLAN_SSID       "Dialog 4G"     // cannot be longer than 32 characters!
-//#define WLAN_PASS       "FA09C543"
-
 #define WLAN_SSID       "WSO2-Restricted"     // cannot be longer than 32 characters!
 #define WLAN_PASS       "LKvene8xIOT"
 
@@ -23,9 +20,10 @@
                            // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
 #define IDLE_TIMEOUT_MS  3000      
 
-#define DEVICE_OWNER "Anonymous"
-#define DEVICE_TYPE "FireAlarm"
-#define DEVICE_ID  "xxxxxxxx"
+#define DEVICE_OWNER "${DEVICE_OWNER}"          //"SHABIRMEAN"
+#define DEVICE_ID "${DEVICE_ID}"              //"vbhenqyt85yq"
+#define DEVICE_TOKEN "${DEVICE_TOKEN}"
+
 
 #define SERVICE_PORT 9763 
 #define SERVICE_EPOINT "/iotdevices/FireAlarmController/" 
@@ -39,6 +37,7 @@
 
 #define POLL_INTERVAL 1000
 #define DEBUG false
+#define CON_DEBUG false
 
 #endif
 

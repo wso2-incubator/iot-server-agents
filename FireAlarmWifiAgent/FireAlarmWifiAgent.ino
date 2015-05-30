@@ -4,17 +4,29 @@
 #include <SPI.h>
 #include "dht.h"
 
-int digitalPins[] = { TEMP_PIN, BULB_PIN, FAN_PIN };
-int analogPins[] = { 0, 1, 2, 3, 4, 5 };
-
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
                                          SPI_CLOCK_DIVIDER); // you can change this clock speed
 
 Adafruit_CC3000_Client httpClient;
+
+uint32_t sserver;
+
+    /**********************************************************************************************  
+        0. Check with a sample Wifi code of the Adafruit_CC3000 library to ensure that the sheild is working
+        1. Set the ip of the server(byte array below) where the Web-Rest API for the FireAlarm is running
+        2. Check whether the "SERVICE_EPOINT" is correct in the 'FireAlarmWifiAgent.h' file
+        3. Check whether the "SERVICE_PORT" is the same (9763) for the server running. Change it if needed
+        4. Check whether the pins have been attached accordingly in the Arduino
+        5. Check whether all reqquired pins are added to the 'digitalPins' array  
+    ***********************************************************************************************/
+
+byte server[4] = { 10, 100, 7, 38 };
+
+int digitalPins[] = { TEMP_PIN, BULB_PIN, FAN_PIN };
 String host, jsonPayLoad, replyMsg;
 
 void setup() {
-  if(DEBUG) Serial.begin(115200); 
+  if(true) Serial.begin(115200); 
   pinMode(BULB_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
   connectHttp();
@@ -22,9 +34,10 @@ void setup() {
 }
 
 void loop() {
-  if (httpClient.connected()) {    
-    pushDigitalPinData();
-
+  if (httpClient.connected()) { 
+ Serial.println("YES");   
+    pushData();                    // batches all the required pin values together and pushes once
+//    pushDigitalPinData();        // pushes pin data via multiple calls with a single pin data per call
     delay(POLL_INTERVAL);
     
     String responseMsg = readControls();
@@ -68,14 +81,15 @@ void loop() {
       }    
     } 
   } else {
+    Serial.println("NO");
     if(DEBUG) {
       Serial.println("client not found...");
       Serial.println("disconnecting.");
     }
-    
     httpClient.close();
+    cc3000.disconnect();  
+   Serial.println("TRY"); 
     connectHttp();
-
   }  
 }
 
