@@ -11,12 +11,12 @@ void pushData(){
  
   int temperature =  (uint8_t)getTemperature();
   payLoad += temperature;
-  payLoad += "-"; 
+  payLoad += ":"; 
   payLoad += digitalRead(PIR_PIN);
-  payLoad += "-"; 
+  payLoad += ":"; 
   payLoad += getSonar();   // returns distance if < MAX_DISTANCE else returns -1, 
                            // Pushed accordingly inside JAX-RS
-  payLoad += "-"; 
+  payLoad += ":"; 
   payLoad += analogRead(LDR_PIN);
   payLoad += "\"}";
 
@@ -34,7 +34,7 @@ void pushData(){
        
   if(DEBUG) {
     Serial.print("POST ");
-    Serial.print(SERVICE_EPOINT); Serial.print("pushalarmdata");
+    Serial.print(SERVICE_EPOINT); Serial.print("pushsensordata");
     Serial.print(" HTTP/1.1"); Serial.println();
     Serial.print(host); Serial.println();
     Serial.print("Content-Type: application/json"); Serial.println();

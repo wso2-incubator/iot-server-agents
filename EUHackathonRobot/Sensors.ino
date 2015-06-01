@@ -90,7 +90,7 @@ int getSonar()
   if (cm > MAX_DISTANCE || cm <= 0){
     //Serial.println("Out of range");
     noTone(BUZZER);
-    return 500;
+    return -1;
   } else {
     tone(BUZZER, BUZZER_SOUND);
     return cm;

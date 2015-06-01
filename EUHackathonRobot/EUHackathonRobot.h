@@ -13,16 +13,17 @@
 #define ADAFRUIT_CC3000_VBAT  5
 #define ADAFRUIT_CC3000_CS    10
 
-#define WLAN_SSID       "WSO2-Restricted"           // cannot be longer than 32 characters!
-#define WLAN_PASS       "LKvene8xIOT"
+#define WLAN_SSID       "ssidName"           // cannot be longer than 32 characters!
+#define WLAN_PASS       "Password"
 
 #define WLAN_SECURITY   WLAN_SEC_WPA2
                            // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
 #define IDLE_TIMEOUT_MS  3000      
 
-#define DEVICE_OWNER "Test" //"${DEVICE_OWNER}"          //"SHABIRMEAN"
-#define DEVICE_ID "Test" //"${DEVICE_ID}"              //"vbhenqyt85yq"
-#define DEVICE_TOKEN "${DEVICE_TOKEN}"
+#define DEVICE_OWNER "${DEVICE_OWNER}"      // used by the template engine 
+#define DEVICE_ID "${DEVICE_ID}"            //  when these args are auto      
+ #define DEVICE_TOKEN "${DEVICE_TOKEN}"	    //    generated from web UI 
+
 
 
 #define SERVICE_PORT 9763 
@@ -33,9 +34,9 @@
 
 #define SONAR_TRIG  2
 #define SONAR_ECHO  4
-#define PIR_PIN  12
+#define PIR_PIN  13
 #define LDR_PIN  A1
-#define TEMP_PIN 13
+#define TEMP_PIN 12
 
 #define BUZZER 6
 #define BUZZER_SOUND 100
@@ -44,7 +45,7 @@
 #define TURN_DELAY 100
 
 #define POLL_INTERVAL 1000
-#define DEBUG true
+#define DEBUG false
 #define CON_DEBUG true
 
 #endif
