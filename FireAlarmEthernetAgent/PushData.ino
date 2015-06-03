@@ -22,7 +22,7 @@ void pushData(){
     }
 
     if ( ((sizeof(digitalPins)/sizeof(int)) - 1) != pin ) {
-      payLoad += "-";
+      payLoad += ":";
     }
     
   }
