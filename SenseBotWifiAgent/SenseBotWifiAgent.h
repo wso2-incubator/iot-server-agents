@@ -1,5 +1,5 @@
-#ifndef EUHackathonRobot_H
-#define EUHackathonRobot_H
+#ifndef SenseBotWifiAgent_H
+#define SenseBotWifiAgent_H
 
 #if (ARDUINO >= 100)
  #include "Arduino.h"
