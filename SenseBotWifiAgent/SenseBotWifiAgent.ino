@@ -1,7 +1,7 @@
 #include "SenseBotWifiAgent.h"
 
 #include <Adafruit_CC3000.h>
-//#include <avr/wdt.h>
+#include <avr/wdt.h>
 #include <SPI.h>
 #include "dht.h"
 #include <pt.h>
@@ -59,7 +59,7 @@ void setup() {
   
   connectHttp();
   setupResource();
-//  wdt_enable(WDTO_4S);
+  wdt_enable(WDTO_4S);
 }
 
 
@@ -71,12 +71,12 @@ void loop() {
 //  listen();
 //  wdt_reset();
                       // Check connection
-//  if( !cc3000.checkConnected() ){
-//    while(1){
-//    }
-//  }
-//  
-//  wdt_reset(); 
+  if( !cc3000.checkConnected() ){
+    while(1){
+    }
+  }
+  
+  wdt_reset(); 
   drive();    
   
 }
@@ -117,7 +117,7 @@ static int protothread1(struct pt *pt, int interval) {
                        // batches all the required pin values together and pushes once
          // Pushes data in 1 second interval
       pushData(); 
-//      wdt_reset();  
+      wdt_reset();  
     } else {
       pushClient.close();
       cc3000.disconnect();
