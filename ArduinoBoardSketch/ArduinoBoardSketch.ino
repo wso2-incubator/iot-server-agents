@@ -2,15 +2,12 @@
 
 #include <Adafruit_CC3000.h>
 #include <SPI.h>
-#include "dht.h"
-#include <pt.h> 
 
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
                                          SPI_CLOCK_DIVIDER); // you can change this clock speed
 
 Adafruit_CC3000_Client pushClient;
 Adafruit_CC3000_Client pollClient;
-static struct pt pushThread;
 
 uint32_t sserver;
 
@@ -23,7 +20,7 @@ uint32_t sserver;
         5. Check whether all reqquired pins are added to the 'digitalPins' array  
     ***********************************************************************************************/
 
-byte server[4] = { 10, 100, 7, 38 };
+byte server[4] = { 192, 168, 1, 101 };
 String host, jsonPayLoad, replyMsg;
 String responseMsg, subStrn;
 
@@ -32,6 +29,9 @@ void setup()
   Serial.begin(9600);
 
   Serial.println(F("Internal Temperature Sensor"));
+  pinMode(6, OUTPUT);
+  connectHttp();
+  setupResource();
 }
 
 void loop()
@@ -43,16 +43,7 @@ void loop()
     
     boolean valid = readControls();
     
-    if (!valid) {
-      if (responseMsg.equals("ON")) {
-          setLED(true);
-      
-      } else if (responseMsg.equals("OFF")){
-        setLED(false);
-       
-      
-      }
-    } 
+    responseMsg="";
   } else {
     if(DEBUG) {
       Serial.println("client not found...");
@@ -65,20 +56,11 @@ void loop()
     connectHttp();
   }  
   
-  
  
-   pinMode(13, OUTPUT);
   delay(1000);
 }
 
-void setLED(boolean status){
-  if(status){
-    digitalWrite(13, HIGH); 
-  }else{
-    digitalWrite(13, LOW); 
-  }
 
-}
 
 
 
@@ -114,15 +96,4 @@ double getBoardTemp(void)
   return (t);
 }
 
-static int protothread1(struct pt *pt, int interval) {
-  static unsigned long timestamp = 0;
-  PT_BEGIN(pt);
-  while(1) { // never stop 
-    /* each time the function it is checked whether any control signals are sent
-    *  if so exit this proto thread
-    */
-    PT_WAIT_UNTIL(pt, readControls() );
-    pushData();
-  }
-  PT_END(pt);
-}
+
