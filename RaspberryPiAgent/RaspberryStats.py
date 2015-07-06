@@ -137,12 +137,15 @@ def getCPULoad():
 def registerDeviceIP():
         dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
         dcConncection.set_debuglevel(1)
-
         dcConncection.connect()
 
-        registerURL = REGISTER_ENDPOINT + '/' + DEVICE_OWNER + '/' + DEVICE_ID + '/' + pythonServer.getDeviceIP() 
+        registerURL = REGISTER_ENDPOINT + '/' + DEVICE_OWNER + '/' + DEVICE_ID + '/' + '10.100.9.10' 
         
-        dcConncection.request('POST', registerURL)
+        dcConncection.putrequest('POST', registerURL)
+        dcConncection.putheader('Authorization', 'Bearer ' + AUTH_TOKEN)
+        dcConncection.endheaders()
+        
+        dcConncection.send('')    
         dcResponse = dcConncection.getresponse()
 
         print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
