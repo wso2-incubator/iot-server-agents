@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 
-import sys, sh, time
+"""
+/**
+* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* WSO2 Inc. licenses this file to you under the Apache License,
+* Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+**/
+"""
+
+import sys, commands, time
 import BaseHTTPServer
 import RPi.GPIO as GPIO
 
@@ -16,7 +36,7 @@ SERVER_PORT = 80 # Maybe set this to 9000.
 
 
 global LAST_TEMP		
-LAST_TEMP = 0 				# The Last read temperature value from the DHT sensor. Kept globally
+LAST_TEMP = 25 				# The Last read temperature value from the DHT sensor. Kept globally
 							# Updated by the temperature reading thread
 
 BULB_PIN = 11                                       # The GPIO Pin# in RPi to which the LED is connected
@@ -92,20 +112,23 @@ def iequal(a, b):
 #       Get the wlan0 interface via which the RPi is connected 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def getDeviceIP():
-	rPi_IP = sh.grep(sh.ifconfig("wlan0"), "-oP", "-m1", "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
-	rPi_IP = rPi_IP.split()[0]
+    rPi_IP = commands.getoutput("ip route list | grep 'src '").split()
+    rPi_IP = rPi_IP[rPi_IP.index('src') + 1]
 
-	print "------------------------------------------------------------------------------------"
-	print "IP Address of RaspberryPi (wlan0): " + rPi_IP
-	print "------------------------------------------------------------------------------------"
-	return rPi_IP
+    if len(rPi_IP)<=16:
+		print "------------------------------------------------------------------------------------"
+		print "IP Address of RaspberryPi: " + rPi_IP
+		print "------------------------------------------------------------------------------------"
+		return rPi_IP
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Set the GPIO pin modes for the ones to be read
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def setUpGPIOPins():
+    GPIO.setmode(GPIO.BOARD)
 	GPIO.setup(BULB_PIN, GPIO.OUT)
 	GPIO.output(BULB_PIN, False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

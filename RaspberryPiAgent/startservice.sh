@@ -1,4 +1,4 @@
-#!/bin/bash   
+#!/bin/bash
 
 echo "----------------------------------------------------------------"
 echo "|		WSO2 IOT Sample				"
@@ -10,25 +10,25 @@ echo "----------------------------------------------------------------"
 while true; do
     read -p "Do you wish to run 'apt-get update' and continue? [Yes/No] " yn
     case $yn in
-        [Yy]* ) sudo apt-get update; 
+        [Yy]* ) sudo apt-get update;
 				break;;
-        [Nn]* ) echo "Continuing without apt-get update..."; 
+        [Nn]* ) echo "Continuing without apt-get update...";
 				break;;
-        * ) echo "Please answer yes or no.";;
+        * ) echo "Please answer yes or no.";
     esac
 done
 
 if [ $? -ne 0 ]; then
-	echo "apt-get update failed.... Some dependencies may not get installed"
+    echo "apt-get update failed.... Some dependencies may not get installed"
     echo "If an already installed version of the package exists, try running:"
     echo "----------------------------------------------------------------"
     echo "sudo -i"
     echo "cd /var/lib/dpkg/info"
-    echo "rm -rf  wso2-raspi-alarm*"
+    echo "rm -rf wso2-raspi-alarm*"
     echo "dpkg --remove --force-remove-reinstreq wso2-raspi-alarm"
     echo "exit"
     echo "----------------------------------------------------------------"
-    break;;
+    break;
 fi
 
 echo "Installing 'gdebi' package..."
@@ -95,6 +95,17 @@ if [ $? -ne 0 ]; then
 	exit;
 fi
 
+##------------------ Temp Hack --------------------
+
+sudo rm /usr/local/src/RaspberryAgent/pythonServer.py
+sudo cp ./pythonServer.py /usr/local/src/RaspberryAgent/
+if [ $? -ne 0 ]; then
+echo "Copying pythonServer.py file failed...."
+exit;
+fi
+
+##-------------------------------------------------
+
 echo "Running the RaspberryAgent service...."
 # sudo service RaspberryService.sh start
 
@@ -113,5 +124,5 @@ echo "|		   --------------------------		"
 echo "|	 run 'sudo service RaspberryService.sh status'	to check status"
 echo "|	 run 'sudo service RaspberryService.sh stop'	to stop service"
 echo "|		   --------------------------		"
-echo "|	 Find logs at: /usr/local/RaspberryAgent/logs/RaspberryStats.log"
+echo "|	 Find logs at: /usr/local/src/RaspberryAgent/logs/RaspberryStats.log"
 echo "---------------------------------------------------------------------------"
