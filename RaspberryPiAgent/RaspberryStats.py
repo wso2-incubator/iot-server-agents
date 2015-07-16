@@ -1,16 +1,38 @@
 #!/usr/bin/env python
+
+"""
+/**
+* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* WSO2 Inc. licenses this file to you under the Apache License,
+* Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+**/
+"""
+
+
 import logging, logging.handlers, argparse
 import sys, os, signal
 import httplib, time 
 import ConfigParser 
-import threading                
-import dhtreader               # DHT Temperature sensor library build  required for temperature sensing
+import threading
+import Adafruit_DHT             # Adafruit library required for temperature sensing
 import pythonServer            # python script used to start a server to listen for operations (includes the TEMPERATURE global variable)
 
 
 
 PUSH_INTERVAL = 300           # time interval between successive data pushes in seconds
-
+logging_enabled = True
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Endpoint specific settings to which the data is pushed
@@ -38,7 +60,8 @@ DEVICE_OWNER = configParser.get('Device-Configurations', 'owner')
 DEVICE_ID = configParser.get('Device-Configurations', 'deviceId')
 AUTH_TOKEN = configParser.get('Device-Configurations', 'auth-token')
 
-DEVICE_INFO = '{"owner":"'+ DEVICE_OWNER + '","deviceId":"' + DEVICE_ID  + '","reply":"Data","value":'                  
+DEVICE_INFO = '{"owner":"'+ DEVICE_OWNER + '","deviceId":"' + DEVICE_ID  + '","reply":'
+DEVICE_IP = '"{ip}","value":'                  
 DEVICE_DATA = '"{temperature}"'                                                                      # '"{temperature}:{load}:OFF"'
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -47,7 +70,7 @@ DEVICE_DATA = '"{temperature}"'                                                 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Logger defaults
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LOG_FILENAME = "/home/pi/Desktop/WSO2IOT/RPiStats/logs/RaspberryStats.log"
+LOG_FILENAME = "/usr/local/src/RaspberryAgent/logs/RaspberryStats.log" 
 LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -60,12 +83,16 @@ LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
 parser = argparse.ArgumentParser(description="Python service to push RPi info to the Device Cloud")
 parser.add_argument("-l", "--log", help="file to write log to (default '" + LOG_FILENAME + "')")
 
+help_string = "time interval between successive data pushes (default '" + str(PUSH_INTERVAL) + "')"
+parser.add_argument("-i", "--interval", type=int, help=help_string)
+
 args = parser.parse_args()
 if args.log:
         LOG_FILENAME = args.log
+
+if args.interval:
+        PUSH_INTERVAL = args.interval
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       A class we can use to capture stdout and sterr in the log
@@ -95,9 +122,10 @@ def configureLogger(loggerName):
         formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')                                # Format each log message like this
         handler.setFormatter(formatter)                                                                         # Attach the formatter to the handler
         logger.addHandler(handler)                                                                              # Attach the handler to the logger
-        
-        sys.stdout = IOTLogger(logger, logging.INFO)                                            # Replace stdout with logging to file at INFO level
-        sys.stderr = IOTLogger(logger, logging.ERROR)                                           # Replace stderr with logging to file at ERROR level
+
+	if(logging_enabled):        
+	        sys.stdout = IOTLogger(logger, logging.INFO)                                            # Replace stdout with logging to file at INFO level
+	        sys.stderr = IOTLogger(logger, logging.ERROR)                                           # Replace stderr with logging to file at ERROR level
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -139,14 +167,14 @@ def registerDeviceIP():
         dcConncection.set_debuglevel(1)
         dcConncection.connect()
 
-        registerURL = REGISTER_ENDPOINT + '/' + DEVICE_OWNER + '/' + DEVICE_ID + '/' + '10.100.9.10' 
+        registerURL = REGISTER_ENDPOINT + '/' + DEVICE_OWNER + '/' + DEVICE_ID + '/' + pythonServer.getDeviceIP()
         
         dcConncection.putrequest('POST', registerURL)
         dcConncection.putheader('Authorization', 'Bearer ' + AUTH_TOKEN)
         dcConncection.endheaders()
         
         dcConncection.send('')    
-        dcResponse = dcConncection.getresponse()
+	dcResponse = dcConncection.getresponse()
 
         print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
         print dcResponse.status, dcResponse.reason
@@ -183,7 +211,7 @@ def connectAndPushData():
         ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
         rPiTemperature = pythonServer.LAST_TEMP                                                 # Push the last read temperature value           
-        PUSH_DATA = DEVICE_INFO + DEVICE_DATA.format(temperature=rPiTemperature)                        # , load=rPiLoad
+        PUSH_DATA = DEVICE_INFO + DEVICE_IP.format(ip=pythonServer.getDeviceIP()) + DEVICE_DATA.format(temperature=rPiTemperature)                        # , load=rPiLoad
         PUSH_DATA += '}'
 
         print PUSH_DATA
@@ -203,6 +231,11 @@ def connectAndPushData():
 
         dcConncection.close()
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+
+        if (dcResponse.status == '409' or dcResponse == '412'):
+            print 'Re-registering Device IP'
+            registerDeviceIP()   
+        
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -210,7 +243,7 @@ def connectAndPushData():
 #       This is a Thread object for reading temperature continuously
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TemperatureReaderThread(object):
-    def __init__(self, interval=5):
+    def __init__(self, interval=3):
         self.interval = interval
  
         thread = threading.Thread(target=self.run, args=())
@@ -220,21 +253,28 @@ class TemperatureReaderThread(object):
     def run(self):
         TEMP_PIN = 4
         TEMP_SENSOR_TYPE = 11
-        
+
+        # Try to grab a sensor reading.  Use the read_retry method which will retry up
+        # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
         while True:
-                try:
-                        dhtreader.init()
-                        t, h = dhtreader.read(TEMP_SENSOR_TYPE, TEMP_PIN)
+            try:
+                humidity, temperature = Adafruit_DHT.read_retry(TEMP_SENSOR_TYPE, TEMP_PIN)
+                
+                if temperature != pythonServer.LAST_TEMP:
+                    pythonServer.LAST_TEMP = temperature
+                    connectAndPushData()
+                
+                pythonServer.LAST_TEMP = temperature
+                
+                print 'Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity)
 
-                        pythonServer.LAST_TEMP = t
-                        print("Temp = {0} *C, Hum = {1} %".format(t, h))
+            except Exception, e:
+                print "Exception in TempReaderThread: Could not successfully read Temperature"
+                print str(e)
+                print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+                pass
 
-                except (IOError,TypeError) as e:
-                        print "Exception: Could not successfully read Temperature"
-                        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-                        pass
- 
-                time.sleep(self.interval)
+            time.sleep(self.interval)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -257,21 +297,23 @@ class ListenServerThread(object):
 #       The Main method of the RPi Agent 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
-        configureLogger("WSO2IOT_RPiStats")
+    configureLogger("WSO2IOT_RPiStats")
 
-        registerDeviceIP()                                      # Call the register endpoint and register Device IP
-        TemperatureReaderThread()                               # initiates and runs the thread to continuously read temperature from DHT Sensor
-        ListenServerThread()                                    # starts an HTTP Server that listens for operational commands to switch ON/OFF Led
+    registerDeviceIP()                                      # Call the register endpoint and register Device IP
+    TemperatureReaderThread()                               # initiates and runs the thread to continuously read temperature from DHT Sensor
+    ListenServerThread()                                    # starts an HTTP Server that listens for operational commands to switch ON/OFF Led
 
 
-        while True:
-                try:
-                        if pythonServer.LAST_TEMP > 0:                 # Push data only if there had been a successful temperature read
-                                connectAndPushData()                   # Push Sensor (Temperature) data to WSO2 BAM 
-                                time.sleep(PUSH_INTERVAL)
-                except (KeyboardInterrupt, Exception) as e:
-                        print "An Exception (either KeyboardInterrupt or Other)", e
-                        break                
+    while True:
+        try:
+            if pythonServer.LAST_TEMP > 0:                 # Push data only if there had been a successful temperature read
+                connectAndPushData()                   # Push Sensor (Temperature) data to WSO2 BAM 
+                time.sleep(PUSH_INTERVAL)
+        except (KeyboardInterrupt, Exception) as e:
+            print "Exception in RaspberryAgentThread (either KeyboardInterrupt or Other):"
+            print str(e)
+            print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+            pass
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 
 

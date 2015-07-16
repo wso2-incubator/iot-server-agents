@@ -128,7 +128,7 @@ def getDeviceIP():
 #       Set the GPIO pin modes for the ones to be read
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def setUpGPIOPins():
-    GPIO.setmode(GPIO.BOARD)
+    	GPIO.setmode(GPIO.BOARD)
 	GPIO.setup(BULB_PIN, GPIO.OUT)
 	GPIO.output(BULB_PIN, False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,18 +146,23 @@ def main():
 	HOST_NAME = getDeviceIP()
 
 	server_class = BaseHTTPServer.HTTPServer
-	httpd = server_class((HOST_NAME, SERVER_PORT), MyHandler)
-	print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, SERVER_PORT)
 	
-	try:
-	   httpd.serve_forever()
-	except KeyboardInterrupt:
-	   	pass
+    	while True:
+        	try:
+           		httpd = server_class((HOST_NAME, SERVER_PORT), MyHandler)
+            		print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, SERVER_PORT)
 
-	GPIO.output(BULB_PIN, False)
-	httpd.server_close()
-	print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, SERVER_PORT)
-	print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+            		httpd.serve_forever()
+        	except (KeyboardInterrupt, Exception) as e:
+            		print "Exception in ServerThread (either KeyboardInterrupt or Other):"
+            		print str(e)
+            
+   		 	GPIO.output(BULB_PIN, False)
+            		httpd.server_close()
+            		print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, SERVER_PORT)
+            		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+            		pass
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

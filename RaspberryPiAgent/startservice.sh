@@ -28,6 +28,7 @@ if [ $? -ne 0 ]; then
     echo "dpkg --remove --force-remove-reinstreq wso2-raspi-alarm"
     echo "exit"
     echo "----------------------------------------------------------------"
+    echo "Retry Installation...."
     break;
 fi
 
@@ -88,23 +89,11 @@ done
 
 echo "Copying configurations file to /usr/local/src/RaspberryAgent"
 sudo cp ./deviceConfigs.cfg /usr/local/src/RaspberryAgent/
-#sudo mkdir /usr/local/RaspberryAgent/logs
 
 if [ $? -ne 0 ]; then
 	echo "Copying configuration file failed...."
 	exit;
 fi
-
-##------------------ Temp Hack --------------------
-
-sudo rm /usr/local/src/RaspberryAgent/pythonServer.py
-sudo cp ./pythonServer.py /usr/local/src/RaspberryAgent/
-if [ $? -ne 0 ]; then
-echo "Copying pythonServer.py file failed...."
-exit;
-fi
-
-##-------------------------------------------------
 
 echo "Running the RaspberryAgent service...."
 # sudo service RaspberryService.sh start
@@ -121,8 +110,8 @@ fi
 echo "--------------------------------------------------------------------------"
 echo "|			Successfully Started		"
 echo "|		   --------------------------		"
-echo "|	 run 'sudo service RaspberryService.sh status'	to check status"
-echo "|	 run 'sudo service RaspberryService.sh stop'	to stop service"
-echo "|		   --------------------------		"
+#echo "|	 run 'sudo service RaspberryService.sh status'	to check status"
+#echo "|	 run 'sudo service RaspberryService.sh stop'	to stop service"
+#echo "|		   --------------------------		"
 echo "|	 Find logs at: /usr/local/src/RaspberryAgent/logs/RaspberryStats.log"
 echo "---------------------------------------------------------------------------"
