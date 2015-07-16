@@ -98,8 +98,21 @@ fi
 echo "Running the RaspberryAgent service...."
 # sudo service RaspberryService.sh start
 
+while true; do
+    read -p "Whats the time-interval (in seconds) between successive Data-Pushes to the WSO2-DC (ex: '60' indicates 1 minute) > " input
+
+    if [ $input -eq $input 2>/dev/null ]
+    then
+        echo "Setting data-push interval to $input seconds."
+        break;
+    else
+        echo "Input needs to be an integer indicating the number seconds between successive data-pushes."
+    fi
+done
+
+
 cd /usr/local/src/RaspberryAgent/
-sudo nohup ./RaspberryStats.py > /dev/null 2>&1 &
+sudo nohup ./RaspberryStats.py -i $input > /dev/null 2>&1 &
 
 if [ $? -ne 0 ]; then
 	echo "Could not start the service..."
