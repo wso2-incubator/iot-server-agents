@@ -10,15 +10,16 @@
 # Description:       RPi Service used to Publish RPi Stats to the WSO2 Device Cloud
 ### END INIT INFO
 
-#PATH=/sbin:/usr/sbin:/bin:/usr/bin
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
 # Change the next 3 lines to suit where you install your script and what you want to call it
 DESC="This service is used to publish events from the Raspberry Pi to the WSO2 Device Cloud"
 NAME=RaspberryStats
 
-DIR=/home/pi/Desktop/WSO2IOT/RPiStats
+DIR=/usr/local/src/RaspberryAgent
+#/home/pi/Desktop/WSO2IOT/RPiStats
 DAEMON=$DIR/$NAME.py
 DAEMON_NAME=$NAME
-SCRIPTNAME=/etc/init.d/RaspberryService.sh
+SCRIPTNAME=RaspberryService.sh
 
 # The process ID of the script when it runs is stored here:
 PIDFILE=/var/run/$DAEMON_NAME.pid
@@ -28,7 +29,7 @@ DAEMON_OPTS=""
 
 # This next line determines what user the script runs as.
 # Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
-DAEMON_USER=pi #root
+DAEMON_USER=root   #pi
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
@@ -70,7 +71,7 @@ case "$1" in
 
     *)
         #echo Usage: /etc/init.d/$DAEMON_NAME {start|stop|restart|status}"
-	echo "Usage: $SCRIPTNAME {start|stop|restart|status}"
+	echo "Usage: /etc/init.d/$SCRIPTNAME {start|stop|restart|status}"
 	exit 1
         ;;
 

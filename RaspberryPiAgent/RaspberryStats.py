@@ -224,15 +224,15 @@ def connectAndPushData():
         dcConncection.endheaders()
 
         dcConncection.send(PUSH_DATA)                           # Push the data
-
         dcResponse = dcConncection.getresponse()
-        print dcResponse.status, dcResponse.reason
+    
+	print dcResponse.status, dcResponse.reason
         print dcResponse.msg
 
         dcConncection.close()
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-
-        if (dcResponse.status == '409' or dcResponse == '412'):
+	
+        if (dcResponse.status == 409 or dcResponse.status == 412):
             print 'Re-registering Device IP'
             registerDeviceIP()   
         

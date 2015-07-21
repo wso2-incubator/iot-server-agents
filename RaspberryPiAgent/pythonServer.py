@@ -128,7 +128,11 @@ def getDeviceIP():
 #       Set the GPIO pin modes for the ones to be read
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def setUpGPIOPins():
-    	GPIO.setmode(GPIO.BOARD)
+	try:
+    		GPIO.setmode(GPIO.BOARD)
+	except Exception as e:
+		pass
+
 	GPIO.setup(BULB_PIN, GPIO.OUT)
 	GPIO.output(BULB_PIN, False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
