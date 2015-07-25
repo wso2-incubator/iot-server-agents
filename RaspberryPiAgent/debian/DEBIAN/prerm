@@ -1,0 +1,9 @@
+#! /bin/bash -e
+
+rm "/usr/bin/getMac"
+
+rm "/usr/bin/pythonServer"
+
+rm "/usr/bin/RaspberryService"
+
+rm "/usr/bin/RaspberryStats"

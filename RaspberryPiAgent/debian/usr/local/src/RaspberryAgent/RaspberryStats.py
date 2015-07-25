@@ -21,48 +21,32 @@
 """
 
 
-import logging, logging.handlers, argparse
-import sys, os, signal
-import httplib, time 
-import ConfigParser 
+import logging, logging.handlers
+import sys, os, signal, argparse
+import httplib, time  
 import threading
 import Adafruit_DHT             # Adafruit library required for temperature sensing
-import pythonServer            # python script used to start a server to listen for operations (includes the TEMPERATURE global variable)
+
+import iotUtils
+import httpServer               # python script used to start a http-server to listen for operations (includes the TEMPERATURE global variable)
+import xmppServer               # python script used to communicate with xmpp server
+import mqttListener             # python script used to accept messages via mqtt
 
 
 
 PUSH_INTERVAL = 300           # time interval between successive data pushes in seconds
-logging_enabled = True
+logging_enabled = False
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Endpoint specific settings to which the data is pushed
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DC_IP = '192.168.57.128'
-DC_PORT = 8281                          
+DC_IP = '10.100.7.38' #'192.168.57.128'
+DC_PORT = 9763 #8281                          
 HOST = DC_IP + ':' + `DC_PORT`
 
-DC_ENDPOINT = '/firealarm/1.0/controller/'
-PUSH_ENDPOINT = DC_ENDPOINT + 'push_temperature'                        #'pushalarmdata'
+DC_ENDPOINT = '/firealarm/controller/' #'/firealarm/1.0/controller/'
+PUSH_ENDPOINT = DC_ENDPOINT + 'push_temperature'
 REGISTER_ENDPOINT = DC_ENDPOINT + 'register'
-### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#       Device specific info when pushing data to server
-#       Read from a file "deviceConfigs.cfg" in the same folder level
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-configParser = ConfigParser.RawConfigParser()   
-configFilePath = r'./deviceConfigs.cfg'
-configParser.read(configFilePath)
-
-DEVICE_OWNER = configParser.get('Device-Configurations', 'owner')
-DEVICE_ID = configParser.get('Device-Configurations', 'deviceId')
-AUTH_TOKEN = configParser.get('Device-Configurations', 'auth-token')
-
-DEVICE_INFO = '{"owner":"'+ DEVICE_OWNER + '","deviceId":"' + DEVICE_ID  + '","reply":'
-DEVICE_IP = '"{ip}","value":'                  
-DEVICE_DATA = '"{temperature}"'                                                                      # '"{temperature}:{load}:OFF"'
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -70,7 +54,7 @@ DEVICE_DATA = '"{temperature}"'                                                 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Logger defaults
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LOG_FILENAME = "/usr/local/src/RaspberryAgent/logs/RaspberryStats.log" 
+LOG_FILENAME = "/usr/local/src/RaspberryAgent/logs/RaspberryStats.log"
 LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -93,6 +77,7 @@ if args.log:
 if args.interval:
         PUSH_INTERVAL = args.interval
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       A class we can use to capture stdout and sterr in the log
@@ -130,57 +115,76 @@ def configureLogger(loggerName):
 
 
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#       This method get the CPU Temperature of the Raspberry Pi
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def getCPUTemp():
-        CPU_TEMP_LOC = "/sys/class/thermal/thermal_zone0/temp"                                 # RaspberryPi file location to get CPU TEMP info
-        tempFile = open(CPU_TEMP_LOC)
-        cpuTemp = tempFile.read()
-        cpuTemp = long(float(cpuTemp))
-        cpuTemp = cpuTemp * 1.0 / 1000.0
-        print "The CPU temperature is: %.2f" % cpuTemp
-        return cpuTemp
-### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+##       This method get the CPU Temperature of the Raspberry Pi
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#def getCPUTemp():
+#        CPU_TEMP_LOC = "/sys/class/thermal/thermal_zone0/temp"                                 # RaspberryPi file location to get CPU TEMP info
+#        tempFile = open(CPU_TEMP_LOC)
+#        cpuTemp = tempFile.read()
+#        cpuTemp = long(float(cpuTemp))
+#        cpuTemp = cpuTemp * 1.0 / 1000.0
+#        print "The CPU temperature is: %.2f" % cpuTemp
+#        return cpuTemp
+#### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#
+#
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+##       This method get the CPU Load of the Raspberry Pi
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#def getCPULoad():
+#        CPU_LOAD_LOC = "/proc/loadavg"                                                          # RaspberryPi file location to get CPU LOAD info
+#        loadFile = open(CPU_LOAD_LOC)
+#        cpuLoad = loadFile.read()
+#        cpuLoad = cpuLoad.split()[0]
+#        cpuLoad = long(float(cpuLoad))
+#        print "The CPU temperature is: %.2f" % cpuLoad
+#        return cpuLoad
+#### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+##       Set the GPIO pin modes for the ones to be read
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#def setUpGPIOPins():
+#    try:
+#        GPIO.setmode(GPIO.BOARD)
+#        except Exception as e:
+#            print "Exception at 'GPIO.setmode'"
+#                pass
+#    
+#        GPIO.setup(BULB_PIN, GPIO.OUT)
+#    GPIO.output(BULB_PIN, False)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#       This method get the CPU Load of the Raspberry Pi
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def getCPULoad():
-        CPU_LOAD_LOC = "/proc/loadavg"                                                          # RaspberryPi file location to get CPU LOAD info
-        loadFile = open(CPU_LOAD_LOC)
-        cpuLoad = loadFile.read()
-        cpuLoad = cpuLoad.split()[0]
-        cpuLoad = long(float(cpuLoad))
-        print "The CPU temperature is: %.2f" % cpuLoad
-        return cpuLoad
-### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#       This method connects to the Device-Cloud and pushes data
+#       This method registers the DevieIP in the Device-Cloud
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def registerDeviceIP():
-        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
-        dcConncection.set_debuglevel(1)
-        dcConncection.connect()
+#        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
+#        dcConncection.set_debuglevel(1)
+#        dcConncection.connect()
 
-        registerURL = REGISTER_ENDPOINT + '/' + DEVICE_OWNER + '/' + DEVICE_ID + '/' + pythonServer.getDeviceIP()
+        registerURL = REGISTER_ENDPOINT + '/' + iotUtils.DEVICE_OWNER + '/' + iotUtils.DEVICE_ID + '/' + iotUtils.HOST_NAME
         
-        dcConncection.putrequest('POST', registerURL)
-        dcConncection.putheader('Authorization', 'Bearer ' + AUTH_TOKEN)
-        dcConncection.endheaders()
-        
-        dcConncection.send('')    
-	dcResponse = dcConncection.getresponse()
+#        dcConncection.putrequest('POST', registerURL)
+#        dcConncection.putheader('Authorization', 'Bearer ' + iotUtils.AUTH_TOKEN)
+#        dcConncection.endheaders()
+#        
+#        dcConncection.send('')    
+#	dcResponse = dcConncection.getresponse()
 
         print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
-        print dcResponse.status, dcResponse.reason
-        print dcResponse.msg
-
-        dcConncection.close()
+        print registerURL
+        print iotUtils.AUTH_TOKEN
+#        print dcResponse.status, dcResponse.reason
+#        print dcResponse.msg
+#
+#        dcConncection.close()
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -190,16 +194,16 @@ def registerDeviceIP():
 #       This method connects to the Device-Cloud and pushes data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def connectAndPushData():
-        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
-        dcConncection.set_debuglevel(1)
-
-        dcConncection.connect()
-
-        request = dcConncection.putrequest('POST', PUSH_ENDPOINT)
-
-        headers = {}
-        headers['Authorization'] = 'Bearer ' + AUTH_TOKEN
-        headers['Content-Type'] = 'application/json'
+#        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
+#        dcConncection.set_debuglevel(1)
+#
+#        dcConncection.connect()
+#
+#        request = dcConncection.putrequest('POST', PUSH_ENDPOINT)
+#
+#        headers = {}
+#        headers['Authorization'] = 'Bearer ' + iotUtils.AUTH_TOKEN
+#        headers['Content-Type'] = 'application/json'
 
         ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         ###       Read the Temperature and Load info of RPi and construct payload
@@ -210,32 +214,32 @@ def connectAndPushData():
         
         ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
-        rPiTemperature = pythonServer.LAST_TEMP                                                 # Push the last read temperature value           
-        PUSH_DATA = DEVICE_INFO + DEVICE_IP.format(ip=pythonServer.getDeviceIP()) + DEVICE_DATA.format(temperature=rPiTemperature)                        # , load=rPiLoad
+        rPiTemperature = iotUtils.LAST_TEMP                                                 # Push the last read temperature value
+        PUSH_DATA = iotUtils.DEVICE_INFO + iotUtils.DEVICE_IP.format(ip=iotUtils.HOST_NAME) + iotUtils.DEVICE_DATA.format(temperature=rPiTemperature)
         PUSH_DATA += '}'
 
         print PUSH_DATA
 
-        headers['Content-Length'] = len(PUSH_DATA)
+#        headers['Content-Length'] = len(PUSH_DATA)
 
-        for k in headers:
-            dcConncection.putheader(k, headers[k])
+#        for k in headers:
+#            dcConncection.putheader(k, headers[k])
+#
+#        dcConncection.endheaders()
+#
+#        dcConncection.send(PUSH_DATA)                           # Push the data
+#        dcResponse = dcConncection.getresponse()
+#    
+#	print dcResponse.status, dcResponse.reason
+#        print dcResponse.msg
+#
+#        dcConncection.close()
+#        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+#	
+#        if (dcResponse.status == 409 or dcResponse.status == 412):
+#            print 'Re-registering Device IP'
+#            registerDeviceIP()   
 
-        dcConncection.endheaders()
-
-        dcConncection.send(PUSH_DATA)                           # Push the data
-        dcResponse = dcConncection.getresponse()
-    
-	print dcResponse.status, dcResponse.reason
-        print dcResponse.msg
-
-        dcConncection.close()
-        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-	
-        if (dcResponse.status == 409 or dcResponse.status == 412):
-            print 'Re-registering Device IP'
-            registerDeviceIP()   
-        
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -245,11 +249,11 @@ def connectAndPushData():
 class TemperatureReaderThread(object):
     def __init__(self, interval=3):
         self.interval = interval
- 
+        
         thread = threading.Thread(target=self.run, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start()                                  # Start the execution
- 
+    
     def run(self):
         TEMP_PIN = 4
         TEMP_SENSOR_TYPE = 11
@@ -259,38 +263,88 @@ class TemperatureReaderThread(object):
         while True:
             try:
                 humidity, temperature = Adafruit_DHT.read_retry(TEMP_SENSOR_TYPE, TEMP_PIN)
-                
-                if temperature != pythonServer.LAST_TEMP:
-                    pythonServer.LAST_TEMP = temperature
+
+                if temperature != iotUtils.LAST_TEMP:
+                    iotUtils.LAST_TEMP = temperature
                     connectAndPushData()
                 
-                pythonServer.LAST_TEMP = temperature
-                
+                iotUtils.LAST_TEMP = temperature
                 print 'Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity)
-
+        
             except Exception, e:
                 print "Exception in TempReaderThread: Could not successfully read Temperature"
                 print str(e)
                 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
                 pass
-
-            time.sleep(self.interval)
+                
+                time.sleep(self.interval)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#       This is a Thread object for Server that listens for operation on RPi
+#       This is a Thread object for listening for MQTT Messages
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class ListenServerThread(object):
+class UtilsThread(object):
+    def __init__(self):
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+    
+    def run(self):
+        iotUtils.main()
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#       This is a Thread object for HTTP-Server that listens for operations on RPi
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class ListenHTTPServerThread(object):
     def __init__(self):
         thread = threading.Thread(target=self.run, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start()                                  # Start the execution
  
     def run(self):
-        pythonServer.main()
+        httpServer.main()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#       This is a Thread object for Server that listens for XMPP Messages
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class ListenXMPPServerThread(object):
+    def __init__(self):
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+        #xmppServer.ENDPOINT = iotUtils.XMPP_EP
+        xmppServer.main()
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#       This is a Thread object for listening for MQTT Messages
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class ListenMQTTThread(object):
+    def __init__(self):
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+    
+    def run(self):
+        #mqttListener.ENDPOINT = iotUtils.MQTT_EP
+        #mqttListener.OWNER = iotUtils.DEVICE_OWNER
+        #mqttListener.ID = iotUtils.DEVICE_ID
+        mqttListener.main()
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -298,17 +352,20 @@ class ListenServerThread(object):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
     configureLogger("WSO2IOT_RPiStats")
+    iotUtils.setUpGPIOPins()
 
+#    UtilsThread()
     registerDeviceIP()                                      # Call the register endpoint and register Device IP
     TemperatureReaderThread()                               # initiates and runs the thread to continuously read temperature from DHT Sensor
-    ListenServerThread()                                    # starts an HTTP Server that listens for operational commands to switch ON/OFF Led
-
-
+    ListenHTTPServerThread()                                    # starts an HTTP Server that listens for operational commands to switch ON/OFF Led
+    ListenXMPPServerThread()
+    ListenMQTTThread()
+    
     while True:
         try:
-            if pythonServer.LAST_TEMP > 0:                 # Push data only if there had been a successful temperature read
-                connectAndPushData()                   # Push Sensor (Temperature) data to WSO2 BAM 
-                time.sleep(PUSH_INTERVAL)
+            if iotUtils.LAST_TEMP > 0:                 # Push data only if there had been a successful temperature read
+                connectAndPushData()                   # Push Sensor (Temperature) data to WSO2 BAM
+		time.sleep(PUSH_INTERVAL)
         except (KeyboardInterrupt, Exception) as e:
             print "Exception in RaspberryAgentThread (either KeyboardInterrupt or Other):"
             print str(e)
@@ -319,10 +376,3 @@ def main():
 
 if __name__ == "__main__":
         main()
-
-
-
-
-
-
-

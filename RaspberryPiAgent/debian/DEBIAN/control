@@ -1,0 +1,11 @@
+Package: wso2-raspi-alarm
+Version: 1.0
+Section: embedded
+Maintainer: shabirmean <shabir@wso2.com>
+Homepage: https://204.234.188.212:9443/iotserver/
+Priority: optional
+Architecture: armhf
+Pre-Depends: python-pip (>=1.1-3), python-openssl (>=0.13-2+rpi1+deb7u1), python-dev (>=2.7.3-4+deb7u1), python (>=2.7.3-4+deb7u1), python-rpi.gpio (>=0.5.11-1)
+Description: FireAlarm setup using RaspberryPi 
+ An agent that runs on the RaspberryPi. This reads the DHT Sensor connected to the RPi. Pushes it to WSO2-BAM. Also a server is started in the RPi.
+

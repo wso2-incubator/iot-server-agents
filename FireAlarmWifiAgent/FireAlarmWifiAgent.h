@@ -32,21 +32,19 @@
                                      // too high or your server could be slow to respond.
 
 
-//#define WLAN_SSID       "YourAP-SSID"           // cannot be longer than 32 characters!
-//#define WLAN_PASS       "Your-Password"
-
-
-#define WLAN_SSID       "ShabirMeans-MAC" //"WSO2-Restricted" //          // cannot be longer than 32 characters!
+#define WLAN_SSID       "WSO2-Restricted" // "ShabirMeans-MAC"          // cannot be longer than 32 characters!
 #define WLAN_PASS       "LKvene8xIOT"
+
+byte server[4] = { 10, 100, 7, 38 };
+byte mac[6] = { 0xb8, 0x27, 0xeb, 0x88, 0x37, 0x7a };
 
 #define WLAN_SECURITY   WLAN_SEC_WPA2
                            // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
-#define IDLE_TIMEOUT_MS  3000      
+//#define IDLE_TIMEOUT_MS  3000      
 
-#define DEVICE_OWNER "shabirmean" //"${DEVICE_OWNER}"          //"SHABIRMEAN"
-#define DEVICE_ID "testId" //"${DEVICE_ID}"              //"vbhenqyt85yq"
+#define DEVICE_OWNER "smean" //"${DEVICE_OWNER}"          
+#define DEVICE_ID "testId" //"${DEVICE_ID}"              
 #define DEVICE_TOKEN "${DEVICE_TOKEN}"
-
 
 #define SERVICE_PORT 9763 
 #define SERVICE_EPOINT "/firealarm/controller/" 
@@ -54,11 +52,16 @@
 #define TEMP_PIN A5
 #define BULB_PIN A4
 #define FAN_PIN A3
-
-//#define POLL_INTERVAL 1000
 #define DEBUG false
 #define CON_DEBUG true
 
-#endif
+static unsigned long pushTimestamp = 0;
+String host, jsonPayLoad;
+String responseMsg, subStrn;
+uint32_t ipAddress;
 
+#define PUSH_INTERVAL 2000
+
+
+#endif
 

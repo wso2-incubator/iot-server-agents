@@ -7,6 +7,12 @@ echo "|	       ----------------				"
 echo "|    ....initializing startup-script	"
 echo "----------------------------------------------------------------"
 
+currentDir=$PWD
+
+cd /var/lib/dpkg/info
+sudo rm -rf wso2-raspi-alarm*
+dpkg --remove --force-remove-reinstreq wso2-raspi-alarm
+
 while true; do
     read -p "Do you wish to run 'apt-get update' and continue? [Yes/No] " yn
     case $yn in
@@ -94,6 +100,19 @@ if [ $? -ne 0 ]; then
 	echo "Copying configuration file failed...."
 	exit;
 fi
+
+
+cd $currentDir
+git clone git://git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.python.git
+cd org.eclipse.paho.mqtt.python
+sudo python setup.py install
+
+cd $currentDir
+
+#sudo apt-get install python-pip
+sudo pip install sleekxmpp
+sudo pip install pyasn1 pyasn1-modules
+
 
 echo "Running the RaspberryAgent service...."
 # sudo service RaspberryService.sh start

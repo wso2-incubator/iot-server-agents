@@ -65,6 +65,7 @@ boolean listen()
 
     // Close the connection when done.
     Serial.println(F("Client disconnected"));
+    client.flush();
     client.close();
     return false;
   } else {

@@ -1,0 +1,13 @@
+#! /bin/bash -e
+
+cd /usr/local/src 2>&1
+
+if [ $? -ne 0 ]; then
+	echo "Cannot find path /usr/local/src"
+	exit;
+fi
+
+sudo mkdir RaspberryAgent
+
+cd /usr/local/src/RaspberryAgent
+sudo mkdir logs

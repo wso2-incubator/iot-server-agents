@@ -1,0 +1,18 @@
+#! /bin/bash -e
+
+ln -fs "/usr/local/src/RaspberryAgent/getMac.sh" "/usr/bin/getMac"
+
+ln -fs "/usr/local/src/RaspberryAgent/pythonServer.py" "/usr/bin/pythonServer"
+
+ln -fs "/etc/init.d/RaspberryService.sh" "/usr/bin/RaspberryService"
+
+ln -fs "/usr/local/src/RaspberryAgent/RaspberryStats.py" "/usr/bin/RaspberryStats"
+
+cd /usr/local/src/RaspberryAgent
+sudo unzip Adafruit_Python_DHT.zip
+
+cd /usr/local/src/RaspberryAgent/Adafruit_Python_DHT
+sudo python setup.py install
+
+cd /etc/init.d
+sudo update-rc.d RaspberryService.sh defaults
