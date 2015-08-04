@@ -32,8 +32,8 @@
                                      // too high or your server could be slow to respond.
 
 
-#define WLAN_SSID       "WSO2-Restricted" // "ShabirMeans-MAC"          // cannot be longer than 32 characters!
-#define WLAN_PASS       "LKvene8xIOT"
+#define WLAN_SSID       "WiFi-SSID" // "ShabirMeans-MAC"          // cannot be longer than 32 characters!
+#define WLAN_PASS       "WiFi-PASSWORD"
 
 byte server[4] = { 10, 100, 7, 38 };
 byte mac[6] = { 0xb8, 0x27, 0xeb, 0x88, 0x37, 0x7a };
@@ -42,8 +42,8 @@ byte mac[6] = { 0xb8, 0x27, 0xeb, 0x88, 0x37, 0x7a };
                            // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
 //#define IDLE_TIMEOUT_MS  3000      
 
-#define DEVICE_OWNER "smean" //"${DEVICE_OWNER}"          
-#define DEVICE_ID "testId" //"${DEVICE_ID}"              
+#define DEVICE_OWNER "${DEVICE_OWNER}"
+#define DEVICE_ID "${DEVICE_ID}"
 #define DEVICE_TOKEN "${DEVICE_TOKEN}"
 
 #define SERVICE_PORT 9763 
