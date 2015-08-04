@@ -36,21 +36,12 @@ SERVER_PORT = 80 # Maybe set this to 9000.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-#
-#global LAST_TEMP		
-#LAST_TEMP = 25 				# The Last read temperature value from the DHT sensor. Kept globally
-#							# Updated by the temperature reading thread
-#
-#BULB_PIN = 11               # The GPIO Pin# in RPi to which the LED is connected
-#
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Class that handles HTTP GET requests for operations on the RPi
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 	def do_GET(request):
 		# """Respond to a GET request."""
-#		global LAST_TEMP
 
 		if not processURLPath(request.path):
 			return			
@@ -64,19 +55,18 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 			request.send_header("Content-type", "text/plain")
 			request.end_headers()
 			request.wfile.write(iotUtils.LAST_TEMP)
-			# return 
 
 		elif resource == "BULB":
 	                iotUtils.switchBulb(state)
 			print "Requested Switch State: " + state
-#			if state == "ON":
-#				GPIO.output(BULB_PIN, True)
-#				print "BULB Switched ON"
-#			elif state == "OFF":
-#				GPIO.output(BULB_PIN, False)
-#				print "BULB Switched OFF"
-#		
-#		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+
+		elif resource == "SONAR":
+			request.send_response(200)
+			request.send_header("Content-type", "text/plain")
+			request.end_headers()
+			request.wfile.write(iotUtils.LAST_DISTANCE)
+
+		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -91,7 +81,7 @@ def processURLPath(path):
 	
 	resource = path.split("/")[1]
 
-	if not iequal("BULB", resource) and not iequal("TEMP", resource) and not iequal("FAN", resource):
+	if not iequal("BULB", resource) and not iequal("TEMP", resource) and not iequal("FAN", resource) and not iequal("SONAR", resource):
 		if not "favicon" in resource:
 			print "Invalid resource: " + resource + " to execute operation"
 		return False
@@ -111,67 +101,30 @@ def iequal(a, b):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##       Get the wlan0 interface via which the RPi is connected 
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#def getDeviceIP():
-#    rPi_IP = commands.getoutput("ip route list | grep 'src '").split()
-#    rPi_IP = rPi_IP[rPi_IP.index('src') + 1]
-#
-#    if len(rPi_IP)<=16:
-#		print "------------------------------------------------------------------------------------"
-#		print "IP Address of RaspberryPi: " + rPi_IP
-#		print "------------------------------------------------------------------------------------"
-#		return rPi_IP
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##       Set the GPIO pin modes for the ones to be read
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#def setUpGPIOPins():
-#	try:
-#    		GPIO.setmode(GPIO.BOARD)
-#	except Exception as e:
-#	        print "Exception at 'GPIO.setmode'"
-#		pass
-#
-#	GPIO.setup(BULB_PIN, GPIO.OUT)
-#	GPIO.output(BULB_PIN, False)
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       The Main method of the server script
 #			This method is invoked from RaspberryStats.py on a new thread
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
-#	global HOST_NAME
-
-#	setUpGPIOPins()
-
-	HOST_NAME = iotUtils.HOST_NAME
-
+	HOST_NAME = iotUtils.getDeviceIP()
         server_class = BaseHTTPServer.HTTPServer
-    
-    	while True:
-        	try:
-            		httpd = server_class((HOST_NAME, SERVER_PORT), MyHandler)
-            		print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, SERVER_PORT)
-                    
-           	 	httpd.serve_forever()
-        	except (KeyboardInterrupt, Exception) as e:
-            		print "Exception in ServerThread (either KeyboardInterrupt or Other):"
-            		print str(e)
-                        
+
+	while True:
+	    	try:
+    			httpd = server_class((HOST_NAME, SERVER_PORT), MyHandler)
+    			print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, SERVER_PORT)
+                
+       	 		httpd.serve_forever()
+    		except (KeyboardInterrupt, Exception) as e:
+    			print "Exception in ServerThread (either KeyboardInterrupt or Other):"
+    			print str(e)
+                
 #            		GPIO.output(BULB_PIN, False)
-                        iotUtils.switchBulb("OFF")
-            		httpd.server_close()
-            		print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, SERVER_PORT)
-            		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-            		pass
+                	iotUtils.switchBulb("OFF")
+    			httpd.server_close()
+    			print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, SERVER_PORT)
+    			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+    			pass
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

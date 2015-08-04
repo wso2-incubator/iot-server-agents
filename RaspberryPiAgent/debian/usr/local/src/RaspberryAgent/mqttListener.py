@@ -71,7 +71,7 @@ def on_message(client, userdata, msg):
 #			This method is invoked from RaspberryStats.py on a new thread
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
-    
+       
     MQTT_ENDPOINT = iotUtils.MQTT_EP.split(":")
     MQTT_IP = MQTT_ENDPOINT[0]
     MQTT_PORT = MQTT_ENDPOINT[1]
@@ -111,5 +111,6 @@ def main():
 
 
 if __name__ == '__main__':
+	iotUtils.setUpGPIOPins()
 	main()
 	

@@ -35,18 +35,18 @@ import mqttListener             # python script used to accept messages via mqtt
 
 
 PUSH_INTERVAL = 300           # time interval between successive data pushes in seconds
-logging_enabled = False
+logging_enabled = True
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Endpoint specific settings to which the data is pushed
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DC_IP = '10.100.7.38' #'192.168.57.128'
-DC_PORT = 9763 #8281                          
+DC_IP = '204.232.188.214' #'192.168.57.128'
+DC_PORT = 8281                          
 HOST = DC_IP + ':' + `DC_PORT`
 
-DC_ENDPOINT = '/firealarm/controller/' #'/firealarm/1.0/controller/'
-PUSH_ENDPOINT = DC_ENDPOINT + 'push_temperature'
-REGISTER_ENDPOINT = DC_ENDPOINT + 'register'
+DC_ENDPOINT = '/firealarm/1.0/controller' #'/firealarm/1.0/'
+PUSH_ENDPOINT = DC_ENDPOINT + '/push_temperature'
+REGISTER_ENDPOINT = DC_ENDPOINT + '/register'
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -114,77 +114,29 @@ def configureLogger(loggerName):
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##       This method get the CPU Temperature of the Raspberry Pi
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#def getCPUTemp():
-#        CPU_TEMP_LOC = "/sys/class/thermal/thermal_zone0/temp"                                 # RaspberryPi file location to get CPU TEMP info
-#        tempFile = open(CPU_TEMP_LOC)
-#        cpuTemp = tempFile.read()
-#        cpuTemp = long(float(cpuTemp))
-#        cpuTemp = cpuTemp * 1.0 / 1000.0
-#        print "The CPU temperature is: %.2f" % cpuTemp
-#        return cpuTemp
-#### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#
-#
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##       This method get the CPU Load of the Raspberry Pi
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#def getCPULoad():
-#        CPU_LOAD_LOC = "/proc/loadavg"                                                          # RaspberryPi file location to get CPU LOAD info
-#        loadFile = open(CPU_LOAD_LOC)
-#        cpuLoad = loadFile.read()
-#        cpuLoad = cpuLoad.split()[0]
-#        cpuLoad = long(float(cpuLoad))
-#        print "The CPU temperature is: %.2f" % cpuLoad
-#        return cpuLoad
-#### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##       Set the GPIO pin modes for the ones to be read
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#def setUpGPIOPins():
-#    try:
-#        GPIO.setmode(GPIO.BOARD)
-#        except Exception as e:
-#            print "Exception at 'GPIO.setmode'"
-#                pass
-#    
-#        GPIO.setup(BULB_PIN, GPIO.OUT)
-#    GPIO.output(BULB_PIN, False)
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       This method registers the DevieIP in the Device-Cloud
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def registerDeviceIP():
-#        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
-#        dcConncection.set_debuglevel(1)
-#        dcConncection.connect()
+        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
+        dcConncection.set_debuglevel(1)
+        dcConncection.connect()
 
         registerURL = REGISTER_ENDPOINT + '/' + iotUtils.DEVICE_OWNER + '/' + iotUtils.DEVICE_ID + '/' + iotUtils.HOST_NAME
         
-#        dcConncection.putrequest('POST', registerURL)
-#        dcConncection.putheader('Authorization', 'Bearer ' + iotUtils.AUTH_TOKEN)
-#        dcConncection.endheaders()
-#        
-#        dcConncection.send('')    
-#	dcResponse = dcConncection.getresponse()
+        dcConncection.putrequest('POST', registerURL)
+        dcConncection.putheader('Authorization', 'Bearer ' + iotUtils.AUTH_TOKEN)
+        dcConncection.endheaders()
+        
+        dcConncection.send('')    
+	dcResponse = dcConncection.getresponse()
 
         print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
         print registerURL
-        print iotUtils.AUTH_TOKEN
-#        print dcResponse.status, dcResponse.reason
-#        print dcResponse.msg
-#
-#        dcConncection.close()
+        print dcResponse.status, dcResponse.reason
+        print dcResponse.msg
+
+        dcConncection.close()
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -194,16 +146,16 @@ def registerDeviceIP():
 #       This method connects to the Device-Cloud and pushes data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def connectAndPushData():
-#        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
-#        dcConncection.set_debuglevel(1)
-#
-#        dcConncection.connect()
-#
-#        request = dcConncection.putrequest('POST', PUSH_ENDPOINT)
-#
-#        headers = {}
-#        headers['Authorization'] = 'Bearer ' + iotUtils.AUTH_TOKEN
-#        headers['Content-Type'] = 'application/json'
+        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
+        dcConncection.set_debuglevel(1)
+
+        dcConncection.connect()
+
+        request = dcConncection.putrequest('POST', PUSH_ENDPOINT)
+
+        headers = {}
+        headers['Authorization'] = 'Bearer ' + iotUtils.AUTH_TOKEN
+        headers['Content-Type'] = 'application/json'
 
         ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         ###       Read the Temperature and Load info of RPi and construct payload
@@ -220,25 +172,24 @@ def connectAndPushData():
 
         print PUSH_DATA
 
-#        headers['Content-Length'] = len(PUSH_DATA)
+        headers['Content-Length'] = len(PUSH_DATA)
 
-#        for k in headers:
-#            dcConncection.putheader(k, headers[k])
-#
-#        dcConncection.endheaders()
-#
-#        dcConncection.send(PUSH_DATA)                           # Push the data
-#        dcResponse = dcConncection.getresponse()
-#    
-#	print dcResponse.status, dcResponse.reason
-#        print dcResponse.msg
-#
-#        dcConncection.close()
-#        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-#	
-#        if (dcResponse.status == 409 or dcResponse.status == 412):
-#            print 'Re-registering Device IP'
-#            registerDeviceIP()   
+        for k in headers:
+            dcConncection.putheader(k, headers[k])
+        dcConncection.endheaders()
+
+        dcConncection.send(PUSH_DATA)                           # Push the data
+        dcResponse = dcConncection.getresponse()
+    
+	print dcResponse.status, dcResponse.reason
+        print dcResponse.msg
+
+        dcConncection.close()
+        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	
+        if (dcResponse.status == 409 or dcResponse.status == 412):
+            print 'Re-registering Device IP'
+            registerDeviceIP()   
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -323,7 +274,6 @@ class ListenXMPPServerThread(object):
         thread.start()                                  # Start the execution
 
     def run(self):
-        #xmppServer.ENDPOINT = iotUtils.XMPP_EP
         xmppServer.main()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -339,9 +289,6 @@ class ListenMQTTThread(object):
         thread.start()                                  # Start the execution
     
     def run(self):
-        #mqttListener.ENDPOINT = iotUtils.MQTT_EP
-        #mqttListener.OWNER = iotUtils.DEVICE_OWNER
-        #mqttListener.ID = iotUtils.DEVICE_ID
         mqttListener.main()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -352,9 +299,9 @@ class ListenMQTTThread(object):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
     configureLogger("WSO2IOT_RPiStats")
-    iotUtils.setUpGPIOPins()
+#    iotUtils.setUpGPIOPins()
 
-#    UtilsThread()
+    UtilsThread()
     registerDeviceIP()                                      # Call the register endpoint and register Device IP
     TemperatureReaderThread()                               # initiates and runs the thread to continuously read temperature from DHT Sensor
     ListenHTTPServerThread()                                    # starts an HTTP Server that listens for operational commands to switch ON/OFF Led
