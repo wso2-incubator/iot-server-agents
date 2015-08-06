@@ -127,14 +127,16 @@ def registerDeviceIP():
         dcConncection.putrequest('POST', registerURL)
         dcConncection.putheader('Authorization', 'Bearer ' + iotUtils.AUTH_TOKEN)
         dcConncection.endheaders()
-        
-        dcConncection.send('')    
+
+        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 	dcResponse = dcConncection.getresponse()
 
         print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
-        print registerURL
-        print dcResponse.status, dcResponse.reason
-        print dcResponse.msg
+        print ('RASPBERRY_STATS: ' + str(registerURL))
+        print ('RASPBERRY_STATS: ' + str(dcResponse.status))
+        print ('RASPBERRY_STATS: ' + str(dcResponse.reason))
+        print ('RASPBERRY_STATS: Response Message')
+	print str(dcResponse.msg)
 
         dcConncection.close()
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
@@ -146,12 +148,12 @@ def registerDeviceIP():
 #       This method connects to the Device-Cloud and pushes data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def connectAndPushData():
-        dcConncection = httplib.HTTPConnection(DC_IP, DC_PORT)
-        dcConncection.set_debuglevel(1)
+        dcConnection = httplib.HTTPConnection(DC_IP, DC_PORT)
+        dcConnection.set_debuglevel(1)
 
-        dcConncection.connect()
+        dcConnection.connect()
 
-        request = dcConncection.putrequest('POST', PUSH_ENDPOINT)
+        request = dcConnection.putrequest('POST', PUSH_ENDPOINT)
 
         headers = {}
         headers['Authorization'] = 'Bearer ' + iotUtils.AUTH_TOKEN
@@ -170,25 +172,29 @@ def connectAndPushData():
         PUSH_DATA = iotUtils.DEVICE_INFO + iotUtils.DEVICE_IP.format(ip=iotUtils.HOST_NAME) + iotUtils.DEVICE_DATA.format(temperature=rPiTemperature)
         PUSH_DATA += '}'
 
-        print PUSH_DATA
+       # print PUSH_DATA
 
         headers['Content-Length'] = len(PUSH_DATA)
 
         for k in headers:
-            dcConncection.putheader(k, headers[k])
-        dcConncection.endheaders()
+            dcConnection.putheader(k, headers[k])
+        dcConnection.endheaders()
 
-        dcConncection.send(PUSH_DATA)                           # Push the data
-        dcResponse = dcConncection.getresponse()
-    
-	print dcResponse.status, dcResponse.reason
-        print dcResponse.msg
-
-        dcConncection.close()
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-	
+
+        dcConnection.send(PUSH_DATA)                           # Push the data
+        dcResponse = dcConnection.getresponse()
+        
+        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        print ('RASPBERRY_STATS: ' + str(dcResponse.status))
+        print ('RASPBERRY_STATS: ' + str(dcResponse.reason))
+        print ('RASPBERRY_STATS: Response Message')
+	print str(dcResponse.msg)
+        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	dcConnection.close()
+
         if (dcResponse.status == 409 or dcResponse.status == 412):
-            print 'Re-registering Device IP'
+            print 'RASPBERRY_STATS: Re-registering Device IP'
             registerDeviceIP()   
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -220,10 +226,10 @@ class TemperatureReaderThread(object):
                     connectAndPushData()
                 
                 iotUtils.LAST_TEMP = temperature
-                print 'Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity)
+                print 'RASPBERRY_STATS: Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity)
         
             except Exception, e:
-                print "Exception in TempReaderThread: Could not successfully read Temperature"
+                print "RASPBERRY_STATS: Exception in TempReaderThread: Could not successfully read Temperature"
                 print str(e)
                 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
                 pass
@@ -298,7 +304,7 @@ class ListenMQTTThread(object):
 #       The Main method of the RPi Agent 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
-    #configureLogger("WSO2IOT_RPiStats")
+    configureLogger("WSO2IOT_RPiStats")
 #    iotUtils.setUpGPIOPins()
 
     UtilsThread()
@@ -314,7 +320,7 @@ def main():
                 connectAndPushData()                   # Push Sensor (Temperature) data to WSO2 BAM
 		time.sleep(PUSH_INTERVAL)
         except (KeyboardInterrupt, Exception) as e:
-            print "Exception in RaspberryAgentThread (either KeyboardInterrupt or Other):"
+            print "RASPBERRY_STATS: Exception in RaspberryAgentThread (either KeyboardInterrupt or Other):"
             print str(e)
             print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
             pass
