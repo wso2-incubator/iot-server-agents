@@ -231,6 +231,7 @@ def readSonarDistance():
 #           This method is invoked from RaspberryStats.py on a new thread
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
+    global HOST_NAME
     HOST_NAME = getDeviceIP()
     setUpGPIOPins()
     # SonarReaderThread()  

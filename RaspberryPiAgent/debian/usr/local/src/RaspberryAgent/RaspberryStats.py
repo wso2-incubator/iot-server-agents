@@ -35,7 +35,7 @@ import mqttListener             # python script used to accept messages via mqtt
 
 
 PUSH_INTERVAL = 300           # time interval between successive data pushes in seconds
-logging_enabled = True
+logging_enabled = False
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       Endpoint specific settings to which the data is pushed
@@ -298,7 +298,7 @@ class ListenMQTTThread(object):
 #       The Main method of the RPi Agent 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
-    configureLogger("WSO2IOT_RPiStats")
+    #configureLogger("WSO2IOT_RPiStats")
 #    iotUtils.setUpGPIOPins()
 
     UtilsThread()
