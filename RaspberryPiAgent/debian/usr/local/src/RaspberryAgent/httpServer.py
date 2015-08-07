@@ -48,7 +48,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 		resource = request.path.split("/")[1].upper()
 		state = request.path.split("/")[2].upper()
-		print "Resource: " + resource 
+		print "HTTP_SERVER: Resource - " + resource 
 
 		if resource == "TEMP":
 			request.send_response(200)
@@ -58,7 +58,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 		elif resource == "BULB":
 	                iotUtils.switchBulb(state)
-			print "Requested Switch State: " + state
+			print "HTTP_SERVER: Requested Switch State - " + state
 
 		elif resource == "SONAR":
 			request.send_response(200)
@@ -76,14 +76,14 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def processURLPath(path):
 	if path.count("/") != 2 and not "favicon" in path:
-		print "Invalid URL String: " + path
+		print "HTTP_SERVER: Invalid URL String: " + path
 		return False
 	
 	resource = path.split("/")[1]
 
 	if not iequal("BULB", resource) and not iequal("TEMP", resource) and not iequal("FAN", resource) and not iequal("SONAR", resource):
 		if not "favicon" in resource:
-			print "Invalid resource: " + resource + " to execute operation"
+			print "HTTP_SERVER: Invalid resource - " + resource + " to execute operation"
 		return False
 
 	return True
@@ -112,17 +112,16 @@ def main():
 	while True:
 	    	try:
     			httpd = server_class((HOST_NAME, SERVER_PORT), MyHandler)
-    			print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, SERVER_PORT)
+    			print "HTTP_SERVER: " + time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, SERVER_PORT)
                 
        	 		httpd.serve_forever()
     		except (KeyboardInterrupt, Exception) as e:
-    			print "Exception in ServerThread (either KeyboardInterrupt or Other):"
-    			print str(e)
-                
-#            		GPIO.output(BULB_PIN, False)
+    			print "HTTP_SERVER: Exception in HttpServerThread (either KeyboardInterrupt or Other)"
+    			print ("HTTP_SERVER: " + str(e))
+
                 	iotUtils.switchBulb("OFF")
     			httpd.server_close()
-    			print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, SERVER_PORT)
+    			print "HTTP_SERVER: " + time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, SERVER_PORT)
     			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
     			pass
 

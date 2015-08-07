@@ -128,10 +128,10 @@ def registerDeviceIP():
         dcConncection.putheader('Authorization', 'Bearer ' + iotUtils.AUTH_TOKEN)
         dcConncection.endheaders()
 
-        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
 	dcResponse = dcConncection.getresponse()
 
-        print '~~~~~~~~~~~~~~~~~~~~~~~~ Device Registration ~~~~~~~~~~~~~~~~~~~~~~~~~'
+        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print ('RASPBERRY_STATS: ' + str(registerURL))
         print ('RASPBERRY_STATS: ' + str(dcResponse.status))
         print ('RASPBERRY_STATS: ' + str(dcResponse.reason))
@@ -173,14 +173,15 @@ def connectAndPushData():
         PUSH_DATA += '}'
 
        # print PUSH_DATA
-
+        
         headers['Content-Length'] = len(PUSH_DATA)
-
+	print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	
         for k in headers:
             dcConnection.putheader(k, headers[k])
         dcConnection.endheaders()
-
-        print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        
+        print '~~~~~~~~~~~~~~~~~~~~~~~~ Pushing Device-Data ~~~~~~~~~~~~~~~~~~~~~~~~~'
 
         dcConnection.send(PUSH_DATA)                           # Push the data
         dcResponse = dcConnection.getresponse()
@@ -230,7 +231,7 @@ class TemperatureReaderThread(object):
         
             except Exception, e:
                 print "RASPBERRY_STATS: Exception in TempReaderThread: Could not successfully read Temperature"
-                print str(e)
+                print ("RASPBERRY_STATS: " + str(e))
                 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
                 pass
                 
@@ -320,8 +321,8 @@ def main():
                 connectAndPushData()                   # Push Sensor (Temperature) data to WSO2 BAM
 		time.sleep(PUSH_INTERVAL)
         except (KeyboardInterrupt, Exception) as e:
-            print "RASPBERRY_STATS: Exception in RaspberryAgentThread (either KeyboardInterrupt or Other):"
-            print str(e)
+            print "RASPBERRY_STATS: Exception in RaspberryAgentThread (either KeyboardInterrupt or Other)"
+            print ("RASPBERRY_STATS: " + str(e))
             print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
             pass
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

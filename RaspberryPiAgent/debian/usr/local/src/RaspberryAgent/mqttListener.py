@@ -28,25 +28,25 @@ import paho.mqtt.client as mqtt
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    	print("Connected with result code "+str(rc))
+    	print("MQTT_LISTENER: Connected with result code " + str(rc))
         
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-        print ("Subscribing with topic " + TOPIC)
+        print ("MQTT_LISTENER: Subscribing with topic " + TOPIC)
     	client.subscribe(TOPIC)
 
 
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    	print(msg.topic+" "+str(msg.payload))
+    	print( "MQTT_LISTENER: " + msg.topic + " " + str(msg.payload) )
 	
 	request = str(msg.payload)
 
 	resource = request.split(":")[0].upper()
 	state = request.split(":")[1].upper()
 
-	print "Resource: " + resource 
+	print "MQTT_LISTENER: Resource- " + resource 
 
 	if resource == "TEMP":
 		pass
@@ -58,13 +58,6 @@ def on_message(client, userdata, msg):
 
 	elif resource == "BULB":
                 iotUtils.switchBulb(state)
-#		print "Requested Switch State: " + state
-#		if state == "ON":
-#			GPIO.output(BULB_PIN, True)
-#			print "BULB Switched ON"
-#		elif state == "OFF":
-#			GPIO.output(BULB_PIN, False)
-#			print "BULB Switched OFF"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #       The Main method of the server script
@@ -82,8 +75,8 @@ def main():
     global TOPIC
     TOPIC = "wso2/iot/" + DEV_OWNER + "/firealarm/" + DEV_ID
     
-    print ("MQTT_ENDPOINT: " + str(MQTT_ENDPOINT))
-    print ("MQTT_TOPIC: " + TOPIC)
+    print ("MQTT_LISTENER: MQTT_ENDPOINT is " + str(MQTT_ENDPOINT))
+    print ("MQTT_LISTENER: MQTT_TOPIC is " + TOPIC)
     
     mqttClient = mqtt.Client()
     mqttClient.on_connect = on_connect
@@ -92,7 +85,7 @@ def main():
     while True:
         try:
             mqttClient.connect(MQTT_IP, MQTT_PORT, 60)
-            print time.asctime(), "Connected to MQTT Broker - %s:%s" % (MQTT_IP, MQTT_PORT)
+            print "MQTT_LISTENER: " + time.asctime(), "Connected to MQTT Broker - %s:%s" % (MQTT_IP, MQTT_PORT)
             
             # Blocking call that processes network traffic, dispatches callbacks and
             # handles reconnecting.
@@ -101,11 +94,11 @@ def main():
             mqttClient.loop_forever()
         
         except (KeyboardInterrupt, Exception) as e:
-            print "Exception in MQTTServerThread (either KeyboardInterrupt or Other):"
-            print str(e)
+            print "MQTT_LISTENER: Exception in MQTTServerThread (either KeyboardInterrupt or Other)"
+            print ("MQTT_LISTENER: " + str(e))
             
             mqttClient.disconnect()
-            print time.asctime(), "Connection to Broker closed - %s:%s" % (MQTT_IP, MQTT_PORT)
+            print "MQTT_LISTENER: " + time.asctime(), "Connection to Broker closed - %s:%s" % (MQTT_IP, MQTT_PORT)
             print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
             pass
 

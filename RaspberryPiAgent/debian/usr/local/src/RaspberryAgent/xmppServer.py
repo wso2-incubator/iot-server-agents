@@ -72,11 +72,11 @@ class IoT_TestDevice(sleekxmpp.ClientXMPP):
 
     def message(self, msg):
         if msg['type'] in ('chat', 'normal'):
-            print ("got normal chat message" + str(msg))
-            ip=urlopen('http://icanhazip.com').read()
-            msg.reply("Hi I am " + self.boundjid.full + " and I am on IP " + ip).send()
+            print ("XMPP_SERVER: Got normal chat message" + str(msg))
+            ip = urlopen('http://icanhazip.com').read()
+            msg.reply("XMPP_SERVER: Hi I am " + self.boundjid.full + " and I am on IP " + ip).send()
         else:
-            print ("got unknown message type %s", str(msg['type']))
+            print ("XMPP_SERVER: Got unknown message type %s", str(msg['type']))
 
 class TheDevice(Device):
     """
@@ -105,11 +105,13 @@ def main():
     XMPP_JID = iotUtils.DEVICE_ID + "@" + XMPP_ENDP + "/raspi" 	
     XMPP_PWD = iotUtils.AUTH_TOKEN
     
-    print XMPP_OWN
-    print XMPP_JID
-    print XMPP_PWD
-    xmpp = IoT_TestDevice(XMPP_JID,XMPP_PWD)
+    print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    print "XMPP_SERVER: Owner - " + XMPP_OWN
+    print "XMPP_SERVER: AccountID - " + XMPP_JID
+    print "XMPP_SERVER: AccountPass - " + XMPP_PWD
+    print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
+    xmpp = IoT_TestDevice(XMPP_JID,XMPP_PWD)
     xmpp.ssl_version = ssl.PROTOCOL_SSLv3
 
     xmpp.register_plugin('xep_0030')
@@ -134,11 +136,10 @@ def main():
             try:
             	xmpp.connect()
             	xmpp.process(block=True)
-            	print ("lost connection")
+            	print ("XMPP_SERVER: Lost Connection")
             except Exception as e:
-                print "Exception in XMPPServerThread (either KeyboardInterrupt or Other):"
-                print str(e)
+                print "XMPP_SERVER: Exception in XMPPServerThread (either KeyboardInterrupt or Other)"
+                print ("XMPP_SERVER: " + str(e))
 
 if __name__ == '__main__':
     main()
-

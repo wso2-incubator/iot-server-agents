@@ -21,7 +21,6 @@
 """
 
 import time, commands
-# import threading
 import RPi.GPIO as GPIO
 import ConfigParser 
 
@@ -92,7 +91,7 @@ def getDeviceIP():
 
     if len(rPi_IP)<=16:
 		print "------------------------------------------------------------------------------------"
-		print "IP Address of RaspberryPi: " + rPi_IP
+		print "IOT_UTILS: IP Address of RaspberryPi: " + rPi_IP
 		print "------------------------------------------------------------------------------------"
 		return rPi_IP
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,7 +106,8 @@ def setUpGPIOPins():
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BOARD)
     except Exception as e:
-            print "Exception at 'GPIO.setmode'"
+            print "IOT_UTILS: Exception at 'GPIO.setmode'"
+            print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
             pass
 
     GPIO.setup(SONAR_TRIG_PIN,GPIO.OUT)                  #Set pin as GPIO out
@@ -146,56 +146,11 @@ def getCPULoad():
         return cpuLoad
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#       This is a Thread object for reading sonar values continuously
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# class SonarReaderThread(object):
-#     def __init__(self, interval=3):
-#         self.interval = interval
-#         thread = threading.Thread(target=self.run, args=())
-#         thread.daemon = True                            # Daemonize thread
-#         thread.start()                                  # Start the execution
-    
-#     def run(self):
-#         while True:
-#             try:
-#                 GPIO.output(SONAR_TRIG_PIN, False)                 #Set TRIG as LOW
-#                 print "SONAR: Waitng For Sonar Sensor To Settle"
-#                 time.sleep(0.5)                                             #Delay of 2 seconds
-
-#                 GPIO.output(SONAR_TRIG_PIN, True)                  #Set TRIG as HIGH
-#                 time.sleep(0.00001)                                         #Delay of 0.00001 seconds
-#                 GPIO.output(SONAR_TRIG_PIN, False)                 #Set TRIG as LOW
-
-#                 while GPIO.input(SONAR_ECHO_PIN)==0:               #Check whether the ECHO is LOW
-#                     pulse_start = time.time()                               #Saves the last known time of LOW pulse
-
-#                 while GPIO.input(SONAR_ECHO_PIN)==1:               #Check whether the ECHO is HIGH
-#                     pulse_end = time.time()                                 #Saves the last known time of HIGH pulse 
-
-#                 pulse_duration = pulse_end - pulse_start                    #Get pulse duration to a variable
-
-#                 distance = pulse_duration * 17150                           #Multiply pulse duration by 17150 to get distance
-#                 distance = round(distance, 2)                               #Round to two decimal points
-
-#                 if distance > 2 and distance < 400:                         #Check whether the distance is within range
-#                     print "SONAR: Distance: ", distance - 0.5,"cm"                   #Print distance with 0.5 cm calibration
-#                 else:
-#                     print "SONAR: Out Of Range"                                    #display out of range
-            
-#             except Exception, e:
-#                 print "SONAR: Exception in SonarReaderThread: Could not successfully read Sonar"
-#                 print str(e)
-#                 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-#                 pass
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 def readSonarDistance():
     global LAST_DISTANCE
     try:
         GPIO.output(SONAR_TRIG_PIN, False)                      #Set TRIG as LOW
-        print "SONAR: Waitng For Sonar Sensor To Settle"
+        print "IOT_UTILS: Waitng For Sonar Sensor To Settle"
         time.sleep(0.5)                                         #Delay of 2 seconds
 
         GPIO.output(SONAR_TRIG_PIN, True)                       #Set TRIG as HIGH
@@ -214,14 +169,14 @@ def readSonarDistance():
         distance = round(distance, 2)                           #Round to two decimal points
 
         if distance > 2 and distance < 400:                     #Check whether the distance is within range
-            print "SONAR: Distance: ", distance - 0.5,"cm"      #Print distance with 0.5 cm calibration
+            print "IOT_UTILS: Distance: ", distance - 0.5,"cm"      #Print distance with 0.5 cm calibration
             LAST_DISTANCE = distance
         else:
-            print "SONAR: Out Of Range"                         #display out of range
+            print "IOT_UTILS: Out Of Range"                         #display out of range
     
     except Exception, e:
-        print "SONAR: Exception in SonarReaderThread: Could not successfully read Sonar"
-        print str(e)
+        print "IOT_UTILS: Exception in SonarReaderThread: Could not successfully read Sonar"
+        print ("IOT_UTILS: " + str(e))
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
 
@@ -234,7 +189,7 @@ def main():
     global HOST_NAME
     HOST_NAME = getDeviceIP()
     setUpGPIOPins()
-    # SonarReaderThread()  
+
     while True:
         readSonarDistance()
 
