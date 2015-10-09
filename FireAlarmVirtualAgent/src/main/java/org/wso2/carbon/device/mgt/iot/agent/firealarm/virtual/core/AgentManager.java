@@ -34,9 +34,9 @@ public class AgentManager {
 
 	private static AgentManager agentManager = new AgentManager();
 	private AgentUI agentUI;
-    private int temperature = 30, humidity = 30, interval = 15;
-    private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
-    private boolean isTemperatureRandomized, isHumidityRandomized;
+	private int temperature = 30, humidity = 30, interval = 15;
+	private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
+	private boolean isTemperatureRandomized, isHumidityRandomized;
 	private String deviceMgtControlUrl, deviceMgtAnalyticUrl;
 
 	private AgentConfiguration agentConfigs;
@@ -71,19 +71,18 @@ public class AgentManager {
 		                                            agentConfigs.getDeviceId(),
 		                                            AgentConstants.DEVICE_TYPE);
 
-		//TODO: Remove hardcoded PORTS. Set all ports in config file.
 		this.deviceMgtAnalyticUrl =
-				AgentConstants.HTTPS_PREFIX + agentConfigs.getIotServerEP().split(":")[0] +
-						"9443" + analyticsPageContext;
-		this.deviceMgtControlUrl = AgentConstants.HTTP_PREFIX + agentConfigs.getIotServerEP() +
-				AgentConstants.AGENT_CONTROL_APP_EP;
+				AgentConstants.HTTPS_PREFIX + agentConfigs.getIotServerEP() + analyticsPageContext;
+		this.deviceMgtControlUrl =
+				AgentConstants.HTTP_PREFIX + agentConfigs.getIotServerServiceEP() +
+						AgentConstants.AGENT_CONTROL_APP_EP;
 
 		// Initialise IoT-Server URL endpoints from the configuration read from file
 		AgentCoreOperations.initializeHTTPEndPoints();
 
 		// Register this current device's IP with the IoT-Server
-        //TODO: check for null pointer
-        try {
+		//TODO: check for null pointer
+		try {
 			int responseCode = AgentCoreOperations.registerDeviceIP(
 					this.agentConfigs.getDeviceOwner(),
 					this.agentConfigs.getDeviceId());
@@ -282,8 +281,8 @@ public class AgentManager {
 	public int getTemperature() {
 		if (isTemperatureRandomized) {
 			temperature = getRandom(temperatureMax, temperatureMin);
-            agentUI.updateTemperature(temperature);
-        }
+			agentUI.updateTemperature(temperature);
+		}
 		return temperature;
 	}
 
@@ -294,8 +293,8 @@ public class AgentManager {
 	public int getHumidity() {
 		if (isHumidityRandomized) {
 			humidity = getRandom(humidityMax, humidityMin);
-            agentUI.updateHumidity(humidity);
-        }
+			agentUI.updateHumidity(humidity);
+		}
 		return humidity;
 	}
 

@@ -70,11 +70,16 @@ public class AgentCoreOperations {
 		String propertiesFileName = AgentConstants.AGENT_PROPERTIES_FILE_NAME;
 
 		try {
-            ClassLoader loader = AgentCoreOperations.class.getClassLoader();
-            URL path = loader.getResource(propertiesFileName);
-            System.out.println(path);
-            String root = path.getPath().replace("firealarm-virtual-agent-1.0-SNAPSHOT-jar-with-dependencies.jar!/deviceConfig.properties", "").replace("jar:", "").replace("file:", "");
-            propertiesInputStream = new FileInputStream(root + AgentConstants.AGENT_PROPERTIES_FILE_NAME);
+			ClassLoader loader = AgentCoreOperations.class.getClassLoader();
+			URL path = loader.getResource(propertiesFileName);
+			System.out.println(path);
+			String root = path.getPath().replace(
+					"firealarm-virtual-agent-1.0-SNAPSHOT-jar-with-dependencies" +
+							".jar!/deviceConfig" +
+							".properties",
+					"").replace("jar:", "").replace("file:", "");
+			propertiesInputStream = new FileInputStream(
+					root + AgentConstants.AGENT_PROPERTIES_FILE_NAME);
 
 			//load a properties file from class path, inside static method
 			properties.load(propertiesInputStream);
@@ -85,7 +90,11 @@ public class AgentCoreOperations {
 					                                                    .DEVICE_ID_PROPERTY));
 			iotServerConfigs.setIotServerEP(properties.getProperty(
 					AgentConstants.IOT_SERVER_EP_PROPERTY));
-			iotServerConfigs.setMqttBrokerEP(properties.getProperty(
+			iotServerConfigs.setIotServerServiceEP(properties.getProperty(
+					AgentConstants.IOT_SERVER_SERVICE_EP_PROPERTY));
+			iotServerConfigs.setApimGatewayEP(properties.getProperty(
+					AgentConstants.APIM_GATEWAY_EP_PROPERTY));
+			iotServerConfigs.setMqttBrokerEP(AgentConstants.TCP_PREFIX + properties.getProperty(
 					AgentConstants.MQTT_BROKER_EP_PROPERTY));
 			iotServerConfigs.setXmppServerEP(properties.getProperty(
 					AgentConstants.XMPP_SERVER_EP_PROPERTY));
@@ -105,6 +114,10 @@ public class AgentCoreOperations {
 			log.info(AgentConstants.LOG_APPENDER + "Device ID: " + iotServerConfigs.getDeviceId());
 			log.info(AgentConstants.LOG_APPENDER + "IoT Server EndPoint: " +
 					         iotServerConfigs.getIotServerEP());
+			log.info(AgentConstants.LOG_APPENDER + "IoT Server Service EndPoint: " +
+					         iotServerConfigs.getIotServerServiceEP());
+			log.info(AgentConstants.LOG_APPENDER + "API-Manager Gateway EndPoint: " +
+					         iotServerConfigs.getApimGatewayEP());
 			log.info(AgentConstants.LOG_APPENDER + "MQTT Broker EndPoint: " +
 					         iotServerConfigs.getMqttBrokerEP());
 			log.info(AgentConstants.LOG_APPENDER + "XMPP Server EndPoint: " +
@@ -160,6 +173,8 @@ public class AgentCoreOperations {
 		iotServerConfigs.setDeviceOwner(AgentConstants.DEFAULT_DEVICE_OWNER);
 		iotServerConfigs.setDeviceId(AgentConstants.DEFAULT_DEVICE_ID);
 		iotServerConfigs.setIotServerEP(AgentConstants.DEFAULT_IOT_SERVER_EP);
+		iotServerConfigs.setIotServerServiceEP(AgentConstants.DEFAULT_IOT_SERVER_SERVICE_EP);
+		iotServerConfigs.setApimGatewayEP(AgentConstants.DEFAULT_APIM_GATEWAY_EP);
 		iotServerConfigs.setMqttBrokerEP(AgentConstants.DEFAULT_MQTT_BROKER_EP);
 		iotServerConfigs.setXmppServerEP(AgentConstants.DEFAULT_XMPP_SERVER_EP);
 		iotServerConfigs.setAuthMethod(AgentConstants.DEFAULT_AUTH_METHOD);
@@ -181,12 +196,12 @@ public class AgentCoreOperations {
 	 *                                     from the configs file
 	 */
 	public static void initializeHTTPEndPoints() {
-		String iotServerEndpoint = AgentConstants.HTTP_PREFIX +
-				agentManager.getAgentConfigs().getIotServerEP();
-		agentManager.setIotServerEP(iotServerEndpoint);
+		String iotServerServiceEndpoint = AgentConstants.HTTP_PREFIX +
+				agentManager.getAgentConfigs().getIotServerServiceEP();
+		agentManager.setIotServerEP(iotServerServiceEndpoint);
 
 		String deviceControllerAPIEndPoint =
-				iotServerEndpoint + AgentConstants.DEVICE_CONTROLLER_API_EP;
+				iotServerServiceEndpoint + AgentConstants.DEVICE_CONTROLLER_API_EP;
 		agentManager.setControllerAPIEP(deviceControllerAPIEndPoint);
 
 		String registerEndpointURL =
@@ -197,7 +212,7 @@ public class AgentCoreOperations {
 				deviceControllerAPIEndPoint + AgentConstants.DEVICE_PUSH_TEMPERATURE_API_EP;
 		agentManager.setPushDataAPIEP(pushDataEndPointURL);
 
-		log.info(AgentConstants.LOG_APPENDER + "IoT Server EndPoint: " + iotServerEndpoint);
+		log.info(AgentConstants.LOG_APPENDER + "IoT Server EndPoint: " + iotServerServiceEndpoint);
 		log.info(AgentConstants.LOG_APPENDER + "IoT Server's Device Controller API Endpoint: " +
 				         deviceControllerAPIEndPoint);
 		log.info(AgentConstants.LOG_APPENDER + "DeviceIP Registration EndPoint: " +
@@ -436,7 +451,8 @@ public class AgentCoreOperations {
 					case AgentConstants.BULB_CONTROL:
 //						agentManager.getAgentOperationManager().changeBulbStatus(
 //								controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
-						agentManager.changeBulbStatus(controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
+						agentManager.changeBulbStatus(controlSignal[1].equals(
+								AgentConstants.CONTROL_ON) ? true : false);
 						log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
 								         controlSignal[1] + "'");
 						break;
@@ -452,7 +468,9 @@ public class AgentCoreOperations {
 
 						String tempPublishTopic = String.format(
 								AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
-						publishPayloadToMQTT(tempPublishTopic, (AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature));
+						publishPayloadToMQTT(tempPublishTopic,
+						                     (AgentConstants.TEMPERATURE_CONTROL + ":" +
+								                     currentTemperature));
 						break;
 
 					case AgentConstants.HUMIDITY_CONTROL:
@@ -467,7 +485,9 @@ public class AgentCoreOperations {
 
 						String humidPublishTopic = String.format(
 								AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
-						publishPayloadToMQTT(humidPublishTopic, (AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity));
+						publishPayloadToMQTT(humidPublishTopic,
+						                     (AgentConstants.HUMIDITY_CONTROL + ":" +
+								                     currentHumidity));
 						break;
 
 					default:
@@ -598,7 +618,8 @@ public class AgentCoreOperations {
 										"C'";
 						log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
-						sendXMPPMessage(xmppAdminJID, replyTemperature, AgentConstants.TEMPERATURE_CONTROL);
+						sendXMPPMessage(xmppAdminJID, replyTemperature,
+						                AgentConstants.TEMPERATURE_CONTROL);
 						break;
 
 					case AgentConstants.HUMIDITY_CONTROL:
@@ -611,7 +632,8 @@ public class AgentCoreOperations {
 								"The current humidity was read to be: '" + currentHumidity + "%'";
 						log.info(AgentConstants.LOG_APPENDER + replyHumidity);
 
-						sendXMPPMessage(xmppAdminJID, replyHumidity, AgentConstants.HUMIDITY_CONTROL);
+						sendXMPPMessage(xmppAdminJID, replyHumidity,
+						                AgentConstants.HUMIDITY_CONTROL);
 						break;
 
 					default:
@@ -663,7 +685,7 @@ public class AgentCoreOperations {
 					networkInterfaceName).getInetAddresses();
 			for (; interfaceIPAddresses.hasMoreElements(); ) {
 				InetAddress ip = interfaceIPAddresses.nextElement();
-				ipAddress = ip.getHostAddress().toString();
+				ipAddress = ip.getHostAddress();
 				if (log.isDebugEnabled()) {
 					log.debug(AgentConstants.LOG_APPENDER + "IP Address: " + ipAddress);
 				}
@@ -672,7 +694,7 @@ public class AgentCoreOperations {
 					return ipAddress;
 				}
 			}
-		} catch (SocketException exception) {
+		} catch (SocketException | NullPointerException exception) {
 			String errorMsg = AgentConstants.LOG_APPENDER +
 					"Error encountered whilst trying to get IP Addresses of the network " +
 					"interface: " + networkInterfaceName +
@@ -680,6 +702,7 @@ public class AgentCoreOperations {
 			log.error(errorMsg);
 			throw new AgentCoreOperationException(errorMsg, exception);
 		}
+
 		return ipAddress;
 	}
 
@@ -707,10 +730,10 @@ public class AgentCoreOperations {
 					return false;
 				}
 			}
-            return !ipAddress.endsWith(".");
+			return !ipAddress.endsWith(".");
 
-        } catch (NumberFormatException nfe) {
-            log.warn(
+		} catch (NumberFormatException nfe) {
+			log.warn(
 					AgentConstants.LOG_APPENDER + "The IP Address: " + ipAddress + " could not " +
 							"be validated against IPv4-style");
 			return false;

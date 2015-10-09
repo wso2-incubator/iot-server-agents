@@ -38,6 +38,7 @@ public class AgentConstants {
 	/*	---------------------------------------------------------------------------------------
 				HTTP Connection specific information for communicating with IoT-Server
  		---------------------------------------------------------------------------------------	*/
+	public static final String TCP_PREFIX = "tcp://";
 	public static final String HTTP_PREFIX = "http://";
 	public static final String HTTPS_PREFIX = "https://";
 	public static final String HTTP_POST = "POST";
@@ -62,6 +63,8 @@ public class AgentConstants {
 	public static final String DEVICE_OWNER_PROPERTY = "owner";
 	public static final String DEVICE_ID_PROPERTY = "deviceId";
 	public static final String IOT_SERVER_EP_PROPERTY = "server-ep";
+	public static final String IOT_SERVER_SERVICE_EP_PROPERTY = "service-ep";
+	public static final String APIM_GATEWAY_EP_PROPERTY = "apim-ep";
 	public static final String MQTT_BROKER_EP_PROPERTY = "mqtt-ep";
 	public static final String XMPP_SERVER_EP_PROPERTY = "xmpp-ep";
 	public static final String AUTH_METHOD_PROPERTY = "auth-method";
@@ -74,9 +77,11 @@ public class AgentConstants {
 	 	---------------------------------------------------------------------------------------	*/
 	public static final String DEFAULT_DEVICE_OWNER = "admin";
 	public static final String DEFAULT_DEVICE_ID = "1234567890";
-	public static final String DEFAULT_IOT_SERVER_EP = "127.0.0.1:9763";
-	public static final String DEFAULT_MQTT_BROKER_EP = "127.0.0.1:1883";
-	public static final String DEFAULT_XMPP_SERVER_EP = "127.0.0.1:9061";
+	public static final String DEFAULT_IOT_SERVER_EP = "127.0.0.1:9443";
+	public static final String DEFAULT_IOT_SERVER_SERVICE_EP = "127.0.0.1:9763";
+	public static final String DEFAULT_APIM_GATEWAY_EP = "http://127.0.0.1:8281";
+	public static final String DEFAULT_MQTT_BROKER_EP = "tcp://127.0.0.1:1883";
+	public static final String DEFAULT_XMPP_SERVER_EP = "http://127.0.0.1:9061";
 	public static final String DEFAULT_AUTH_METHOD = "token";
 	public static final String DEFAULT_AUTH_TOKEN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321";
 	public static final String DEFAULT_REFRESH_TOKEN = "1234567890ZYXWVUTSRQPONMKLJIHGFEDCBA";

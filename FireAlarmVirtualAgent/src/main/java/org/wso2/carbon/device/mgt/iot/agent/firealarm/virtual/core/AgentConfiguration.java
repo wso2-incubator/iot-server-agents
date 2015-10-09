@@ -27,6 +27,8 @@ public class AgentConfiguration {
 	private String deviceOwner;
 	private String deviceId;
 	private String iotServerEP;
+	private String iotServerServiceEP;
+	private String apimGatewayEP;
 	private String mqttBrokerEP;
 	private String xmppServerEP;
 	private String authMethod;
@@ -57,6 +59,22 @@ public class AgentConfiguration {
 
 	public void setIotServerEP(String iotServerEP) {
 		this.iotServerEP = iotServerEP;
+	}
+
+	public String getIotServerServiceEP() {
+		return iotServerServiceEP;
+	}
+
+	public void setIotServerServiceEP(String iotServerServiceEP) {
+		this.iotServerServiceEP = iotServerServiceEP;
+	}
+
+	public String getApimGatewayEP() {
+		return apimGatewayEP;
+	}
+
+	public void setApimGatewayEP(String apimGatewayEP) {
+		this.apimGatewayEP = apimGatewayEP;
 	}
 
 	public String getMqttBrokerEP() {
