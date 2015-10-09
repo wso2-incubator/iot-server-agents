@@ -1,19 +1,18 @@
 /*
  * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
@@ -22,13 +21,9 @@ import java.io.File;
 
 public class AgentConstants {
 	public static final String DEVICE_TYPE = "firealarm";
-
-	private static final String FILE_SEPERATOR = File.separator;
 	public static final String LOG_APPENDER = "AGENT_LOG:: ";
-	public static final String PROPERTIES_FILE_PATH =
-			"." + FILE_SEPERATOR + "repository" + FILE_SEPERATOR + "conf" + FILE_SEPERATOR;
+	public static final String PROPERTIES_FILE_PATH = "";
 	public static final int DEFAULT_RETRY_THREAD_INTERVAL = 5000;        // time in millis
-
 	/*	---------------------------------------------------------------------------------------
 								IoT-Server specific information
  		---------------------------------------------------------------------------------------	*/
@@ -40,8 +35,6 @@ public class AgentConstants {
 			"{\"owner\":\"%s\",\"deviceId\":\"%s\",\"reply\":\"%s\",\"value\":\"%s\"}";
 	public static final String DEVICE_ANALYTICS_PAGE_URL =
 			"/store/pages/analytics?deviceId=%s&deviceType=%s";
-
-
 	/*	---------------------------------------------------------------------------------------
 				HTTP Connection specific information for communicating with IoT-Server
  		---------------------------------------------------------------------------------------	*/
@@ -50,9 +43,7 @@ public class AgentConstants {
 	public static final String HTTP_POST = "POST";
 	public static final String HTTP_GET = "GET";
 	public static final String APPLICATION_JSON_TYPE = "application/json";
-
 	public static final int DEVICE_SERVER_PORT = 9090;
-
 	/*	---------------------------------------------------------------------------------------
 								MQTT Connection specific information
  		---------------------------------------------------------------------------------------	*/
@@ -60,17 +51,14 @@ public class AgentConstants {
 	public static final int DEFAULT_MQTT_QUALITY_OF_SERVICE = 0;
 	public static final String MQTT_SUBSCRIBE_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s";
 	public static final String MQTT_PUBLISH_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s/reply";
-
 	/*	---------------------------------------------------------------------------------------
 								XMPP Connection specific information
  		---------------------------------------------------------------------------------------	*/
 	public static final String XMPP_ADMIN_ACCOUNT_UNAME = "admin";
-
 	/*	---------------------------------------------------------------------------------------
 		  Device/Agent specific properties to be read from the 'deviceConfig.properties' file
  		---------------------------------------------------------------------------------------	*/
 	public static final String AGENT_PROPERTIES_FILE_NAME = "deviceConfig.properties";
-
 	public static final String DEVICE_OWNER_PROPERTY = "owner";
 	public static final String DEVICE_ID_PROPERTY = "deviceId";
 	public static final String IOT_SERVER_EP_PROPERTY = "server-ep";
@@ -81,7 +69,6 @@ public class AgentConstants {
 	public static final String REFRESH_TOKEN_PROPERTY = "refresh-token";
 	public static final String NETWORK_INTERFACE_PROPERTY = "network-interface";
 	public static final String PUSH_INTERVAL_PROPERTY = "push-interval";
-
 	/*	---------------------------------------------------------------------------------------
 				Default values for the Device/Agent specific configurations listed above
 	 	---------------------------------------------------------------------------------------	*/
@@ -95,7 +82,6 @@ public class AgentConstants {
 	public static final String DEFAULT_REFRESH_TOKEN = "1234567890ZYXWVUTSRQPONMKLJIHGFEDCBA";
 	public static final String DEFAULT_NETWORK_INTERFACE = "lo0";
 	public static final int DEFAULT_PUSH_INTERVAL = 15;
-
 	/*	---------------------------------------------------------------------------------------
 					Control Signal specific constants to match the request context
 	 	---------------------------------------------------------------------------------------	*/
@@ -104,4 +90,5 @@ public class AgentConstants {
 	public static final String HUMIDITY_CONTROL = "HUMID";
 	public static final String CONTROL_ON = "ON";
 	public static final String CONTROL_OFF = "OFF";
+	private static final String FILE_SEPERATOR = File.separator;
 }

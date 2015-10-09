@@ -17,18 +17,23 @@
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui;
 
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URI;
 
 public class AgentUI extends javax.swing.JFrame {
+
+    boolean isTemperatureRandomized, isHumidityRandomized;
 
     private javax.swing.JButton btnControl;
     private javax.swing.JButton btnView;
     private javax.swing.JCheckBox chkbxTemperatureRandom;
-    private javax.swing.JCheckBox chkbxTemperatureRandom1;
+    private javax.swing.JCheckBox chkbxHumidityRandom;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -55,9 +60,9 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JSpinner spinnerInterval;
     private javax.swing.JSpinner spinnerTemperature;
     private javax.swing.JTextField txtTemperatureMax;
-    private javax.swing.JTextField txtTemperatureMax1;
+    private javax.swing.JTextField txtHumidityMax;
     private javax.swing.JTextField txtTemperatureMin;
-    private javax.swing.JTextField txtTemperatureMin1;
+    private javax.swing.JTextField txtHumidityMin;
     // End of variables declaration
 
     /**
@@ -100,13 +105,13 @@ public class AgentUI extends javax.swing.JFrame {
         jLabel22 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
         jLabel23 = new javax.swing.JLabel();
-        chkbxTemperatureRandom1 = new javax.swing.JCheckBox();
+        chkbxHumidityRandom = new javax.swing.JCheckBox();
         jSeparator5 = new javax.swing.JSeparator();
         jPanel9 = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
-        txtTemperatureMin1 = new javax.swing.JTextField();
+        txtHumidityMin = new javax.swing.JTextField();
         jLabel25 = new javax.swing.JLabel();
-        txtTemperatureMax1 = new javax.swing.JTextField();
+        txtHumidityMax = new javax.swing.JTextField();
         spinnerHumidity = new javax.swing.JSpinner();
         spinnerInterval = new javax.swing.JSpinner();
 
@@ -170,9 +175,9 @@ public class AgentUI extends javax.swing.JFrame {
         jLabel4.setText("Temperature");
 
         chkbxTemperatureRandom.setText("Randomize Data");
-        chkbxTemperatureRandom.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                chkbxTemperatureRandomStateChanged(evt);
+        chkbxTemperatureRandom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkbxTemperatureRandomActionPerformed(evt);
             }
         });
 
@@ -185,12 +190,24 @@ public class AgentUI extends javax.swing.JFrame {
 
         txtTemperatureMin.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtTemperatureMin.setText("20");
+        txtTemperatureMin.setEnabled(false);
+        txtTemperatureMin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTemperatureMinActionPerformed(evt);
+            }
+        });
 
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel6.setText("Max");
 
         txtTemperatureMax.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtTemperatureMax.setText("50");
+        txtTemperatureMax.setEnabled(false);
+        txtTemperatureMax.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTemperatureMaxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -219,8 +236,13 @@ public class AgentUI extends javax.swing.JFrame {
                                 .addGap(35, 35, 35))
         );
 
-        spinnerTemperature.setFont(new java.awt.Font("Cantarell", Font.BOLD, 24)); // NOI18N
+        spinnerTemperature.setFont(new java.awt.Font("Cantarell", 1, 24)); // NOI18N
         spinnerTemperature.setModel(new javax.swing.SpinnerNumberModel(30, 0, 100, 1));
+        spinnerTemperature.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinnerTemperatureStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -276,7 +298,7 @@ public class AgentUI extends javax.swing.JFrame {
             }
         });
 
-        lblStatus.setFont(new java.awt.Font("Cantarell", Font.BOLD, 15)); // NOI18N
+        lblStatus.setFont(new java.awt.Font("Cantarell", 1, 15)); // NOI18N
         lblStatus.setText("Not Connected");
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
@@ -318,10 +340,10 @@ public class AgentUI extends javax.swing.JFrame {
         jLabel23.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel23.setText("Humidity");
 
-        chkbxTemperatureRandom1.setText("Randomize Data");
-        chkbxTemperatureRandom1.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                chkbxTemperatureRandom1StateChanged(evt);
+        chkbxHumidityRandom.setText("Randomize Data");
+        chkbxHumidityRandom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkbxHumidityRandomActionPerformed(evt);
             }
         });
 
@@ -332,14 +354,26 @@ public class AgentUI extends javax.swing.JFrame {
         jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel24.setText("Min");
 
-        txtTemperatureMin1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtTemperatureMin1.setText("20");
+        txtHumidityMin.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtHumidityMin.setText("20");
+        txtHumidityMin.setEnabled(false);
+        txtHumidityMin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtHumidityMinActionPerformed(evt);
+            }
+        });
 
         jLabel25.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel25.setText("Max");
 
-        txtTemperatureMax1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtTemperatureMax1.setText("50");
+        txtHumidityMax.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtHumidityMax.setText("50");
+        txtHumidityMax.setEnabled(false);
+        txtHumidityMax.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtHumidityMaxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
@@ -349,11 +383,11 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addContainerGap()
                                           .addComponent(jLabel24)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                          .addComponent(txtTemperatureMin1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jLabel25)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(txtTemperatureMax1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
@@ -361,15 +395,20 @@ public class AgentUI extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                  .addComponent(txtTemperatureMin1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                  .addComponent(txtTemperatureMax1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(jLabel25)
                                                   .addComponent(jLabel24))
                                 .addGap(35, 35, 35))
         );
 
-        spinnerHumidity.setFont(new java.awt.Font("Cantarell", Font.BOLD, 24)); // NOI18N
+        spinnerHumidity.setFont(new java.awt.Font("Cantarell", 1, 24)); // NOI18N
         spinnerHumidity.setModel(new javax.swing.SpinnerNumberModel(30, 0, 100, 1));
+        spinnerHumidity.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinnerHumidityStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -385,7 +424,7 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addComponent(chkbxTemperatureRandom1))
+                                                            .addComponent(chkbxHumidityRandom))
                                           .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -395,7 +434,7 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jSeparator5)
                                                             .addGroup(jPanel8Layout.createSequentialGroup()
-                                                                              .addComponent(chkbxTemperatureRandom1)
+                                                                              .addComponent(chkbxHumidityRandom)
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addGap(0, 1, Short.MAX_VALUE))
@@ -406,7 +445,7 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addContainerGap())
         );
 
-        spinnerInterval.setFont(new java.awt.Font("Cantarell", Font.BOLD, 15)); // NOI18N
+        spinnerInterval.setFont(new java.awt.Font("Cantarell", 1, 15)); // NOI18N
         spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(30, 5, 300, 5));
         spinnerInterval.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -468,23 +507,117 @@ public class AgentUI extends javax.swing.JFrame {
     }
 
     private void btnControlMouseClicked(java.awt.event.MouseEvent evt) {
-        setBulbStatus(true);
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                URI uri = new URI(AgentManager.getInstance().getDeviceMgtControlUrl());
+                desktop.browse(uri);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void btnViewMouseClicked(java.awt.event.MouseEvent evt) {
-        setBulbStatus(false);
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                URI uri = new URI(AgentManager.getInstance().getDeviceMgtAnalyticUrl());
+                desktop.browse(uri);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void spinnerIntervalStateChanged(javax.swing.event.ChangeEvent evt) {
-        // TODO add your handling code here:
+        try {
+            int interval = Integer.parseInt(spinnerInterval.getValue().toString());
+            AgentManager.getInstance().setInterval(interval);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid interval value", "Error", JOptionPane.ERROR_MESSAGE);
+            spinnerTemperature.setValue(AgentManager.getInstance().getTemperature());
+        }
     }
 
-    private void chkbxTemperatureRandomStateChanged(javax.swing.event.ChangeEvent evt) {
-        // TODO add your handling code here:
+    private void chkbxTemperatureRandomActionPerformed(java.awt.event.ActionEvent evt) {
+        isTemperatureRandomized = chkbxTemperatureRandom.isSelected();
+        AgentManager.getInstance().setIsTemperatureRandomized(isTemperatureRandomized);
+        spinnerTemperature.setEnabled(!isTemperatureRandomized);
+        txtTemperatureMax.setEnabled(isTemperatureRandomized);
+        txtTemperatureMin.setEnabled(isTemperatureRandomized);
     }
 
-    private void chkbxTemperatureRandom1StateChanged(javax.swing.event.ChangeEvent evt) {
-        // TODO add your handling code here:
+    private void chkbxHumidityRandomActionPerformed(java.awt.event.ActionEvent evt) {
+        isHumidityRandomized = chkbxHumidityRandom.isSelected();
+        AgentManager.getInstance().setIsHumidityRandomized(isHumidityRandomized);
+        spinnerHumidity.setEnabled(!isHumidityRandomized);
+        txtHumidityMax.setEnabled(isHumidityRandomized);
+        txtHumidityMin.setEnabled(isHumidityRandomized);
+    }
+
+    private void spinnerTemperatureStateChanged(javax.swing.event.ChangeEvent evt) {
+        if (!isTemperatureRandomized) {
+            try {
+                int temperature = Integer.parseInt(spinnerTemperature.getValue().toString());
+                AgentManager.getInstance().setTemperature(temperature);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Invalid temperature value", "Error", JOptionPane.ERROR_MESSAGE);
+                spinnerTemperature.setValue(AgentManager.getInstance().getTemperature());
+            }
+        }
+    }
+
+    private void spinnerHumidityStateChanged(javax.swing.event.ChangeEvent evt) {
+        if (!isHumidityRandomized) {
+            try {
+                int humidity = Integer.parseInt(spinnerHumidity.getValue().toString());
+                AgentManager.getInstance().setHumidity(humidity);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
+                spinnerHumidity.setValue(AgentManager.getInstance().getHumidity());
+            }
+        }
+    }
+
+    private void txtTemperatureMinActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            int temperature = Integer.parseInt(txtTemperatureMin.getText());
+            AgentManager.getInstance().setTemperatureMin(temperature);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid temperature value", "Error", JOptionPane.ERROR_MESSAGE);
+            txtTemperatureMin.setText("20");
+        }
+    }
+
+    private void txtTemperatureMaxActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            int temperature = Integer.parseInt(txtTemperatureMax.getText());
+            AgentManager.getInstance().setTemperatureMax(temperature);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid temperature value", "Error", JOptionPane.ERROR_MESSAGE);
+            txtTemperatureMax.setText("50");
+        }
+    }
+
+    private void txtHumidityMinActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            int humidity = Integer.parseInt(txtHumidityMin.getText());
+            AgentManager.getInstance().setHumidity(humidity);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
+            txtHumidityMin.setText("20");
+        }
+    }
+
+    private void txtHumidityMaxActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            int humidity = Integer.parseInt(txtHumidityMax.getText());
+            AgentManager.getInstance().setHumidity(humidity);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
+            txtHumidityMax.setText("50");
+        }
     }
 
     public void setBulbStatus(boolean isOn) {
@@ -505,4 +638,15 @@ public class AgentUI extends javax.swing.JFrame {
     public void setAgentStatus(String status) {
         lblStatus.setText(status);
     }
+
+    public void updateTemperature(int temperature) {
+        spinnerTemperature.setValue(temperature);
+        spinnerTemperature.updateUI();
+    }
+
+    public void updateHumidity(int humidity) {
+        spinnerHumidity.setValue(humidity);
+        spinnerHumidity.updateUI();
+    }
+
 }

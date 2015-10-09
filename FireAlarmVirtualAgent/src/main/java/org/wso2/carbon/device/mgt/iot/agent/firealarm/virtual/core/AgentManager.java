@@ -34,9 +34,9 @@ public class AgentManager {
 
 	private static AgentManager agentManager = new AgentManager();
 	private AgentUI agentUI;
-	private int temperature, humidity, interval;
-	private int temperatureMin, temperatureMax, humidityMin, humidityMax;
-	private boolean isTemperatureRandomized, isHumidityRandomized;
+    private int temperature = 30, humidity = 30, interval = 15;
+    private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
+    private boolean isTemperatureRandomized, isHumidityRandomized;
 	private String deviceMgtControlUrl, deviceMgtAnalyticUrl;
 
 	private AgentConfiguration agentConfigs;
@@ -82,7 +82,8 @@ public class AgentManager {
 		AgentCoreOperations.initializeHTTPEndPoints();
 
 		// Register this current device's IP with the IoT-Server
-		try {
+        //TODO: check for null pointer
+        try {
 			int responseCode = AgentCoreOperations.registerDeviceIP(
 					this.agentConfigs.getDeviceOwner(),
 					this.agentConfigs.getDeviceId());
@@ -281,7 +282,8 @@ public class AgentManager {
 	public int getTemperature() {
 		if (isTemperatureRandomized) {
 			temperature = getRandom(temperatureMax, temperatureMin);
-		}
+            agentUI.updateTemperature(temperature);
+        }
 		return temperature;
 	}
 
@@ -292,7 +294,8 @@ public class AgentManager {
 	public int getHumidity() {
 		if (isHumidityRandomized) {
 			humidity = getRandom(humidityMax, humidityMin);
-		}
+            agentUI.updateHumidity(humidity);
+        }
 		return humidity;
 	}
 

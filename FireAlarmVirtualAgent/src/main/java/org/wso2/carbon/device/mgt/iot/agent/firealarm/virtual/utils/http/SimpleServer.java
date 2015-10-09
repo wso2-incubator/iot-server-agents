@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
  */
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http;
@@ -22,9 +23,8 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.operation.AgentOperationManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -51,16 +51,15 @@ public class SimpleServer {
 					httpServletResponse.setContentType("text/html;charset=utf-8");
 					httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 					request.setHandled(true);
-					AgentOperationManager agentOperationManager = AgentManager.getInstance()
-							.getAgentOperationManager();
+					AgentManager agentManager = AgentManager.getInstance();
 
 					if (request.getPathInfo().equals("/temperature")) {
 						httpServletResponse.getWriter().println(
-								agentOperationManager.getTemperature());
+								agentManager.getTemperature());
 
 					} else if (request.getPathInfo().equals("/humidity")) {
 						httpServletResponse.getWriter().println(
-								agentOperationManager.getHumidity());
+								agentManager.getHumidity());
 
 					} else if (request.getPathInfo().equals("/bulb")) {
 
@@ -70,7 +69,7 @@ public class SimpleServer {
 						} else {
 							boolean status = request.getParameter("status").toUpperCase().equals(
 									AgentConstants.CONTROL_ON);
-							agentOperationManager.changeBulbStatus(status);
+							agentManager.changeBulbStatus(status);
 							httpServletResponse.getWriter().println("Bulb is " + (status ?
 									AgentConstants.CONTROL_ON : AgentConstants.CONTROL_OFF));
 						}
