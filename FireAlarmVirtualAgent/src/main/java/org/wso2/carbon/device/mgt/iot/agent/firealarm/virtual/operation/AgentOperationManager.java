@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -12,21 +12,16 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.operation;
 
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+public interface AgentOperationManager {
 
-public class Bootstrap {
+	void changeBulbStatus(boolean status);
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        AgentManager agentManager = AgentManager.getInstance();
-        agentManager.init();
-    }
+	double getTemperature();
 
+	double getHumidity();
 }
+
