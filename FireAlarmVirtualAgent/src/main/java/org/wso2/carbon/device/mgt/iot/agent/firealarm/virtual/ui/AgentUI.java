@@ -57,7 +57,6 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblStatus;
     private javax.swing.JPanel pnlBulbStatus;
     private javax.swing.JSpinner spinnerHumidity;
-    private javax.swing.JSpinner spinnerInterval;
     private javax.swing.JSpinner spinnerTemperature;
     private javax.swing.JTextField txtTemperatureMax;
     private javax.swing.JTextField txtHumidityMax;
@@ -113,7 +112,6 @@ public class AgentUI extends javax.swing.JFrame {
         jLabel25 = new javax.swing.JLabel();
         txtHumidityMax = new javax.swing.JTextField();
         spinnerHumidity = new javax.swing.JSpinner();
-        spinnerInterval = new javax.swing.JSpinner();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Virtual Agent");
@@ -144,7 +142,7 @@ public class AgentUI extends javax.swing.JFrame {
         );
         pnlBulbStatusLayout.setVerticalGroup(
                 pnlBulbStatusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(0, 167, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -329,11 +327,6 @@ public class AgentUI extends javax.swing.JFrame {
                                 .addContainerGap())
         );
 
-        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel7.setText("Data Push Interval:");
-
-        jLabel22.setText("Seconds");
-
         jPanel8.setBackground(new java.awt.Color(220, 220, 220));
 
         jLabel23.setFont(new java.awt.Font("Cantarell", 0, 18)); // NOI18N
@@ -445,14 +438,6 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addContainerGap())
         );
 
-        spinnerInterval.setFont(new java.awt.Font("Cantarell", 1, 15)); // NOI18N
-        spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(30, 5, 300, 5));
-        spinnerInterval.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                spinnerIntervalStateChanged(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -460,13 +445,6 @@ public class AgentUI extends javax.swing.JFrame {
                         .addGroup(layout.createSequentialGroup()
                                           .addContainerGap()
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addGroup(layout.createSequentialGroup()
-                                                                              .addComponent(jLabel7)
-                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                              .addComponent(spinnerInterval, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                              .addComponent(jLabel22)
-                                                                              .addGap(0, 0, Short.MAX_VALUE))
                                                             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addGroup(layout.createSequentialGroup()
@@ -485,17 +463,12 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addComponent(spinnerInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                          .addGap(12, 12, 12)
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                             .addGroup(layout.createSequentialGroup()
                                                                               .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                           .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addContainerGap())
@@ -527,16 +500,6 @@ public class AgentUI extends javax.swing.JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private void spinnerIntervalStateChanged(javax.swing.event.ChangeEvent evt) {
-        try {
-            int interval = Integer.parseInt(spinnerInterval.getValue().toString());
-            AgentManager.getInstance().setInterval(interval);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid interval value", "Error", JOptionPane.ERROR_MESSAGE);
-            spinnerTemperature.setValue(AgentManager.getInstance().getTemperature());
         }
     }
 

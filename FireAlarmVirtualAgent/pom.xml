@@ -51,6 +51,8 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <finalName>wso2-firelarm-virtual-agent</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -66,30 +68,6 @@
             </plugin>
         </plugins>
 
-        <!--<plugins>-->
-        <!--<plugin>-->
-        <!--<artifactId>maven-assembly-plugin</artifactId>-->
-        <!--<configuration>-->
-        <!--<archive>-->
-        <!--<manifest>-->
-        <!--<mainClass>org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.Bootstrap</mainClass>-->
-        <!--</manifest>-->
-        <!--</archive>-->
-        <!--<descriptorRefs>-->
-        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
-        <!--</descriptorRefs>-->
-        <!--</configuration>-->
-        <!--</plugin>-->
-        <!--<plugin>-->
-        <!--<groupId>org.apache.maven.plugins</groupId>-->
-        <!--<artifactId>maven-compiler-plugin</artifactId>-->
-        <!--<version>2.3.2</version>-->
-        <!--<configuration>-->
-        <!--<source>1.7</source>-->
-        <!--<target>1.7</target>-->
-        <!--</configuration>-->
-        <!--</plugin>-->
-        <!--</plugins>-->
     </build>
 
     <dependencies>
