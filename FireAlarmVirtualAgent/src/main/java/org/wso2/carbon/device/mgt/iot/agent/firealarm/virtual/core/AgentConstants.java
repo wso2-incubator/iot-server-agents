@@ -20,14 +20,14 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 import java.io.File;
 
 public class AgentConstants {
-	public static final String DEVICE_TYPE = "firealarm";
+	public static final String DEVICE_TYPE = "virtual_firealarm";
 	public static final String LOG_APPENDER = "AGENT_LOG:: ";
 	public static final String PROPERTIES_FILE_PATH = "";
 	public static final int DEFAULT_RETRY_THREAD_INTERVAL = 5000;        // time in millis
 	/*	---------------------------------------------------------------------------------------
 								IoT-Server specific information
  		---------------------------------------------------------------------------------------	*/
-	public static final String DEVICE_CONTROLLER_API_EP = "/firealarm/controller";
+	public static final String DEVICE_CONTROLLER_API_EP = "/virtual_firealarm/controller";
 	public static final String DEVICE_REGISTER_API_EP = "/register";
 	public static final String DEVICE_PUSH_TEMPERATURE_API_EP = "/push_temperature";
 	public static final String AGENT_CONTROL_APP_EP = "/firealarm-webapp";

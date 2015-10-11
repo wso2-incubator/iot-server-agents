@@ -81,26 +81,12 @@ public class AgentManager {
 		AgentCoreOperations.initializeHTTPEndPoints();
 
 		// Register this current device's IP with the IoT-Server
-		//TODO: check for null pointer
-		try {
-			int responseCode = AgentCoreOperations.registerDeviceIP(
-					this.agentConfigs.getDeviceOwner(),
-					this.agentConfigs.getDeviceId());
-
-			if (responseCode != HttpStatus.OK_200) {
-				log.error(AgentConstants.LOG_APPENDER + "Device Registration with IoT Server at:" +
-						          " " + this.iotServerEP + " failed");
-			}
-		} catch (AgentCoreOperationException exception) {
-			log.error(AgentConstants.LOG_APPENDER +
-					          "Error encountered whilst trying to register the Device's IP at: " +
-					          this.iotServerEP);
-		}
+		this.registerThisDevice();
 
 		// Initiate the thread for continuous pushing of device data to the IoT-Server
-		AgentCoreOperations.initiateDeviceDataPush(this.agentConfigs.getDeviceOwner(),
-		                                           this.agentConfigs.getDeviceId(),
-		                                           this.agentConfigs.getDataPushInterval());
+		AgentCoreOperations.initiateDeviceDataPush(agentConfigs.getDeviceOwner(),
+		                                           agentConfigs.getDeviceId(),
+		                                           interval);
 
 		// Subscribe to the platform's MQTT Queue for receiving Control Signals via MQTT
 		try {
@@ -154,6 +140,32 @@ public class AgentManager {
 		});
 	}
 
+
+	private void registerThisDevice() {
+		Thread ipRegisterThread = new Thread() {
+			@Override
+			public void run() {
+				//TODO: check for null pointer
+				try {
+					int responseCode = AgentCoreOperations.registerDeviceIP(
+							agentConfigs.getDeviceOwner(), agentConfigs.getDeviceId());
+
+					if (responseCode != HttpStatus.OK_200) {
+						log.error(AgentConstants.LOG_APPENDER +
+								          "Device Registration with IoT Server at:" +
+								          " " + iotServerEP + " failed");
+					}
+				} catch (AgentCoreOperationException exception) {
+					log.error(AgentConstants.LOG_APPENDER +
+							          "Error encountered whilst trying to register the Device's " +
+							          "IP at: " + iotServerEP);
+				}
+			}
+		};
+
+		ipRegisterThread.setDaemon(true);
+		ipRegisterThread.start();
+	}
 
 	private void retryMQTTSubscription() {
 		Thread retryToSubscribe = new Thread() {
