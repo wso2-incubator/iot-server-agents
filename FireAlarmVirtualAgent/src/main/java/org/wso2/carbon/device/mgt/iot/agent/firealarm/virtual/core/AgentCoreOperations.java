@@ -74,9 +74,7 @@ public class AgentCoreOperations {
 			URL path = loader.getResource(propertiesFileName);
 			System.out.println(path);
 			String root = path.getPath().replace(
-					"firealarm-virtual-agent-1.0-SNAPSHOT-jar-with-dependencies" +
-							".jar!/deviceConfig" +
-							".properties",
+					"wso2-firelarm-virtual-agent.jar!/deviceConfig.properties",
 					"").replace("jar:", "").replace("file:", "");
 			propertiesInputStream = new FileInputStream(
 					root + AgentConstants.AGENT_PROPERTIES_FILE_NAME);

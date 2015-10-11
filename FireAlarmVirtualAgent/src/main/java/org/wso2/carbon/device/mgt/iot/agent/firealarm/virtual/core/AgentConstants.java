@@ -77,8 +77,8 @@ public class AgentConstants {
 	 	---------------------------------------------------------------------------------------	*/
 	public static final String DEFAULT_DEVICE_OWNER = "admin";
 	public static final String DEFAULT_DEVICE_ID = "1234567890";
-	public static final String DEFAULT_IOT_SERVER_EP = "127.0.0.1:9443";
-	public static final String DEFAULT_IOT_SERVER_SERVICE_EP = "127.0.0.1:9763";
+	public static final String DEFAULT_IOT_SERVER_EP = "localhost:9443";
+	public static final String DEFAULT_IOT_SERVER_SERVICE_EP = "localhost:9763";
 	public static final String DEFAULT_APIM_GATEWAY_EP = "http://127.0.0.1:8281";
 	public static final String DEFAULT_MQTT_BROKER_EP = "tcp://127.0.0.1:1883";
 	public static final String DEFAULT_XMPP_SERVER_EP = "http://127.0.0.1:9061";
