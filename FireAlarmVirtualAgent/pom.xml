@@ -51,7 +51,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>wso2-firelarm-virtual-agent</finalName>
+                    <finalName>wso2-firealarm-virtual-agent</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
