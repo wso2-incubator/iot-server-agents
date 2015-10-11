@@ -314,14 +314,6 @@ public class AgentManager {
 		this.humidity = humidity;
 	}
 
-	public int getInterval() {
-		return interval;
-	}
-
-	public void setInterval(int interval) {
-		this.interval = interval;
-	}
-
 	public void setTemperatureMin(int temperatureMin) {
 		this.temperatureMin = temperatureMin;
 	}
