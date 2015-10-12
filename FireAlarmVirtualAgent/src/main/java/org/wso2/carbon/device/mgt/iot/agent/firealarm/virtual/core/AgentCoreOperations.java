@@ -579,6 +579,7 @@ public class AgentCoreOperations {
 		String server = xmppEndPointInfo[0];
 		int port = Integer.parseInt(xmppEndPointInfo[1]);
 
+		final String xmppDeviceJID = username + "@" + server;
 		final String xmppAdminJID = AgentConstants.XMPP_ADMIN_ACCOUNT_UNAME + "@" + server;
 		agentManager.setXmppAdminJID(xmppAdminJID);
 
@@ -645,6 +646,7 @@ public class AgentCoreOperations {
 		agentManager.setAgentXMPPClient(xmppClient);
 		agentManager.getAgentXMPPClient().connectAndLogin(username, password, resource);
 		agentManager.getAgentXMPPClient().setMessageFilterAndListener(xmppAdminJID);
+//		agentManager.getAgentXMPPClient().setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID, true);
 	}
 
 

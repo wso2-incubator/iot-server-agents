@@ -27,8 +27,10 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.AndFilter;
 import org.jivesoftware.smack.filter.FromContainsFilter;
+import org.jivesoftware.smack.filter.OrFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.filter.ToContainsFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
@@ -144,6 +146,49 @@ public abstract class XMPPClient {
 	public void setMessageFilterAndListener(String senderJID) {
 		filter = new AndFilter(new PacketTypeFilter(Message.class), new FromContainsFilter(
 				senderJID));
+		listener = new PacketListener() {
+			@Override
+			public void processPacket(Packet packet) {
+				if (packet instanceof Message) {
+					final Message xmppMessage = (Message) packet;
+					Thread msgProcessThread = new Thread() {
+						public void run() {
+							processXMPPMessage(xmppMessage);
+						}
+					};
+					msgProcessThread.start();
+				}
+			}
+		};
+
+		connection.addPacketListener(listener, filter);
+	}
+
+	/**
+	 * Sets a filter on all the incoming XMPP-Messages for the From-JID & To-JID (XMPP-Account IDs)
+	 * passed in. Also creates a listener for the incoming messages and connects the listener to
+	 * the XMPPConnection alongside the set filter.
+	 *
+	 * @param senderJID    the From-JID (XMPP-Account ID) to which the filter is to be set.
+	 * @param receiverJID  the To-JID (XMPP-Account ID) to which the filter is to be set.
+	 * @param andCondition if true: then filter is set with 'AND' operator (senderJID &&
+	 *                        receiverJID),
+	 *                     if false: then the filter is set with 'OR' operator (senderJID |
+	 *                     receiverJID)
+	 */
+	public void setMessageFilterAndListener(String senderJID, String receiverJID, boolean
+			andCondition) {
+		PacketFilter jidFilter;
+
+		if (andCondition) {
+			jidFilter = new AndFilter(new FromContainsFilter(senderJID), new ToContainsFilter(
+					receiverJID));
+		} else {
+			jidFilter = new OrFilter(new FromContainsFilter(senderJID), new ToContainsFilter(
+					receiverJID));
+		}
+
+		filter = new AndFilter(new PacketTypeFilter(Message.class), jidFilter);
 		listener = new PacketListener() {
 			@Override
 			public void processPacket(Packet packet) {
