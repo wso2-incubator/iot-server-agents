@@ -86,7 +86,7 @@ public class AgentManager {
 		// Initiate the thread for continuous pushing of device data to the IoT-Server
 		AgentCoreOperations.initiateDeviceDataPush(agentConfigs.getDeviceOwner(),
 		                                           agentConfigs.getDeviceId(),
-		                                           interval);
+		                                           agentConfigs.getDataPushInterval());
 
 		// Subscribe to the platform's MQTT Queue for receiving Control Signals via MQTT
 		try {

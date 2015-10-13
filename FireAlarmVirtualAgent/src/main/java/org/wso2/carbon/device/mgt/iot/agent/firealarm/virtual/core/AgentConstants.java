@@ -91,8 +91,8 @@ public class AgentConstants {
 					Control Signal specific constants to match the request context
 	 	---------------------------------------------------------------------------------------	*/
 	public static final String BULB_CONTROL = "BULB";
-	public static final String TEMPERATURE_CONTROL = "TEMP";
-	public static final String HUMIDITY_CONTROL = "HUMID";
+	public static final String TEMPERATURE_CONTROL = "TEMPERATURE";
+	public static final String HUMIDITY_CONTROL = "HUMIDITY";
 	public static final String CONTROL_ON = "ON";
 	public static final String CONTROL_OFF = "OFF";
 	private static final String FILE_SEPERATOR = File.separator;
