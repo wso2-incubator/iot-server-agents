@@ -34,7 +34,7 @@ public class AgentManager {
 
 	private static AgentManager agentManager = new AgentManager();
 	private AgentUI agentUI;
-	private int temperature = 30, humidity = 30, interval = 15;
+	private int temperature = 30, humidity = 30;
 	private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
 	private boolean isTemperatureRandomized, isHumidityRandomized;
 	private String deviceMgtControlUrl, deviceMgtAnalyticUrl;
