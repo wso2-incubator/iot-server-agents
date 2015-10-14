@@ -28,7 +28,11 @@ import java.net.URI;
 
 public class AgentUI extends javax.swing.JFrame {
 
-    boolean isTemperatureRandomized, isHumidityRandomized;
+    private boolean isTemperatureRandomized, isHumidityRandomized;
+
+    private volatile boolean isBulbOn = false;
+
+    private JLabel picLabelBulbOn, picLabelBulbOff;
 
     private javax.swing.JButton btnControl;
     private javax.swing.JButton btnView;
@@ -56,6 +60,28 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JPanel pnlBulbStatus;
+
+    private Runnable bulbStateChanger = new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        pnlBulbStatus.removeAll();
+                        pnlBulbStatus.add(isBulbOn ? picLabelBulbOn : picLabelBulbOff);
+                        pnlBulbStatus.updateUI();
+                    }
+                });
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+    };
+
     private javax.swing.JSpinner spinnerHumidity;
     private javax.swing.JSpinner spinnerTemperature;
     private javax.swing.JTextField txtTemperatureMax;
@@ -476,7 +502,24 @@ public class AgentUI extends javax.swing.JFrame {
 
         pack();
 
-        setBulbStatus(false);
+        try {
+            BufferedImage imgBulbOn = ImageIO.read(this.getClass().getResource("/bulb-on.jpg"));
+            Image scaledBulbOn = imgBulbOn.getScaledInstance(pnlBulbStatus.getWidth(), pnlBulbStatus.getHeight(),
+                                                             Image.SCALE_SMOOTH);
+            picLabelBulbOn = new JLabel(new ImageIcon(scaledBulbOn));
+            picLabelBulbOn.setSize(pnlBulbStatus.getSize());
+
+            BufferedImage imgBulbOff = ImageIO.read(this.getClass().getResource("/bulb-off.jpg"));
+            Image scaledBulbOff = imgBulbOff.getScaledInstance(pnlBulbStatus.getWidth(), pnlBulbStatus.getHeight(),
+                                                               Image.SCALE_SMOOTH);
+            picLabelBulbOff = new JLabel(new ImageIcon(scaledBulbOff));
+            picLabelBulbOff.setSize(pnlBulbStatus.getSize());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        new Thread(bulbStateChanger).start();
+
     }
 
     private void btnControlMouseClicked(java.awt.event.MouseEvent evt) {
@@ -583,19 +626,9 @@ public class AgentUI extends javax.swing.JFrame {
         }
     }
 
-    public void setBulbStatus(boolean isOn) {
-        try {
-            pnlBulbStatus.removeAll();
-            BufferedImage imgBulb = ImageIO.read(this.getClass().getResource(isOn ? "/bulb-on.jpg" : "/bulb-off.jpg"));
-            Image scaled = imgBulb.getScaledInstance(pnlBulbStatus.getWidth(), pnlBulbStatus.getHeight(),
-                                                     Image.SCALE_SMOOTH);
-            JLabel picLabel = new JLabel(new ImageIcon(scaled));
-            picLabel.setSize(pnlBulbStatus.getSize());
-            pnlBulbStatus.add(picLabel);
-            pnlBulbStatus.updateUI();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void setBulbStatus(boolean isBulbOn) {
+        this.isBulbOn = isBulbOn;
+        new Thread(bulbStateChanger).start();
     }
 
     public void setAgentStatus(String status) {
