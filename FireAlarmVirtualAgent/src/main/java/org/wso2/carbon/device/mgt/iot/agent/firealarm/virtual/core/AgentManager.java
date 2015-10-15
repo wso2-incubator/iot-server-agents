@@ -65,6 +65,7 @@ public class AgentManager {
 		// Read IoT-Server specific configurations from the 'deviceConfig.properties' file
 		this.agentConfigs = AgentCoreOperations.readIoTServerConfigs();
 
+
 		String analyticsPageContext = String.format(AgentConstants.DEVICE_ANALYTICS_PAGE_URL,
 		                                            agentConfigs.getDeviceId(),
 		                                            AgentConstants.DEVICE_TYPE);
@@ -399,14 +400,6 @@ public class AgentManager {
 	public void setDeviceIP(String deviceIP) {
 		this.deviceIP = deviceIP;
 	}
-
-//	public String getHTTPS_ServerEndpoint() {
-//		return iotServerEP;
-//	}
-//
-//	public void setHTTPS_ServerEndpoint(String iotServerEP) {
-//		this.iotServerEP = iotServerEP;
-//	}
 
 	public String getControllerAPIEP() {
 		return controllerAPIEP;

@@ -88,6 +88,8 @@ public class AgentCoreOperations {
 					AgentConstants.DEVICE_OWNER_PROPERTY));
 			iotServerConfigs.setDeviceId(properties.getProperty(
 					AgentConstants.DEVICE_ID_PROPERTY));
+			iotServerConfigs.setDeviceName(properties.getProperty(
+					AgentConstants.DEVICE_NAME_PROPERTY));
 			iotServerConfigs.setControllerContext(properties.getProperty(
 					AgentConstants.DEVICE_CONTROLLER_CONTEXT_PROPERTY));
 			iotServerConfigs.setHTTPS_ServerEndpoint(properties.getProperty(
@@ -114,6 +116,8 @@ public class AgentCoreOperations {
 			log.info(AgentConstants.LOG_APPENDER + "Device Owner: " +
 					         iotServerConfigs.getDeviceOwner());
 			log.info(AgentConstants.LOG_APPENDER + "Device ID: " + iotServerConfigs.getDeviceId());
+			log.info(AgentConstants.LOG_APPENDER + "Device Name: " +
+					         iotServerConfigs.getDeviceName());
 			log.info(AgentConstants.LOG_APPENDER + "Device Controller Context: " +
 					         iotServerConfigs.getControllerContext());
 			log.info(AgentConstants.LOG_APPENDER + "IoT Server HTTPS EndPoint: " +
@@ -176,6 +180,7 @@ public class AgentCoreOperations {
 
 		iotServerConfigs.setDeviceOwner(AgentConstants.DEFAULT_DEVICE_OWNER);
 		iotServerConfigs.setDeviceId(AgentConstants.DEFAULT_DEVICE_ID);
+		iotServerConfigs.setDeviceName(AgentConstants.DEFAULT_DEVICE_NAME);
 		iotServerConfigs.setControllerContext(AgentConstants.DEVICE_CONTROLLER_API_EP);
 		iotServerConfigs.setHTTPS_ServerEndpoint(AgentConstants.DEFAULT_HTTPS_SERVER_EP);
 		iotServerConfigs.setHTTP_ServerEndpoint(AgentConstants.DEFAULT_HTTP_SERVER_EP);

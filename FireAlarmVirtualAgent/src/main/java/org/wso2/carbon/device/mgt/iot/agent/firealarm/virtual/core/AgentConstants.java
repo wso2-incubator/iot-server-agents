@@ -62,6 +62,7 @@ public class AgentConstants {
 	public static final String AGENT_PROPERTIES_FILE_NAME = "deviceConfig.properties";
 	public static final String DEVICE_OWNER_PROPERTY = "owner";
 	public static final String DEVICE_ID_PROPERTY = "deviceId";
+	public static final String DEVICE_NAME_PROPERTY = "device-name";
 	public static final String DEVICE_CONTROLLER_CONTEXT_PROPERTY = "controller-context";
 	public static final String SERVER_HTTPS_EP_PROPERTY = "https-ep";
 	public static final String SERVER_HTTP_EP_PROPERTY = "http-ep";
@@ -78,6 +79,7 @@ public class AgentConstants {
 	 	---------------------------------------------------------------------------------------	*/
 	public static final String DEFAULT_DEVICE_OWNER = "admin";
 	public static final String DEFAULT_DEVICE_ID = "1234567890";
+	public static final String DEFAULT_DEVICE_NAME = "admin_1234567890";
 	public static final String DEFAULT_HTTPS_SERVER_EP = "https://localhost:9443";
 	public static final String DEFAULT_HTTP_SERVER_EP = "http://localhost:9763";
 	public static final String DEFAULT_APIM_GATEWAY_EP = "http://127.0.0.1:8281";

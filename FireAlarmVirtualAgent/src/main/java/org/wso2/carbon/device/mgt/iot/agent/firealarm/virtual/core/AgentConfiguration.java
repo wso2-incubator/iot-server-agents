@@ -26,6 +26,7 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 public class AgentConfiguration {
 	private String deviceOwner;
 	private String deviceId;
+	private String deviceName;
 	private String controllerContext;
 	private String HTTPS_ServerEndpoint;
 	private String HTTP_ServerEndpoint;
@@ -52,6 +53,14 @@ public class AgentConfiguration {
 
 	public void setDeviceId(String deviceId) {
 		this.deviceId = deviceId;
+	}
+
+	public String getDeviceName() {
+		return deviceName;
+	}
+
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
 	}
 
 	public String getControllerContext() {
