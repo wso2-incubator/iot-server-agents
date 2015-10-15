@@ -148,7 +148,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         lblAgentName.setFont(new java.awt.Font("Cantarell", 0, 36)); // NOI18N
         lblAgentName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblAgentName.setText(AgentManager.getInstance().getAgentName());
+        lblAgentName.setText(AgentManager.getInstance().getDeviceName());
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Copyright (c) 2015, WSO2 Inc.");

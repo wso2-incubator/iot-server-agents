@@ -30,9 +30,11 @@ public class AgentConstants {
 	public static final String DEVICE_CONTROLLER_API_EP = "/virtual_firealarm/controller";
 	public static final String DEVICE_REGISTER_API_EP = "/register";
 	public static final String DEVICE_PUSH_TEMPERATURE_API_EP = "/push_temperature";
-	public static final String AGENT_CONTROL_APP_EP = "/firealarm-webapp";
 	public static final String PUSH_DATA_PAYLOAD =
 			"{\"owner\":\"%s\",\"deviceId\":\"%s\",\"reply\":\"%s\",\"value\":\"%s\"}";
+
+//	public static final String AGENT_CONTROL_APP_EP = "/firealarm-webapp";
+	public static final String AGENT_CONTROL_APP_EP = "/store/pages/device/%s/%s";
 	public static final String DEVICE_ANALYTICS_PAGE_URL =
 			"/store/pages/analytics?deviceId=%s&deviceType=%s";
 	/*	---------------------------------------------------------------------------------------

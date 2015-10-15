@@ -244,8 +244,15 @@ public class AgentCoreOperations {
 			throws AgentCoreOperationException {
 		int responseCode = -1;
 
-		String deviceIPAddress = getDeviceIP(
-				agentManager.getAgentConfigs().getNetworkInterface());
+		String networkInterface = agentManager.getAgentConfigs().getNetworkInterface();
+		String deviceIPAddress = getDeviceIP(networkInterface);
+
+		if (deviceIPAddress == null) {
+			throw new AgentCoreOperationException(
+					"An IP address could not be retrieved for the network interface - '" +
+							networkInterface + "' provided in the '" +
+							AgentConstants.AGENT_PROPERTIES_FILE_NAME + "' file.");
+		}
 
 		agentManager.setDeviceIP(deviceIPAddress);
 		log.info(AgentConstants.LOG_APPENDER + "Device IP Address: " + deviceIPAddress);
@@ -385,13 +392,8 @@ public class AgentCoreOperations {
 					log.warn(AgentConstants.LOG_APPENDER +
 							         "DeviceIP is being Re-Registered due to Push-Data failure " +
 							         "with response code: " + responseCode);
-					try {
-						registerDeviceIP(deviceOwner, deviceID);
-					} catch (AgentCoreOperationException exception) {
-						log.error(AgentConstants.LOG_APPENDER +
-								          "Error encountered whilst trying to Re-Register the " +
-								          "Device's IP");
-					}
+					agentManager.registerThisDevice();
+
 				} else if (responseCode != HttpStatus.NO_CONTENT_204) {
 					if (log.isDebugEnabled()) {
 						log.error(AgentConstants.LOG_APPENDER + "Status Code: " + responseCode +
@@ -399,6 +401,7 @@ public class AgentCoreOperations {
 								          " Server at: " +
 								          agentManager.getPushDataAPIEP());
 					}
+					agentManager.updateAgentStatus("Server not responding..");
 				}
 
 				if (log.isDebugEnabled()) {
