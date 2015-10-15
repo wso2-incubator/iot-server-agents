@@ -44,6 +44,8 @@ import java.net.SocketException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -84,17 +86,19 @@ public class AgentCoreOperations {
 
 			iotServerConfigs.setDeviceOwner(properties.getProperty(
 					AgentConstants.DEVICE_OWNER_PROPERTY));
-			iotServerConfigs.setDeviceId(properties.getProperty(AgentConstants
-					                                                    .DEVICE_ID_PROPERTY));
-			iotServerConfigs.setIotServerEP(properties.getProperty(
-					AgentConstants.IOT_SERVER_EP_PROPERTY));
-			iotServerConfigs.setIotServerServiceEP(properties.getProperty(
-					AgentConstants.IOT_SERVER_SERVICE_EP_PROPERTY));
-			iotServerConfigs.setApimGatewayEP(properties.getProperty(
+			iotServerConfigs.setDeviceId(properties.getProperty(
+					AgentConstants.DEVICE_ID_PROPERTY));
+			iotServerConfigs.setControllerContext(properties.getProperty(
+					AgentConstants.DEVICE_CONTROLLER_CONTEXT_PROPERTY));
+			iotServerConfigs.setHTTPS_ServerEndpoint(properties.getProperty(
+					AgentConstants.SERVER_HTTPS_EP_PROPERTY));
+			iotServerConfigs.setHTTP_ServerEndpoint(properties.getProperty(
+					AgentConstants.SERVER_HTTP_EP_PROPERTY));
+			iotServerConfigs.setApimGatewayEndpoint(properties.getProperty(
 					AgentConstants.APIM_GATEWAY_EP_PROPERTY));
-			iotServerConfigs.setMqttBrokerEP(AgentConstants.TCP_PREFIX + properties.getProperty(
+			iotServerConfigs.setMqttBrokerEndpoint(properties.getProperty(
 					AgentConstants.MQTT_BROKER_EP_PROPERTY));
-			iotServerConfigs.setXmppServerEP(properties.getProperty(
+			iotServerConfigs.setXmppServerEndpoint(properties.getProperty(
 					AgentConstants.XMPP_SERVER_EP_PROPERTY));
 			iotServerConfigs.setAuthMethod(properties.getProperty(
 					AgentConstants.AUTH_METHOD_PROPERTY));
@@ -110,16 +114,18 @@ public class AgentCoreOperations {
 			log.info(AgentConstants.LOG_APPENDER + "Device Owner: " +
 					         iotServerConfigs.getDeviceOwner());
 			log.info(AgentConstants.LOG_APPENDER + "Device ID: " + iotServerConfigs.getDeviceId());
-			log.info(AgentConstants.LOG_APPENDER + "IoT Server EndPoint: " +
-					         iotServerConfigs.getIotServerEP());
-			log.info(AgentConstants.LOG_APPENDER + "IoT Server Service EndPoint: " +
-					         iotServerConfigs.getIotServerServiceEP());
+			log.info(AgentConstants.LOG_APPENDER + "Device Controller Context: " +
+					         iotServerConfigs.getControllerContext());
+			log.info(AgentConstants.LOG_APPENDER + "IoT Server HTTPS EndPoint: " +
+					         iotServerConfigs.getHTTPS_ServerEndpoint());
+			log.info(AgentConstants.LOG_APPENDER + "IoT Server HTTP EndPoint: " +
+					         iotServerConfigs.getHTTP_ServerEndpoint());
 			log.info(AgentConstants.LOG_APPENDER + "API-Manager Gateway EndPoint: " +
-					         iotServerConfigs.getApimGatewayEP());
+					         iotServerConfigs.getApimGatewayEndpoint());
 			log.info(AgentConstants.LOG_APPENDER + "MQTT Broker EndPoint: " +
-					         iotServerConfigs.getMqttBrokerEP());
+					         iotServerConfigs.getMqttBrokerEndpoint());
 			log.info(AgentConstants.LOG_APPENDER + "XMPP Server EndPoint: " +
-					         iotServerConfigs.getXmppServerEP());
+					         iotServerConfigs.getXmppServerEndpoint());
 			log.info(AgentConstants.LOG_APPENDER + "Authentication Method: " +
 					         iotServerConfigs.getAuthMethod());
 			log.info(AgentConstants.LOG_APPENDER + "Authentication Token: " +
@@ -170,11 +176,12 @@ public class AgentCoreOperations {
 
 		iotServerConfigs.setDeviceOwner(AgentConstants.DEFAULT_DEVICE_OWNER);
 		iotServerConfigs.setDeviceId(AgentConstants.DEFAULT_DEVICE_ID);
-		iotServerConfigs.setIotServerEP(AgentConstants.DEFAULT_IOT_SERVER_EP);
-		iotServerConfigs.setIotServerServiceEP(AgentConstants.DEFAULT_IOT_SERVER_SERVICE_EP);
-		iotServerConfigs.setApimGatewayEP(AgentConstants.DEFAULT_APIM_GATEWAY_EP);
-		iotServerConfigs.setMqttBrokerEP(AgentConstants.DEFAULT_MQTT_BROKER_EP);
-		iotServerConfigs.setXmppServerEP(AgentConstants.DEFAULT_XMPP_SERVER_EP);
+		iotServerConfigs.setControllerContext(AgentConstants.DEVICE_CONTROLLER_API_EP);
+		iotServerConfigs.setHTTPS_ServerEndpoint(AgentConstants.DEFAULT_HTTPS_SERVER_EP);
+		iotServerConfigs.setHTTP_ServerEndpoint(AgentConstants.DEFAULT_HTTP_SERVER_EP);
+		iotServerConfigs.setApimGatewayEndpoint(AgentConstants.DEFAULT_APIM_GATEWAY_EP);
+		iotServerConfigs.setMqttBrokerEndpoint(AgentConstants.DEFAULT_MQTT_BROKER_EP);
+		iotServerConfigs.setXmppServerEndpoint(AgentConstants.DEFAULT_XMPP_SERVER_EP);
 		iotServerConfigs.setAuthMethod(AgentConstants.DEFAULT_AUTH_METHOD);
 		iotServerConfigs.setAuthToken(AgentConstants.DEFAULT_AUTH_TOKEN);
 		iotServerConfigs.setRefreshToken(AgentConstants.DEFAULT_REFRESH_TOKEN);
@@ -194,25 +201,22 @@ public class AgentCoreOperations {
 	 *                                     from the configs file
 	 */
 	public static void initializeHTTPEndPoints() {
-		String iotServerServiceEndpoint = AgentConstants.HTTP_PREFIX +
-				agentManager.getAgentConfigs().getIotServerServiceEP();
-		agentManager.setIotServerEP(iotServerServiceEndpoint);
+		String apimEndpoint = agentManager.getAgentConfigs().getHTTP_ServerEndpoint();
+		String backEndContext = agentManager.getAgentConfigs().getControllerContext();
 
-		String deviceControllerAPIEndPoint =
-				iotServerServiceEndpoint + AgentConstants.DEVICE_CONTROLLER_API_EP;
-		agentManager.setControllerAPIEP(deviceControllerAPIEndPoint);
+		String deviceControllerAPIEndpoint = apimEndpoint + backEndContext;
+		agentManager.setControllerAPIEP(deviceControllerAPIEndpoint);
 
 		String registerEndpointURL =
-				deviceControllerAPIEndPoint + AgentConstants.DEVICE_REGISTER_API_EP;
+				deviceControllerAPIEndpoint + AgentConstants.DEVICE_REGISTER_API_EP;
 		agentManager.setIpRegistrationEP(registerEndpointURL);
 
 		String pushDataEndPointURL =
-				deviceControllerAPIEndPoint + AgentConstants.DEVICE_PUSH_TEMPERATURE_API_EP;
+				deviceControllerAPIEndpoint + AgentConstants.DEVICE_PUSH_TEMPERATURE_API_EP;
 		agentManager.setPushDataAPIEP(pushDataEndPointURL);
 
-		log.info(AgentConstants.LOG_APPENDER + "IoT Server EndPoint: " + iotServerServiceEndpoint);
 		log.info(AgentConstants.LOG_APPENDER + "IoT Server's Device Controller API Endpoint: " +
-				         deviceControllerAPIEndPoint);
+				         deviceControllerAPIEndpoint);
 		log.info(AgentConstants.LOG_APPENDER + "DeviceIP Registration EndPoint: " +
 				         registerEndpointURL);
 		log.info(AgentConstants.LOG_APPENDER + "Push-Data API EndPoint: " + pushDataEndPointURL);
@@ -277,8 +281,9 @@ public class AgentCoreOperations {
 
 		log.info(AgentConstants.LOG_APPENDER + "DeviceIP - " + deviceIPAddress +
 				         ", registration with IoT Server at : " +
-				         agentManager.getIotServerEP() +
-				         " returned status " + responseCode);
+				         agentManager.getAgentConfigs().getHTTPS_ServerEndpoint() +
+				         " returned status " +
+				         responseCode);
 		return responseCode;
 	}
 
@@ -329,12 +334,6 @@ public class AgentCoreOperations {
 							agentManager.getAgentConfigs().getAuthToken());
 					httpConnection.setRequestProperty("Content-Type",
 					                                  AgentConstants.APPLICATION_JSON_TYPE);
-
-//					pushDataPayload = String.format(AgentConstants.PUSH_DATA_PAYLOAD, deviceOwner,
-//					                                deviceID,
-//					                                agentManager.getDeviceIP(),
-//					                                agentManager.getAgentOperationManager()
-//							                                .getTemperature());
 
 					int currentTemperature = agentManager.getTemperature();
 					pushDataPayload = String.format(AgentConstants.PUSH_DATA_PAYLOAD, deviceOwner,
@@ -443,7 +442,7 @@ public class AgentCoreOperations {
 
 				String[] controlSignal = message.toString().split(":");
 				// message is in "<SIGNAL_TYPE>:<SIGNAL_MODE>" format.
-				//                           (ex: "BULB:ON", "TEMP", "HUMID")
+				//                           (ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
 				switch (controlSignal[0].toUpperCase()) {
 					case AgentConstants.BULB_CONTROL:
@@ -566,18 +565,9 @@ public class AgentCoreOperations {
 			String xmppServerEndPoint)
 			throws AgentCoreOperationException {
 
-		String[] xmppEndPointInfo = xmppServerEndPoint.split(":");
-
-		if (xmppEndPointInfo.length != 2) {
-			String errorMsg =
-					"The XMPP Endpoint (xmpp-ep) provided in the 'deviceConfig.properties' file " +
-							"is inappropriate. Needs to be in '<IP>:<PORT>' format.";
-			log.info(AgentConstants.LOG_APPENDER + errorMsg);
-			throw new AgentCoreOperationException(errorMsg);
-		}
-
-		String server = xmppEndPointInfo[0];
-		int port = Integer.parseInt(xmppEndPointInfo[1]);
+		Map<String, String> ipPortMap = getHostAndPort(xmppServerEndPoint);
+		String server = ipPortMap.get("Host");
+		int port = Integer.parseInt(ipPortMap.get("Port"));
 
 		final String xmppDeviceJID = username + "@" + server;
 		final String xmppAdminJID = AgentConstants.XMPP_ADMIN_ACCOUNT_UNAME + "@" + server;
@@ -593,13 +583,10 @@ public class AgentCoreOperations {
 
 				String[] controlSignal = message.toString().split(":");
 				// message is in "<SIGNAL_TYPE>:<SIGNAL_MODE>" format.
-				// (ex: "BULB:ON", "TEMP", "HUMID")
+				// (ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
 				switch (controlSignal[0].toUpperCase()) {
 					case AgentConstants.BULB_CONTROL:
-//						agentManager.getAgentOperationManager().changeBulbStatus(
-//								controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
-
 						agentManager.changeBulbStatus(
 								controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
 						log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
@@ -607,9 +594,6 @@ public class AgentCoreOperations {
 						break;
 
 					case AgentConstants.TEMPERATURE_CONTROL:
-//						String currentTemperature = "" + agentManager.getAgentOperationManager()
-//										.getTemperature();
-
 						int currentTemperature = agentManager.getTemperature();
 
 						String replyTemperature =
@@ -622,9 +606,6 @@ public class AgentCoreOperations {
 						break;
 
 					case AgentConstants.HUMIDITY_CONTROL:
-//						String currentHumidity = "" + agentManager.getAgentOperationManager()
-//										.getHumidity();
-
 						int currentHumidity = agentManager.getHumidity();
 
 						String replyHumidity =
@@ -645,8 +626,9 @@ public class AgentCoreOperations {
 
 		agentManager.setAgentXMPPClient(xmppClient);
 		agentManager.getAgentXMPPClient().connectAndLogin(username, password, resource);
-		agentManager.getAgentXMPPClient().setMessageFilterAndListener(xmppAdminJID);
-//		agentManager.getAgentXMPPClient().setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID, true);
+//		agentManager.getAgentXMPPClient().setMessageFilterAndListener(xmppAdminJID);
+		agentManager.getAgentXMPPClient().setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID,
+		                                                              true);
 	}
 
 
@@ -817,6 +799,32 @@ public class AgentCoreOperations {
 					          "at: " + httpConnection.getURL());
 		}
 		return completeResponse.toString();
+	}
+
+	/**
+	 * Given a server endpoint as a String, this method splits it into Protocol, Host and Port
+	 *
+	 * @param ipString a network endpoint in the format - '<PROTOCOL>://<HOST>:<PORT>'
+	 * @return a map with keys "Protocol", "Host" & "Port" for the related values from the ipString
+	 * @throws AgentCoreOperationException
+	 */
+	private static Map<String, String> getHostAndPort(String ipString)
+			throws AgentCoreOperationException {
+		Map<String, String> ipPortMap = new HashMap<String, String>();
+		String[] ipPortArray = ipString.split(":");
+
+		if (ipPortArray.length != 3) {
+			String errorMsg =
+					"The IP String - '" + ipString +
+							"' is invalid. It needs to be in format '<PROTOCOL>://<HOST>:<PORT>'.";
+			log.info(AgentConstants.LOG_APPENDER + errorMsg);
+			throw new AgentCoreOperationException(errorMsg);
+		}
+
+		ipPortMap.put("Protocol", ipPortArray[0]);
+		ipPortMap.put("Host", ipPortArray[1].replace(File.separator, ""));
+		ipPortMap.put("Port", ipPortArray[2]);
+		return ipPortMap;
 	}
 }
 

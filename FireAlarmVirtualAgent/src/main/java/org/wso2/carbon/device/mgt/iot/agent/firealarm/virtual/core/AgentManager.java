@@ -40,7 +40,6 @@ public class AgentManager {
 	private String deviceMgtControlUrl, deviceMgtAnalyticUrl;
 
 	private AgentConfiguration agentConfigs;
-//	private AgentOperationManager agentOperationManager;
 
 	private SimpleServer simpleServer;
 	private MQTTClient agentMQTTClient;
@@ -48,7 +47,6 @@ public class AgentManager {
 	private String xmppAdminJID;
 
 	private String deviceIP;
-	private String iotServerEP;
 	private String controllerAPIEP;
 	private String ipRegistrationEP;
 	private String pushDataAPIEP;
@@ -72,9 +70,9 @@ public class AgentManager {
 		                                            AgentConstants.DEVICE_TYPE);
 
 		this.deviceMgtAnalyticUrl =
-				AgentConstants.HTTPS_PREFIX + agentConfigs.getIotServerEP() + analyticsPageContext;
+				AgentConstants.HTTPS_PREFIX + agentConfigs.getHTTPS_ServerEndpoint() + analyticsPageContext;
 		this.deviceMgtControlUrl =
-				AgentConstants.HTTP_PREFIX + agentConfigs.getIotServerServiceEP() +
+				AgentConstants.HTTP_PREFIX + agentConfigs.getHTTP_ServerEndpoint() +
 						AgentConstants.AGENT_CONTROL_APP_EP;
 
 		// Initialise IoT-Server URL endpoints from the configuration read from file
@@ -92,10 +90,10 @@ public class AgentManager {
 		try {
 			AgentCoreOperations.subscribeToMQTT(this.agentConfigs.getDeviceOwner(),
 			                                    this.agentConfigs.getDeviceId(),
-			                                    this.agentConfigs.getMqttBrokerEP());
+			                                    this.agentConfigs.getMqttBrokerEndpoint());
 		} catch (AgentCoreOperationException e) {
 			log.error(AgentConstants.LOG_APPENDER + "Subscription to MQTT Broker at: " +
-					          this.agentConfigs.getMqttBrokerEP() + " failed");
+					          this.agentConfigs.getMqttBrokerEndpoint() + " failed");
 			retryMQTTSubscription();
 		}
 
@@ -104,10 +102,10 @@ public class AgentManager {
 			AgentCoreOperations.connectToXMPPServer(this.agentConfigs.getDeviceId(),
 			                                        this.agentConfigs.getAuthToken(),
 			                                        this.agentConfigs.getDeviceOwner(),
-			                                        this.agentConfigs.getXmppServerEP());
+			                                        this.agentConfigs.getXmppServerEndpoint());
 		} catch (AgentCoreOperationException e) {
 			log.error(AgentConstants.LOG_APPENDER + "Connect/Login attempt to XMPP Server at: " +
-					          this.agentConfigs.getXmppServerEP() + " failed");
+					          this.agentConfigs.getXmppServerEndpoint() + " failed");
 			retryXMPPConnection();
 		}
 
@@ -153,12 +151,12 @@ public class AgentManager {
 					if (responseCode != HttpStatus.OK_200) {
 						log.error(AgentConstants.LOG_APPENDER +
 								          "Device Registration with IoT Server at:" +
-								          " " + iotServerEP + " failed");
+								          " " + agentConfigs.getHTTPS_ServerEndpoint() + " failed");
 					}
 				} catch (AgentCoreOperationException exception) {
 					log.error(AgentConstants.LOG_APPENDER +
 							          "Error encountered whilst trying to register the Device's " +
-							          "IP at: " + iotServerEP);
+							          "IP at: " + agentConfigs.getHTTPS_ServerEndpoint());
 				}
 			}
 		};
@@ -342,17 +340,10 @@ public class AgentManager {
 		return deviceMgtControlUrl;
 	}
 
-	public void setDeviceMgtControlUrl(String deviceMgtControlUrl) {
-		this.deviceMgtControlUrl = deviceMgtControlUrl;
-	}
-
 	public String getDeviceMgtAnalyticUrl() {
 		return deviceMgtAnalyticUrl;
 	}
 
-	public void setDeviceMgtAnalyticUrl(String deviceMgtAnalyticUrl) {
-		this.deviceMgtAnalyticUrl = deviceMgtAnalyticUrl;
-	}
 
 	private int getRandom(int max, int min) {
 		double rnd = Math.random() * (max - min) + min;
@@ -370,14 +361,6 @@ public class AgentManager {
 	public void setAgentConfigs(AgentConfiguration agentConfigs) {
 		this.agentConfigs = agentConfigs;
 	}
-
-//	public AgentOperationManager getAgentOperationManager() {
-//		return agentOperationManager;
-//	}
-
-//	public void setAgentOperationManager(AgentOperationManager agentOperationManager) {
-//		this.agentOperationManager = agentOperationManager;
-//	}
 
 	public SimpleServer getSimpleServer() {
 		return simpleServer;
@@ -417,13 +400,13 @@ public class AgentManager {
 		this.deviceIP = deviceIP;
 	}
 
-	public String getIotServerEP() {
-		return iotServerEP;
-	}
-
-	public void setIotServerEP(String iotServerEP) {
-		this.iotServerEP = iotServerEP;
-	}
+//	public String getHTTPS_ServerEndpoint() {
+//		return iotServerEP;
+//	}
+//
+//	public void setHTTPS_ServerEndpoint(String iotServerEP) {
+//		this.iotServerEP = iotServerEP;
+//	}
 
 	public String getControllerAPIEP() {
 		return controllerAPIEP;
