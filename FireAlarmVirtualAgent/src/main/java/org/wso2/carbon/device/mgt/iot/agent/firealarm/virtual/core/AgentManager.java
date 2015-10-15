@@ -37,7 +37,7 @@ public class AgentManager {
 	private int temperature = 30, humidity = 30;
 	private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
 	private boolean isTemperatureRandomized, isHumidityRandomized;
-	private String deviceMgtControlUrl, deviceMgtAnalyticUrl;
+	private String deviceMgtControlUrl, deviceMgtAnalyticUrl, agentName, agentStatus;
 
 	private AgentConfiguration agentConfigs;
 //	private AgentOperationManager agentOperationManager;
@@ -76,6 +76,33 @@ public class AgentManager {
 		this.deviceMgtControlUrl =
 				AgentConstants.HTTP_PREFIX + agentConfigs.getIotServerServiceEP() +
 						AgentConstants.AGENT_CONTROL_APP_EP;
+
+        this.agentStatus = "Not Connected";
+
+        try {
+            // Set System L&F
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (UnsupportedLookAndFeelException e) {
+            // handle exception
+        } catch (ClassNotFoundException e) {
+            // handle exception
+        } catch (InstantiationException e) {
+            // handle exception
+        } catch (IllegalAccessException e) {
+            // handle exception
+        }
+
+        //TODO: Get agent name from configs
+        //this.agentName = this.agentConfigs.getAgentName();
+        //TODO: Remove this line after getting agent name from configs
+        this.agentName = "WSO2 Virtual Agent";
+
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                agentUI = new AgentUI();
+                agentUI.setVisible(true);
+            }
+        });
 
 		// Initialise IoT-Server URL endpoints from the configuration read from file
 		AgentCoreOperations.initializeHTTPEndPoints();
@@ -119,29 +146,11 @@ public class AgentManager {
 			retryHTTPServerInit();
 		}
 
-		try {
-			// Set System L&F
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (UnsupportedLookAndFeelException e) {
-			// handle exception
-		} catch (ClassNotFoundException e) {
-			// handle exception
-		} catch (InstantiationException e) {
-			// handle exception
-		} catch (IllegalAccessException e) {
-			// handle exception
-		}
-
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				agentUI = new AgentUI();
-				agentUI.setVisible(true);
-			}
-		});
 	}
 
 
 	private void registerThisDevice() {
+        this.agentStatus = "Registering";
 		Thread ipRegisterThread = new Thread() {
 			@Override
 			public void run() {
@@ -150,15 +159,19 @@ public class AgentManager {
 					int responseCode = AgentCoreOperations.registerDeviceIP(
 							agentConfigs.getDeviceOwner(), agentConfigs.getDeviceId());
 
-					if (responseCode != HttpStatus.OK_200) {
+					if (responseCode == HttpStatus.OK_200) {
+                        updateAgentStatus("Registered");
+                    }else{
 						log.error(AgentConstants.LOG_APPENDER +
 								          "Device Registration with IoT Server at:" +
 								          " " + iotServerEP + " failed");
+                        updateAgentStatus("Registration failed");
 					}
 				} catch (AgentCoreOperationException exception) {
 					log.error(AgentConstants.LOG_APPENDER +
 							          "Error encountered whilst trying to register the Device's " +
 							          "IP at: " + iotServerEP);
+                    updateAgentStatus("Registration failed");
 				}
 			}
 		};
@@ -287,7 +300,7 @@ public class AgentManager {
 	}
 
 	public void updateAgentStatus(String status) {
-		agentUI.setAgentStatus(status);
+		this.agentStatus = status;
 	}
 
 	public int getTemperature() {
@@ -448,4 +461,12 @@ public class AgentManager {
 	public void setPushDataAPIEP(String pushDataAPIEP) {
 		this.pushDataAPIEP = pushDataAPIEP;
 	}
+
+	public String getAgentName() {
+		return agentName;
+	}
+
+    public String getAgentStatus() {
+        return agentStatus;
+    }
 }

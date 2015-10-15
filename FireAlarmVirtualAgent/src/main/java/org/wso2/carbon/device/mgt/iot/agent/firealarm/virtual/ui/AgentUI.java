@@ -38,7 +38,7 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JButton btnView;
     private javax.swing.JCheckBox chkbxTemperatureRandom;
     private javax.swing.JCheckBox chkbxHumidityRandom;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel lblAgentName;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel22;
@@ -61,7 +61,7 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JLabel lblStatus;
     private javax.swing.JPanel pnlBulbStatus;
 
-    private Runnable bulbStateChanger = new Runnable() {
+    private Runnable uiUpdater = new Runnable() {
         @Override
         public void run() {
             while (true) {
@@ -71,6 +71,7 @@ public class AgentUI extends javax.swing.JFrame {
                         pnlBulbStatus.removeAll();
                         pnlBulbStatus.add(isBulbOn ? picLabelBulbOn : picLabelBulbOff);
                         pnlBulbStatus.updateUI();
+                        lblStatus.setText(AgentManager.getInstance().getAgentStatus());
                     }
                 });
                 try {
@@ -106,7 +107,7 @@ public class AgentUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        lblAgentName = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -140,14 +141,14 @@ public class AgentUI extends javax.swing.JFrame {
         spinnerHumidity = new javax.swing.JSpinner();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Virtual Agent");
+        setTitle("WSO2 IoT Virtual Agent");
         setResizable(false);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation(dim.width / 2 - 650 / 2, dim.height / 2 - 440 / 2);
 
-        jLabel1.setFont(new java.awt.Font("Cantarell", 0, 36)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("WSO2 IoT Virtual Agent");
+        lblAgentName.setFont(new java.awt.Font("Cantarell", 0, 36)); // NOI18N
+        lblAgentName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblAgentName.setText(AgentManager.getInstance().getAgentName());
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Copyright (c) 2015, WSO2 Inc.");
@@ -472,7 +473,7 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addContainerGap()
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(lblAgentName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addGroup(layout.createSequentialGroup()
                                                                               .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -485,7 +486,7 @@ public class AgentUI extends javax.swing.JFrame {
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                          .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addComponent(lblAgentName, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -518,7 +519,7 @@ public class AgentUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
 
-        new Thread(bulbStateChanger).start();
+        new Thread(uiUpdater).start();
 
     }
 
@@ -628,11 +629,6 @@ public class AgentUI extends javax.swing.JFrame {
 
     public void setBulbStatus(boolean isBulbOn) {
         this.isBulbOn = isBulbOn;
-        new Thread(bulbStateChanger).start();
-    }
-
-    public void setAgentStatus(String status) {
-        lblStatus.setText(status);
     }
 
     public void updateTemperature(int temperature) {
