@@ -391,12 +391,12 @@ public class AgentManager {
 	private int getRandom(int max, int min, int current, boolean isSmoothed, int svf) {
 
         if (isSmoothed) {
-            int diff = max - min;
-            double mx = current + (diff * svf / 100);
+            int offset = (max - min) * svf / 100;
+            double mx = current + offset;
             max = (mx > max) ? max : (int) Math.round(mx);
 
-            double mn = current - (diff * svf / 100);
-            min = (mx < min) ? min : (int) Math.round(mn);
+            double mn = current - offset;
+            min = (mn < min) ? min : (int) Math.round(mn);
         }
 
 		double rnd = Math.random() * (max - min) + min;
