@@ -27,6 +27,8 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt.MQTTCli
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp.XMPPClient;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AgentManager {
 
@@ -34,9 +36,12 @@ public class AgentManager {
 
 	private static AgentManager agentManager = new AgentManager();
 	private AgentUI agentUI;
+	private int pushInterval;
 	private int temperature = 30, humidity = 30;
 	private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
+    private int temperatureSVF = 50, humiditySVF = 50;
 	private boolean isTemperatureRandomized, isHumidityRandomized;
+    private boolean isTemperatureSmoothed, isHumiditySmoothed;
 	private String deviceMgtControlUrl, deviceMgtAnalyticUrl, agentName, agentStatus;
 
 	private AgentConfiguration agentConfigs;
@@ -52,6 +57,8 @@ public class AgentManager {
 	private String controllerAPIEP;
 	private String ipRegistrationEP;
 	private String pushDataAPIEP;
+
+    private List<String> interfaceList, protocolList;
 
 	private AgentManager() {
 
@@ -96,6 +103,14 @@ public class AgentManager {
         //this.agentName = this.agentConfigs.getAgentName();
         //TODO: Remove this line after getting agent name from configs
         this.agentName = "WSO2 Virtual Agent";
+        //TODO: Set ip interfaces
+        interfaceList = new ArrayList<>();
+        interfaceList.add("eth0");
+
+        protocolList = new ArrayList<>();
+        protocolList.add("MQTT");
+        protocolList.add("XMPP");
+        protocolList.add("HTTP");
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -305,7 +320,7 @@ public class AgentManager {
 
 	public int getTemperature() {
 		if (isTemperatureRandomized) {
-			temperature = getRandom(temperatureMax, temperatureMin);
+			temperature = getRandom(temperatureMax, temperatureMin, temperature, isTemperatureSmoothed, temperatureSVF);
 			agentUI.updateTemperature(temperature);
 		}
 		return temperature;
@@ -317,7 +332,7 @@ public class AgentManager {
 
 	public int getHumidity() {
 		if (isHumidityRandomized) {
-			humidity = getRandom(humidityMax, humidityMin);
+			humidity = getRandom(humidityMax, humidityMin, humidity, isHumiditySmoothed, humiditySVF);
 			agentUI.updateHumidity(humidity);
 		}
 		return humidity;
@@ -367,9 +382,20 @@ public class AgentManager {
 		this.deviceMgtAnalyticUrl = deviceMgtAnalyticUrl;
 	}
 
-	private int getRandom(int max, int min) {
+	private int getRandom(int max, int min, int current, boolean isSmoothed, int svf) {
+
+        if (isSmoothed) {
+            int diff = max - min;
+            double mx = current + (diff * svf / 100);
+            max = (mx > max) ? max : (int) Math.round(mx);
+
+            double mn = current - (diff * svf / 100);
+            min = (mx < min) ? min : (int) Math.round(mn);
+        }
+
 		double rnd = Math.random() * (max - min) + min;
 		return (int) Math.round(rnd);
+
 	}
 
 	/*------------------------------------------------------------------------------------------*/
@@ -468,5 +494,45 @@ public class AgentManager {
 
     public String getAgentStatus() {
         return agentStatus;
+    }
+
+	public int getPushInterval() {
+		return pushInterval;
+	}
+
+	public void setPushInterval(int pushInterval) {
+		this.pushInterval = pushInterval;
+	}
+
+    public List<String> getInterfaceList() {
+        return interfaceList;
+    }
+
+    public List<String> getProtocolList() {
+        return protocolList;
+    }
+
+    public void setInterface(int interfaceId) {
+        //TODO: Set selected interface using id in list
+    }
+
+    public void setProtocol(int protocolId) {
+        //TODO: Set selected protocol using id in list
+    }
+
+    public void setTemperatureSVF(int temperatureSVF) {
+        this.temperatureSVF = temperatureSVF;
+    }
+
+    public void setHumiditySVF(int humiditySVF) {
+        this.humiditySVF = humiditySVF;
+    }
+
+    public void setIsTemperatureSmoothed(boolean isTemperatureSmoothed) {
+        this.isTemperatureSmoothed = isTemperatureSmoothed;
+    }
+
+    public void setIsHumiditySmoothed(boolean isHumiditySmoothed) {
+        this.isHumiditySmoothed = isHumiditySmoothed;
     }
 }
