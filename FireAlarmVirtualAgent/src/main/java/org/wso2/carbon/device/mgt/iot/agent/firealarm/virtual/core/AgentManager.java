@@ -42,7 +42,7 @@ public class AgentManager {
     private int temperatureSVF = 50, humiditySVF = 50;
 	private boolean isTemperatureRandomized, isHumidityRandomized;
     private boolean isTemperatureSmoothed, isHumiditySmoothed;
-	private String deviceMgtControlUrl, deviceMgtAnalyticUrl, agentName, agentStatus;
+	private String deviceMgtControlUrl, deviceMgtAnalyticUrl, deviceName, agentStatus;
 
 	private AgentConfiguration agentConfigs;
 
@@ -138,7 +138,7 @@ public class AgentManager {
         //TODO: Get agent name from configs
         //this.agentName = this.agentConfigs.getAgentName();
         //TODO: Remove this line after getting agent name from configs
-        this.agentName = "WSO2 Virtual Agent";
+        this.deviceName = "WSO2 Virtual Agent";
         //TODO: Set ip interfaces
         interfaceList = new ArrayList<>();
         interfaceList.add("eth0");
