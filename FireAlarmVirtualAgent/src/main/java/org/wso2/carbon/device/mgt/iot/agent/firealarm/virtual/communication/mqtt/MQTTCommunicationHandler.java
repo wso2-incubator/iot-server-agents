@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +35,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 /**
- * This class contains the Agent specific implementation for all the MQTT functionality. This
+ * This class contains the Device specific implementation for all the MQTT functionality. This
  * includes connecting to a MQTT Broker & subscribing to the appropriate MQTT-topic, action plan
  * upon losing connection or successfully delivering a message to the broker and processing
  * incoming messages. Makes use of the 'Paho-MQTT' library provided by Eclipse Org.
@@ -44,16 +44,19 @@ import java.nio.charset.StandardCharsets;
  * their own implementation of the actions to be taken upon receiving a message to the subscribed
  * MQTT-Topic.
  */
-public abstract class MQTTClient implements MqttCallback, CommunicationHandler<MqttMessage> {
-	private static final Log log = LogFactory.getLog(MQTTClient.class);
+public abstract class MQTTCommunicationHandler implements MqttCallback, CommunicationHandler<MqttMessage> {
+	private static final Log log = LogFactory.getLog(MQTTCommunicationHandler.class);
+
+	public static final int DEFAULT_MQTT_QUALITY_OF_SERVICE = 0;
 
 	private MqttClient client;
 	private String clientId;
 	private MqttConnectOptions options;
-	private String subscribeTopic;
 	private String clientWillTopic;
-	private String mqttBrokerEndPoint;
-	private int reConnectionInterval;
+
+	protected String mqttBrokerEndPoint;
+	protected int timeoutInterval;
+	protected String subscribeTopic;
 
 	/**
 	 * Constructor for the MQTTClient which takes in the owner, type of the device and the MQTT
@@ -64,13 +67,14 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 * @param mqttBrokerEndPoint the IP/URL of the MQTT broker endpoint.
 	 * @param subscribeTopic     the MQTT topic to which the client is to be subscribed
 	 */
-	protected MQTTClient(String deviceOwner, String deviceType, String mqttBrokerEndPoint,
-	                     String subscribeTopic) {
+	protected MQTTCommunicationHandler(String deviceOwner, String deviceType,
+	                                   String mqttBrokerEndPoint,
+	                                   String subscribeTopic) {
 		this.clientId = deviceOwner + ":" + deviceType;
 		this.subscribeTopic = subscribeTopic;
 		this.clientWillTopic = deviceType + File.separator + "disconnection";
 		this.mqttBrokerEndPoint = mqttBrokerEndPoint;
-		this.reConnectionInterval = DEFAULT_TIMEOUT_INTERVAL;
+		this.timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
 		this.initSubscriber();
 	}
 
@@ -83,17 +87,22 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 * @param deviceType                   the CDMF Device-Type of the device.
 	 * @param mqttBrokerEndPoint           the IP/URL of the MQTT broker endpoint.
 	 * @param subscribeTopic               the MQTT topic to which the client is to be subscribed
-	 * @param reConnectionIntervalInMillis the time interval in MILLI-SECONDS between successive
+	 * @param intervalInMillis the time interval in MILLI-SECONDS between successive
 	 *                                        attempts to connect to the broker.
 	 */
-	protected MQTTClient(String deviceOwner, String deviceType, String mqttBrokerEndPoint,
-	                     String subscribeTopic, int reConnectionIntervalInMillis) {
+	protected MQTTCommunicationHandler(String deviceOwner, String deviceType,
+	                                   String mqttBrokerEndPoint, String subscribeTopic,
+	                                   int intervalInMillis) {
 		this.clientId = deviceOwner + ":" + deviceType;
 		this.subscribeTopic = subscribeTopic;
 		this.clientWillTopic = deviceType + File.separator + "disconnection";
 		this.mqttBrokerEndPoint = mqttBrokerEndPoint;
-		this.reConnectionInterval = reConnectionIntervalInMillis;
+		this.timeoutInterval = intervalInMillis;
 		this.initSubscriber();
+	}
+
+	public void setTimeoutInterval(int timeoutInterval) {
+		this.timeoutInterval = timeoutInterval;
 	}
 
 	/**
@@ -126,6 +135,7 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 *
 	 * @return true if the client is connected to the MQTT-Broker, else false.
 	 */
+	@Override
 	public boolean isConnected() {
 		return client.isConnected();
 	}
@@ -136,7 +146,7 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 *
 	 * @throws CommunicationHandlerException in the event of 'Connecting to' the MQTT broker fails.
 	 */
-	public void connectToQueue() throws CommunicationHandlerException {
+	protected void connectToQueue() throws CommunicationHandlerException {
 		try {
 			client.connect(options);
 
@@ -173,7 +183,7 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 * @throws CommunicationHandlerException in the event of 'Subscribing to' the MQTT broker
 	 *                                       fails.
 	 */
-	public void subscribeToQueue() throws CommunicationHandlerException {
+	protected void subscribeToQueue() throws CommunicationHandlerException {
 		try {
 			client.subscribe(subscribeTopic, 0);
 			log.info("Subscriber '" + clientId + "' subscribed to topic: " + subscribeTopic);
@@ -191,12 +201,74 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 		}
 	}
 
+
+	/**
+	 * This method is used to publish reply-messages for the control signals received.
+	 * Invocation of this method calls its overloaded-method with a QoS equal to that of the
+	 * default value.
+	 *
+	 * @param topic the topic to which the reply message is to be published.
+	 * @param payLoad      the reply-message (payload) of the MQTT publish action.
+	 */
+	protected void publishToQueue(String topic, String payLoad)
+			throws CommunicationHandlerException {
+		publishToQueue(topic, payLoad, DEFAULT_MQTT_QUALITY_OF_SERVICE, true);
+	}
+
+	/**
+	 * This is an overloaded method that publishes MQTT reply-messages for control signals
+	 * received form the IoT-Server.
+	 *
+	 * @param topic the topic to which the reply message is to be published
+	 * @param payLoad      the reply-message (payload) of the MQTT publish action.
+	 * @param qos          the Quality-of-Service of the current publish action.
+	 *                     Could be 0(At-most once), 1(At-least once) or 2(Exactly once)
+	 */
+	protected void publishToQueue(String topic, String payLoad, int qos, boolean retained)
+			throws CommunicationHandlerException {
+		try {
+			client.publish(topic, payLoad.getBytes(StandardCharsets.UTF_8), qos, retained);
+			if (log.isDebugEnabled()) {
+				log.debug("Message: " + payLoad + " to MQTT topic [" + topic +
+						          "] published successfully");
+			}
+		} catch (MqttException ex) {
+			String errorMsg =
+					"MQTT Client Error" + "\n\tReason:  " + ex.getReasonCode() + "\n\tMessage: " +
+							ex.getMessage() + "\n\tLocalMsg: " + ex.getLocalizedMessage() +
+							"\n\tCause: " + ex.getCause() + "\n\tException: " + ex;
+			log.info(errorMsg);
+			throw new CommunicationHandlerException(errorMsg, ex);
+		}
+	}
+
+
+	protected void publishToQueue(String topic, MqttMessage message)
+			throws CommunicationHandlerException {
+		try {
+			client.publish(topic, message);
+			if (log.isDebugEnabled()) {
+				log.debug("Message: " + message.toString() + " to MQTT topic [" + topic +
+						          "] published successfully");
+			}
+		} catch (MqttException ex) {
+			String errorMsg =
+					"MQTT Client Error" + "\n\tReason:  " + ex.getReasonCode() + "\n\tMessage: " +
+							ex.getMessage() + "\n\tLocalMsg: " + ex.getLocalizedMessage() +
+							"\n\tCause: " + ex.getCause() + "\n\tException: " + ex;
+			log.info(errorMsg);
+			throw new CommunicationHandlerException(errorMsg, ex);
+		}
+	}
+
+
 	/**
 	 * Callback method which is triggered once the MQTT client losers its connection to the broker.
 	 * Spawns a new thread that executes necessary actions to try and reconnect to the endpoint.
 	 *
 	 * @param throwable a Throwable Object containing the details as to why the failure occurred.
 	 */
+	@Override
 	public void connectionLost(Throwable throwable) {
 		log.warn("Lost Connection for client: " + this.clientId +
 				         " to " + this.mqttBrokerEndPoint + ".\nThis was due to - " +
@@ -219,9 +291,10 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 *                    client was subscribed to.
 	 * @param mqttMessage the actual MQTT-Message that was received from the broker.
 	 */
+	@Override
 	public void messageArrived(final String topic, final MqttMessage mqttMessage) {
 		if (log.isDebugEnabled()) {
-			log.debug("Got an MQTT message for topic '" + topic + "'.");
+			log.info("Got an MQTT message '" + mqttMessage.toString() + "' for topic '" + topic + "'.");
 		}
 
 		Thread messageProcessorThread = new Thread() {
@@ -240,6 +313,7 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 	 * @param iMqttDeliveryToken the MQTT-DeliveryToken which includes the details about the
 	 *                           specific message delivery.
 	 */
+	@Override
 	public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
 		String message = "";
 		try {
@@ -247,13 +321,22 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 		} catch (MqttException e) {
 			log.error(
 					"Error occurred whilst trying to read the message from the MQTT delivery " +
-							"token" +
-							".");
+							"token.");
 		}
 		String topic = iMqttDeliveryToken.getTopics()[0];
 		String client = iMqttDeliveryToken.getClient().getClientId();
 		log.info("Message - '" + message + "' of client [" + client + "] for the topic (" + topic +
 				         ") was delivered successfully.");
+	}
+
+	/**
+	 * Closes the connection to the MQTT Broker.
+	 */
+	public void closeConnection() throws MqttException {
+		if (client != null && isConnected()) {
+			client.disconnect();
+			client.close();
+		}
 	}
 }
 

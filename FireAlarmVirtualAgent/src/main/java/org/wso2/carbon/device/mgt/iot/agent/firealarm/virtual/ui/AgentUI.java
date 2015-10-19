@@ -71,7 +71,7 @@ public class AgentUI extends javax.swing.JFrame {
                         pnlBulbStatus.removeAll();
                         pnlBulbStatus.add(isBulbOn ? picLabelBulbOn : picLabelBulbOff);
                         pnlBulbStatus.updateUI();
-                        lblStatus.setText(AgentManager.getInstance().getAgentStatus());
+                        lblStatus.setText(AgentManager.getInstance().getDeviceStatus());
                     }
                 });
                 try {
