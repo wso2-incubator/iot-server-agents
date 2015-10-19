@@ -45,7 +45,6 @@ public class AgentManager {
 	private String deviceMgtControlUrl, deviceMgtAnalyticUrl, agentName, agentStatus;
 
 	private AgentConfiguration agentConfigs;
-//	private AgentOperationManager agentOperationManager;
 
 	private SimpleServer simpleServer;
 	private MQTTClient agentMQTTClient;
@@ -53,12 +52,48 @@ public class AgentManager {
 	private String xmppAdminJID;
 
 	private String deviceIP;
-	private String iotServerEP;
 	private String controllerAPIEP;
 	private String ipRegistrationEP;
 	private String pushDataAPIEP;
 
     private List<String> interfaceList, protocolList;
+
+	Runnable ipRegister = new Runnable() {
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					int responseCode = AgentCoreOperations.registerDeviceIP(
+							agentConfigs.getDeviceOwner(), agentConfigs.getDeviceId());
+
+					if (responseCode == HttpStatus.OK_200) {
+						updateAgentStatus("Registered");
+						break;
+					} else {
+						log.error(AgentConstants.LOG_APPENDER +
+								          "Device Registration with IoT Server at:" +
+								          " " + ipRegistrationEP + " failed with response - '" +
+								          responseCode + ":" + HttpStatus.getMessage(responseCode) +
+								          "'");
+						updateAgentStatus("Registration failed. Re-trying..");
+					}
+				} catch (AgentCoreOperationException exception) {
+					log.error(AgentConstants.LOG_APPENDER +
+							          "Error encountered whilst trying to register the Device's " +
+							          "IP at: " + ipRegistrationEP +
+							          ".\nCheck whether the network-interface provided is " +
+							          "accurate");
+					updateAgentStatus("Registration failed");
+				}
+
+				try {
+					Thread.sleep(AgentConstants.DEFAULT_RETRY_THREAD_INTERVAL);
+				} catch (InterruptedException e1) {
+					log.error("Device Registration: Thread Sleep Interrupt Exception");
+				}
+			}
+		}
+	};
 
 	private AgentManager() {
 
@@ -69,8 +104,6 @@ public class AgentManager {
 	}
 
 	public void init() {
-//		this.agentOperationManager = new AgentOperationManagerImpl();
-
 		// Read IoT-Server specific configurations from the 'deviceConfig.properties' file
 		this.agentConfigs = AgentCoreOperations.readIoTServerConfigs();
 
@@ -78,26 +111,29 @@ public class AgentManager {
 		                                            agentConfigs.getDeviceId(),
 		                                            AgentConstants.DEVICE_TYPE);
 
-		this.deviceMgtAnalyticUrl =
-				AgentConstants.HTTPS_PREFIX + agentConfigs.getIotServerEP() + analyticsPageContext;
+		String deviceControlPageContext = String.format(AgentConstants.AGENT_CONTROL_APP_EP,
+		                                                AgentConstants.DEVICE_TYPE,
+		                                                agentConfigs.getDeviceId());
+
+		this.deviceMgtAnalyticUrl = agentConfigs.getHTTPS_ServerEndpoint() + analyticsPageContext;
 		this.deviceMgtControlUrl =
-				AgentConstants.HTTP_PREFIX + agentConfigs.getIotServerServiceEP() +
-						AgentConstants.AGENT_CONTROL_APP_EP;
+				agentConfigs.getHTTPS_ServerEndpoint() + deviceControlPageContext;
 
-        this.agentStatus = "Not Connected";
+		try {
+			// Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		} catch (ClassNotFoundException e) {
+			// handle exception
+		} catch (InstantiationException e) {
+			// handle exception
+		} catch (IllegalAccessException e) {
+			// handle exception
+		}
 
-        try {
-            // Set System L&F
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException e) {
-            // handle exception
-        } catch (ClassNotFoundException e) {
-            // handle exception
-        } catch (InstantiationException e) {
-            // handle exception
-        } catch (IllegalAccessException e) {
-            // handle exception
-        }
+		this.agentStatus = "Not Connected";
+		this.deviceName = this.agentConfigs.getDeviceName();
 
         //TODO: Get agent name from configs
         //this.agentName = this.agentConfigs.getAgentName();
@@ -134,10 +170,10 @@ public class AgentManager {
 		try {
 			AgentCoreOperations.subscribeToMQTT(this.agentConfigs.getDeviceOwner(),
 			                                    this.agentConfigs.getDeviceId(),
-			                                    this.agentConfigs.getMqttBrokerEP());
+			                                    this.agentConfigs.getMqttBrokerEndpoint());
 		} catch (AgentCoreOperationException e) {
 			log.error(AgentConstants.LOG_APPENDER + "Subscription to MQTT Broker at: " +
-					          this.agentConfigs.getMqttBrokerEP() + " failed");
+					          this.agentConfigs.getMqttBrokerEndpoint() + " failed");
 			retryMQTTSubscription();
 		}
 
@@ -146,10 +182,10 @@ public class AgentManager {
 			AgentCoreOperations.connectToXMPPServer(this.agentConfigs.getDeviceId(),
 			                                        this.agentConfigs.getAuthToken(),
 			                                        this.agentConfigs.getDeviceOwner(),
-			                                        this.agentConfigs.getXmppServerEP());
+			                                        this.agentConfigs.getXmppServerEndpoint());
 		} catch (AgentCoreOperationException e) {
 			log.error(AgentConstants.LOG_APPENDER + "Connect/Login attempt to XMPP Server at: " +
-					          this.agentConfigs.getXmppServerEP() + " failed");
+					          this.agentConfigs.getXmppServerEndpoint() + " failed");
 			retryXMPPConnection();
 		}
 
@@ -163,34 +199,9 @@ public class AgentManager {
 
 	}
 
-
-	private void registerThisDevice() {
-        this.agentStatus = "Registering";
-		Thread ipRegisterThread = new Thread() {
-			@Override
-			public void run() {
-				//TODO: check for null pointer
-				try {
-					int responseCode = AgentCoreOperations.registerDeviceIP(
-							agentConfigs.getDeviceOwner(), agentConfigs.getDeviceId());
-
-					if (responseCode == HttpStatus.OK_200) {
-                        updateAgentStatus("Registered");
-                    }else{
-						log.error(AgentConstants.LOG_APPENDER +
-								          "Device Registration with IoT Server at:" +
-								          " " + iotServerEP + " failed");
-                        updateAgentStatus("Registration failed");
-					}
-				} catch (AgentCoreOperationException exception) {
-					log.error(AgentConstants.LOG_APPENDER +
-							          "Error encountered whilst trying to register the Device's " +
-							          "IP at: " + iotServerEP);
-                    updateAgentStatus("Registration failed");
-				}
-			}
-		};
-
+	public void registerThisDevice() {
+		this.agentStatus = "Registering";
+		Thread ipRegisterThread = new Thread(ipRegister);
 		ipRegisterThread.setDaemon(true);
 		ipRegisterThread.start();
 	}
@@ -236,7 +247,6 @@ public class AgentManager {
 		Thread retryToConnect = new Thread() {
 			@Override
 			public void run() {
-
 				while (true) {
 					if (!agentXMPPClient.isConnected()) {
 						if (log.isDebugEnabled()) {
@@ -370,10 +380,6 @@ public class AgentManager {
 		return deviceMgtControlUrl;
 	}
 
-	public void setDeviceMgtControlUrl(String deviceMgtControlUrl) {
-		this.deviceMgtControlUrl = deviceMgtControlUrl;
-	}
-
 	public String getDeviceMgtAnalyticUrl() {
 		return deviceMgtAnalyticUrl;
 	}
@@ -410,14 +416,6 @@ public class AgentManager {
 		this.agentConfigs = agentConfigs;
 	}
 
-//	public AgentOperationManager getAgentOperationManager() {
-//		return agentOperationManager;
-//	}
-
-//	public void setAgentOperationManager(AgentOperationManager agentOperationManager) {
-//		this.agentOperationManager = agentOperationManager;
-//	}
-
 	public SimpleServer getSimpleServer() {
 		return simpleServer;
 	}
@@ -426,8 +424,7 @@ public class AgentManager {
 		return agentMQTTClient;
 	}
 
-	public void setAgentMQTTClient(
-			MQTTClient mqttClient) {
+	public void setAgentMQTTClient(MQTTClient mqttClient) {
 		this.agentMQTTClient = mqttClient;
 	}
 
@@ -435,8 +432,7 @@ public class AgentManager {
 		return agentXMPPClient;
 	}
 
-	public void setAgentXMPPClient(
-			XMPPClient xmppClient) {
+	public void setAgentXMPPClient(XMPPClient xmppClient) {
 		this.agentXMPPClient = xmppClient;
 	}
 
@@ -454,14 +450,6 @@ public class AgentManager {
 
 	public void setDeviceIP(String deviceIP) {
 		this.deviceIP = deviceIP;
-	}
-
-	public String getIotServerEP() {
-		return iotServerEP;
-	}
-
-	public void setIotServerEP(String iotServerEP) {
-		this.iotServerEP = iotServerEP;
 	}
 
 	public String getControllerAPIEP() {
@@ -488,8 +476,8 @@ public class AgentManager {
 		this.pushDataAPIEP = pushDataAPIEP;
 	}
 
-	public String getAgentName() {
-		return agentName;
+	public String getDeviceName() {
+		return deviceName;
 	}
 
     public String getAgentStatus() {

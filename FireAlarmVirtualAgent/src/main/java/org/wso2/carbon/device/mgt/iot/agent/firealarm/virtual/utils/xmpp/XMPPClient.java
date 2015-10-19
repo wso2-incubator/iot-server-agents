@@ -48,7 +48,7 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCor
 public abstract class XMPPClient {
 	private static final Log log = LogFactory.getLog(XMPPClient.class);
 
-	private int replyTimeoutInterval = 500;    // millis
+	private int replyTimeoutInterval = 5000;    // millis
 	private String server;
 	private int port;
 	private ConnectionConfiguration config;

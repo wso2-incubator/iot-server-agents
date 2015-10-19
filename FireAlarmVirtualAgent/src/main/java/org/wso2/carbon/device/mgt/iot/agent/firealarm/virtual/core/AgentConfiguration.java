@@ -26,11 +26,13 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 public class AgentConfiguration {
 	private String deviceOwner;
 	private String deviceId;
-	private String iotServerEP;
-	private String iotServerServiceEP;
-	private String apimGatewayEP;
-	private String mqttBrokerEP;
-	private String xmppServerEP;
+	private String deviceName;
+	private String controllerContext;
+	private String HTTPS_ServerEndpoint;
+	private String HTTP_ServerEndpoint;
+	private String apimGatewayEndpoint;
+	private String mqttBrokerEndpoint;
+	private String xmppServerEndpoint;
 	private String authMethod;
 	private String authToken;
 	private String refreshToken;
@@ -53,44 +55,60 @@ public class AgentConfiguration {
 		this.deviceId = deviceId;
 	}
 
-	public String getIotServerEP() {
-		return iotServerEP;
+	public String getDeviceName() {
+		return deviceName;
 	}
 
-	public void setIotServerEP(String iotServerEP) {
-		this.iotServerEP = iotServerEP;
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
 	}
 
-	public String getIotServerServiceEP() {
-		return iotServerServiceEP;
+	public String getControllerContext() {
+		return controllerContext;
 	}
 
-	public void setIotServerServiceEP(String iotServerServiceEP) {
-		this.iotServerServiceEP = iotServerServiceEP;
+	public void setControllerContext(String controllerContext) {
+		this.controllerContext = controllerContext;
 	}
 
-	public String getApimGatewayEP() {
-		return apimGatewayEP;
+	public String getHTTPS_ServerEndpoint() {
+		return HTTPS_ServerEndpoint;
 	}
 
-	public void setApimGatewayEP(String apimGatewayEP) {
-		this.apimGatewayEP = apimGatewayEP;
+	public void setHTTPS_ServerEndpoint(String HTTPS_ServerEndpoint) {
+		this.HTTPS_ServerEndpoint = HTTPS_ServerEndpoint;
 	}
 
-	public String getMqttBrokerEP() {
-		return mqttBrokerEP;
+	public String getHTTP_ServerEndpoint() {
+		return HTTP_ServerEndpoint;
 	}
 
-	public void setMqttBrokerEP(String mqttBrokerEP) {
-		this.mqttBrokerEP = mqttBrokerEP;
+	public void setHTTP_ServerEndpoint(String HTTP_ServerEndpoint) {
+		this.HTTP_ServerEndpoint = HTTP_ServerEndpoint;
 	}
 
-	public String getXmppServerEP() {
-		return xmppServerEP;
+	public String getApimGatewayEndpoint() {
+		return apimGatewayEndpoint;
 	}
 
-	public void setXmppServerEP(String xmppServerEP) {
-		this.xmppServerEP = xmppServerEP;
+	public void setApimGatewayEndpoint(String apimGatewayEndpoint) {
+		this.apimGatewayEndpoint = apimGatewayEndpoint;
+	}
+
+	public String getMqttBrokerEndpoint() {
+		return mqttBrokerEndpoint;
+	}
+
+	public void setMqttBrokerEndpoint(String mqttBrokerEndpoint) {
+		this.mqttBrokerEndpoint = mqttBrokerEndpoint;
+	}
+
+	public String getXmppServerEndpoint() {
+		return xmppServerEndpoint;
+	}
+
+	public void setXmppServerEndpoint(String xmppServerEndpoint) {
+		this.xmppServerEndpoint = xmppServerEndpoint;
 	}
 
 	public String getAuthMethod() {

@@ -29,6 +29,7 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCor
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 
 public class SimpleServer {
@@ -51,29 +52,48 @@ public class SimpleServer {
 					httpServletResponse.setContentType("text/html;charset=utf-8");
 					httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 					request.setHandled(true);
-					AgentManager agentManager = AgentManager.getInstance();
 
-					if (request.getPathInfo().equals("/temperature")) {
+					AgentManager agentManager = AgentManager.getInstance();
+					String pathContext = request.getPathInfo();
+					String separator = File.separator;
+
+					if (pathContext.toUpperCase().contains(
+							separator + AgentConstants.TEMPERATURE_CONTROL)) {
 						httpServletResponse.getWriter().println(
 								agentManager.getTemperature());
 
-					} else if (request.getPathInfo().equals("/humidity")) {
+					} else if (pathContext.toUpperCase().contains(
+							separator + AgentConstants.HUMIDITY_CONTROL)) {
 						httpServletResponse.getWriter().println(
 								agentManager.getHumidity());
 
-					} else if (request.getPathInfo().equals("/bulb")) {
+					} else if (pathContext.toUpperCase().contains(
+							separator + AgentConstants.BULB_CONTROL)) {
+						String[] pathVariables = pathContext.split(separator);
 
-						if (request.getParameter("status") == null) {
-							httpServletResponse.getWriter().println("Please specify status");
+						if (pathVariables.length != 3) {
+							httpServletResponse.getWriter().println(
+									"Invalid BULB-control received by the device. Need to be in " +
+											"'/BULB/<ON|OFF>' format.");
+							return;
+						}
 
+						String switchState = pathVariables[2];
+
+						if (switchState == null) {
+							httpServletResponse.getWriter().println(
+									"Please specify switch-status of the BULB.");
 						} else {
-							boolean status = request.getParameter("status").toUpperCase().equals(
+							boolean status = switchState.toUpperCase().equals(
 									AgentConstants.CONTROL_ON);
 							agentManager.changeBulbStatus(status);
 							httpServletResponse.getWriter().println("Bulb is " + (status ?
 									AgentConstants.CONTROL_ON : AgentConstants.CONTROL_OFF));
 						}
 
+					} else {
+						httpServletResponse.getWriter().println(
+								"Invalid control command received by the device.");
 					}
 				}
 			});
