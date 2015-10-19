@@ -29,19 +29,27 @@ import java.net.URI;
 public class AgentUI extends javax.swing.JFrame {
 
     private boolean isTemperatureRandomized, isHumidityRandomized;
+    private boolean isTemperatureSmoothed, isHumiditySmoothed;
 
     private volatile boolean isBulbOn = false;
 
     private JLabel picLabelBulbOn, picLabelBulbOff;
 
+    // Variables declaration - do not modify
     private javax.swing.JButton btnControl;
     private javax.swing.JButton btnView;
-    private javax.swing.JCheckBox chkbxTemperatureRandom;
     private javax.swing.JCheckBox chkbxHumidityRandom;
+    private javax.swing.JCheckBox chkbxHumiditySmooth;
+    private javax.swing.JCheckBox chkbxTemperatureRandom;
+    private javax.swing.JCheckBox chkbxTemperatureSmooth;
+    private javax.swing.JComboBox cmbInterface;
+    private javax.swing.JComboBox cmbProtocol;
     private javax.swing.JLabel lblAgentName;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
@@ -50,8 +58,11 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -60,6 +71,16 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JPanel pnlBulbStatus;
+    private javax.swing.JSpinner spinnerHumidity;
+    private javax.swing.JSpinner spinnerInterval;
+    private javax.swing.JSpinner spinnerTemperature;
+    private javax.swing.JTextField txtHumidityMax;
+    private javax.swing.JTextField txtHumidityMin;
+    private javax.swing.JTextField txtHumiditySVF;
+    private javax.swing.JTextField txtTemperatureMax;
+    private javax.swing.JTextField txtTemperatureMin;
+    private javax.swing.JTextField txtTemperatureSVF;
+    // End of variables declaration
 
     private Runnable uiUpdater = new Runnable() {
         @Override
@@ -82,14 +103,6 @@ public class AgentUI extends javax.swing.JFrame {
             }
         }
     };
-
-    private javax.swing.JSpinner spinnerHumidity;
-    private javax.swing.JSpinner spinnerTemperature;
-    private javax.swing.JTextField txtTemperatureMax;
-    private javax.swing.JTextField txtHumidityMax;
-    private javax.swing.JTextField txtTemperatureMin;
-    private javax.swing.JTextField txtHumidityMin;
-    // End of variables declaration
 
     /**
      * Creates new form AgentUI
@@ -121,14 +134,15 @@ public class AgentUI extends javax.swing.JFrame {
         txtTemperatureMin = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         txtTemperatureMax = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        txtTemperatureSVF = new javax.swing.JTextField();
         spinnerTemperature = new javax.swing.JSpinner();
+        chkbxTemperatureSmooth = new javax.swing.JCheckBox();
         jPanel6 = new javax.swing.JPanel();
         jLabel20 = new javax.swing.JLabel();
         btnView = new javax.swing.JButton();
         btnControl = new javax.swing.JButton();
         lblStatus = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel22 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
         jLabel23 = new javax.swing.JLabel();
         chkbxHumidityRandom = new javax.swing.JCheckBox();
@@ -138,7 +152,18 @@ public class AgentUI extends javax.swing.JFrame {
         txtHumidityMin = new javax.swing.JTextField();
         jLabel25 = new javax.swing.JLabel();
         txtHumidityMax = new javax.swing.JTextField();
+        txtHumiditySVF = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
         spinnerHumidity = new javax.swing.JSpinner();
+        chkbxHumiditySmooth = new javax.swing.JCheckBox();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        spinnerInterval = new javax.swing.JSpinner();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        cmbProtocol = new javax.swing.JComboBox();
+        jLabel12 = new javax.swing.JLabel();
+        cmbInterface = new javax.swing.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("WSO2 IoT Virtual Agent");
@@ -234,20 +259,35 @@ public class AgentUI extends javax.swing.JFrame {
             }
         });
 
+        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel10.setText("SV %");
+
+        txtTemperatureSVF.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtTemperatureSVF.setText("50");
+        txtTemperatureSVF.setEnabled(false);
+        txtTemperatureSVF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTemperatureSVFActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
                 jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel7Layout.createSequentialGroup()
-                                          .addContainerGap()
                                           .addComponent(jLabel5)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                          .addComponent(txtTemperatureMin, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(txtTemperatureMin, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jLabel6)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(txtTemperatureMax, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addContainerGap())
+                                          .addComponent(txtTemperatureMax, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(jLabel10)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(txtTemperatureSVF, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
                 jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -257,7 +297,9 @@ public class AgentUI extends javax.swing.JFrame {
                                                   .addComponent(txtTemperatureMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(txtTemperatureMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(jLabel6)
-                                                  .addComponent(jLabel5))
+                                                  .addComponent(jLabel5)
+                                                  .addComponent(jLabel10)
+                                                  .addComponent(txtTemperatureSVF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(35, 35, 35))
         );
 
@@ -266,6 +308,13 @@ public class AgentUI extends javax.swing.JFrame {
         spinnerTemperature.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerTemperatureStateChanged(evt);
+            }
+        });
+
+        chkbxTemperatureSmooth.setText("Smooth Variation");
+        chkbxTemperatureSmooth.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkbxTemperatureSmoothActionPerformed(evt);
             }
         });
 
@@ -283,8 +332,11 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addComponent(chkbxTemperatureRandom))
-                                          .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                                                              .addComponent(chkbxTemperatureRandom)
+                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                              .addComponent(chkbxTemperatureSmooth)))
+                                          .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
                 jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -293,10 +345,12 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jSeparator1)
                                                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                                                              .addComponent(chkbxTemperatureRandom)
+                                                                              .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                                                .addComponent(chkbxTemperatureRandom)
+                                                                                                .addComponent(chkbxTemperatureSmooth))
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                              .addGap(0, 1, Short.MAX_VALUE))
+                                                                              .addGap(0, 0, Short.MAX_VALUE))
                                                             .addGroup(jPanel2Layout.createSequentialGroup()
                                                                               .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -395,20 +449,35 @@ public class AgentUI extends javax.swing.JFrame {
             }
         });
 
+        txtHumiditySVF.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtHumiditySVF.setText("50");
+        txtHumiditySVF.setEnabled(false);
+        txtHumiditySVF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtHumiditySVFActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel11.setText("SV %");
+
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
                 jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel9Layout.createSequentialGroup()
-                                          .addContainerGap()
                                           .addComponent(jLabel24)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                          .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jLabel25)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addContainerGap())
+                                          .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(jLabel11)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(txtHumiditySVF, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
                 jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -418,7 +487,10 @@ public class AgentUI extends javax.swing.JFrame {
                                                   .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(jLabel25)
-                                                  .addComponent(jLabel24))
+                                                  .addComponent(jLabel24)
+                                                  .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                    .addComponent(jLabel11)
+                                                                    .addComponent(txtHumiditySVF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(35, 35, 35))
         );
 
@@ -427,6 +499,13 @@ public class AgentUI extends javax.swing.JFrame {
         spinnerHumidity.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerHumidityStateChanged(evt);
+            }
+        });
+
+        chkbxHumiditySmooth.setText("Smooth Variation");
+        chkbxHumiditySmooth.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkbxHumiditySmoothActionPerformed(evt);
             }
         });
 
@@ -442,9 +521,12 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                           .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 6, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                          .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                             .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addComponent(chkbxHumidityRandom))
+                                                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                                                              .addComponent(chkbxHumidityRandom)
+                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                              .addComponent(chkbxHumiditySmooth)))
                                           .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -454,7 +536,9 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jSeparator5)
                                                             .addGroup(jPanel8Layout.createSequentialGroup()
-                                                                              .addComponent(chkbxHumidityRandom)
+                                                                              .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                                                .addComponent(chkbxHumidityRandom)
+                                                                                                .addComponent(chkbxHumiditySmooth))
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addGap(0, 1, Short.MAX_VALUE))
@@ -463,6 +547,74 @@ public class AgentUI extends javax.swing.JFrame {
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(spinnerHumidity)))
                                           .addContainerGap())
+        );
+
+        jPanel3.setBackground(new java.awt.Color(207, 233, 234));
+
+        jLabel7.setText("Data Push Interval:");
+
+        spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(1), null, Integer.valueOf(1)));
+        spinnerInterval.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinnerIntervalStateChanged(evt);
+            }
+        });
+
+        jLabel8.setText("Seconds");
+
+        jLabel9.setText("Protocol:");
+
+        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MQTT", "XMPP", "HTTP" }));
+        cmbProtocol.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbProtocolActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setText("Interface:");
+
+        cmbInterface.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "eth0" }));
+        cmbInterface.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbInterfaceActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+                jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                                          .addContainerGap()
+                                          .addComponent(jLabel7)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(spinnerInterval, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(jLabel8)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                          .addComponent(jLabel12)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(cmbInterface, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(jLabel9)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(cmbProtocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+                jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                  .addComponent(jLabel7)
+                                                  .addComponent(spinnerInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addComponent(jLabel8)
+                                                  .addComponent(jLabel9)
+                                                  .addComponent(cmbProtocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                    .addComponent(jLabel12)
+                                                                    .addComponent(cmbInterface, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -480,7 +632,8 @@ public class AgentUI extends javax.swing.JFrame {
                                                                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                                                                 .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                                                                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                                            .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                            .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                           .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -489,11 +642,13 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addComponent(lblAgentName, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                             .addGroup(layout.createSequentialGroup()
                                                                               .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                                               .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -502,6 +657,19 @@ public class AgentUI extends javax.swing.JFrame {
         );
 
         pack();
+
+        chkbxTemperatureSmooth.setEnabled(false);
+        chkbxTemperatureSmooth.setEnabled(false);
+
+        cmbInterface.removeAllItems();
+        for (String item : AgentManager.getInstance().getInterfaceList()){
+            cmbInterface.addItem(item);
+        }
+
+        cmbProtocol.removeAllItems();
+        for (String item : AgentManager.getInstance().getProtocolList()){
+            cmbProtocol.addItem(item);
+        }
 
         try {
             BufferedImage imgBulbOn = ImageIO.read(this.getClass().getResource("/bulb-on.jpg"));
@@ -553,6 +721,8 @@ public class AgentUI extends javax.swing.JFrame {
         spinnerTemperature.setEnabled(!isTemperatureRandomized);
         txtTemperatureMax.setEnabled(isTemperatureRandomized);
         txtTemperatureMin.setEnabled(isTemperatureRandomized);
+        chkbxTemperatureSmooth.setEnabled(isTemperatureRandomized);
+        txtTemperatureSVF.setEnabled(isTemperatureRandomized && isTemperatureSmoothed);
     }
 
     private void chkbxHumidityRandomActionPerformed(java.awt.event.ActionEvent evt) {
@@ -561,6 +731,8 @@ public class AgentUI extends javax.swing.JFrame {
         spinnerHumidity.setEnabled(!isHumidityRandomized);
         txtHumidityMax.setEnabled(isHumidityRandomized);
         txtHumidityMin.setEnabled(isHumidityRandomized);
+        chkbxHumiditySmooth.setEnabled(isHumidityRandomized);
+        txtTemperatureSVF.setEnabled(isHumidityRandomized && isHumiditySmoothed);
     }
 
     private void spinnerTemperatureStateChanged(javax.swing.event.ChangeEvent evt) {
@@ -610,7 +782,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtHumidityMinActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int humidity = Integer.parseInt(txtHumidityMin.getText());
-            AgentManager.getInstance().setHumidity(humidity);
+            AgentManager.getInstance().setHumidityMin(humidity);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
             txtHumidityMin.setText("20");
@@ -620,11 +792,61 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtHumidityMaxActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int humidity = Integer.parseInt(txtHumidityMax.getText());
-            AgentManager.getInstance().setHumidity(humidity);
+            AgentManager.getInstance().setHumidityMax(humidity);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
             txtHumidityMax.setText("50");
         }
+    }
+
+    private void spinnerIntervalStateChanged(javax.swing.event.ChangeEvent evt) {
+        try {
+            int interval = Integer.parseInt(spinnerInterval.getValue().toString());
+            AgentManager.getInstance().setPushInterval(interval);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid time interval value", "Error", JOptionPane.ERROR_MESSAGE);
+            spinnerInterval.setValue(5);
+        }
+    }
+
+    private void cmbInterfaceActionPerformed(java.awt.event.ActionEvent evt) {
+        AgentManager.getInstance().setInterface(cmbInterface.getSelectedIndex());
+    }
+
+    private void cmbProtocolActionPerformed(java.awt.event.ActionEvent evt) {
+        AgentManager.getInstance().setProtocol(cmbProtocol.getSelectedIndex());
+    }
+
+    private void txtTemperatureSVFActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            int temperatureSVF = Integer.parseInt(txtTemperatureSVF.getText());
+            AgentManager.getInstance().setTemperatureSVF(temperatureSVF);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid value", "Error", JOptionPane.ERROR_MESSAGE);
+            txtTemperatureSVF.setText("50");
+        }
+    }
+
+    private void txtHumiditySVFActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            int humiditySVF = Integer.parseInt(txtHumiditySVF.getText());
+            AgentManager.getInstance().setHumiditySVF(humiditySVF);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid value", "Error", JOptionPane.ERROR_MESSAGE);
+            txtHumiditySVF.setText("50");
+        }
+    }
+
+    private void chkbxTemperatureSmoothActionPerformed(java.awt.event.ActionEvent evt) {
+        isTemperatureSmoothed = chkbxTemperatureSmooth.isSelected();
+        txtTemperatureSVF.setEnabled(isTemperatureSmoothed);
+        AgentManager.getInstance().setIsTemperatureSmoothed(isTemperatureSmoothed);
+    }
+
+    private void chkbxHumiditySmoothActionPerformed(java.awt.event.ActionEvent evt) {
+        isHumiditySmoothed = chkbxHumiditySmooth.isSelected();
+        txtHumiditySVF.setEnabled(isHumiditySmoothed);
+        AgentManager.getInstance().setIsHumiditySmoothed(isHumiditySmoothed);
     }
 
     public void setBulbStatus(boolean isBulbOn) {
