@@ -178,6 +178,10 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
 				try {
 					publishToQueue(topic, pushMessage);
+					log.info("Message: '" + pushMessage + "' published to MQTT Queue at [" +
+							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+							          "] under topic [" + topic + "]");
+
 				} catch (CommunicationHandlerException e) {
 					log.warn("Data Publish attempt to topic - [" +
 							         AgentConstants.MQTT_PUBLISH_TOPIC + "] failed for payload [" +

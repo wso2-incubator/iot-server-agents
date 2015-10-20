@@ -156,6 +156,9 @@ public class AgentManager {
 				agentUI.setVisible(true);
 			}
 		});
+
+		agentCommunicator.get(protocol).initializeConnection();
+
 	}
 
 

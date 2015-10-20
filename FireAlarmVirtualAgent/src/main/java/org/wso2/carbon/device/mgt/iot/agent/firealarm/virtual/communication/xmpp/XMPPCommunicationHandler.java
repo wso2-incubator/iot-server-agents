@@ -317,10 +317,10 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 */
 	protected void sendXMPPMessage(String JID, Message xmppMessage) {
 		connection.sendPacket(xmppMessage);
-//		if (log.isDebugEnabled()) {
-		log.info("Message: " + xmppMessage.getBody() + " to XMPP JID [" + JID +
-				         "] sent successfully");
-//		}
+		if (log.isDebugEnabled()) {
+			log.debug("Message: '" + xmppMessage.getBody() + "' sent to XMPP JID [" + JID +
+					          "] sent successfully");
+		}
 	}
 
 

@@ -56,7 +56,7 @@ public class AgentConstants {
 	public static final int DEFAULT_MQTT_RECONNECTION_INTERVAL = 2;        // time in seconds
 	public static final int DEFAULT_MQTT_QUALITY_OF_SERVICE = 0;
 	public static final String MQTT_SUBSCRIBE_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s";
-	public static final String MQTT_PUBLISH_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s/reply";
+	public static final String MQTT_PUBLISH_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s/publisher";
 	/*	---------------------------------------------------------------------------------------
 								XMPP Connection specific information
  		---------------------------------------------------------------------------------------	*/
@@ -95,7 +95,7 @@ public class AgentConstants {
 	public static final String DEFAULT_REFRESH_TOKEN = "1234567890ZYXWVUTSRQPONMKLJIHGFEDCBA";
 	public static final String DEFAULT_NETWORK_INTERFACE = "en0";
 	public static final int DEFAULT_DATA_PUBLISH_INTERVAL = 15;                  // seconds
-	public static final String DEFAULT_PROTOCOL = "HTTP";
+	public static final String DEFAULT_PROTOCOL = "MQTT";
 	/*	---------------------------------------------------------------------------------------
 					Control Signal specific constants to match the request context
 	 	---------------------------------------------------------------------------------------	*/

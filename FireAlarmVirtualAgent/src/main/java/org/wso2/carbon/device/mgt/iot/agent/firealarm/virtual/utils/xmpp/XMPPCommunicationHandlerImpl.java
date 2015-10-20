@@ -112,11 +112,19 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		log.info(AgentConstants.LOG_APPENDER + "Received XMPP message '" + message +
 				         "' from " + from);
 
+		String replyMessage;
 		String[] controlSignal = message.toString().split(":");
 		//message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format. (ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
 		switch (controlSignal[0].toUpperCase()) {
 			case AgentConstants.BULB_CONTROL:
+				if (controlSignal.length != 2) {
+					replyMessage = "BULB controls need to be in the form - 'BULB:{ON|OFF}'";
+					log.warn(replyMessage);
+					sendXMPPMessage(xmppAdminJID, replyMessage, AgentConstants.BULB_CONTROL);
+					break;
+				}
+
 				agentManager.changeBulbStatus(
 						controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
 				log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
@@ -127,12 +135,11 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				int currentTemperature = agentManager.getTemperature();
 
 				String replyTemperature =
-						"The current temperature was read to be: '" + currentTemperature +
-								"C'";
+						"The current temperature was read to be: '" + currentTemperature + "C'";
 				log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
-				sendXMPPMessage(xmppAdminJID, replyTemperature, AgentConstants
-						.TEMPERATURE_CONTROL);
+				replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
+				sendXMPPMessage(xmppAdminJID, replyMessage, AgentConstants.TEMPERATURE_CONTROL);
 				break;
 
 			case AgentConstants.HUMIDITY_CONTROL:
@@ -142,12 +149,14 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 						"The current humidity was read to be: '" + currentHumidity + "%'";
 				log.info(AgentConstants.LOG_APPENDER + replyHumidity);
 
-				sendXMPPMessage(xmppAdminJID, replyHumidity, AgentConstants.HUMIDITY_CONTROL);
+				replyMessage = AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity;
+				sendXMPPMessage(xmppAdminJID, replyMessage, AgentConstants.HUMIDITY_CONTROL);
 				break;
 
 			default:
-				log.warn("'" + controlSignal[0] +
-						         "' is invalid and not-supported for this device-type");
+				replyMessage = "'" + controlSignal[0] + "' is invalid and not-supported for this device-type";
+				log.warn(replyMessage);
+				sendXMPPMessage(xmppAdminJID, replyMessage, "CONTROL-ERROR");
 				break;
 		}
 	}
@@ -160,13 +169,15 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				int currentTemperature = agentManager.getTemperature();
 				String payLoad = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
 
-				Message pushMessage = new Message();
-				pushMessage.setTo(xmppAdminJID);
-				pushMessage.setSubject("PUBLISHER");
-				pushMessage.setBody(payLoad);
-				pushMessage.setType(Message.Type.chat);
+				Message xmppMessage = new Message();
+				xmppMessage.setTo(xmppAdminJID);
+				xmppMessage.setSubject("PUBLISHER");
+				xmppMessage.setBody(payLoad);
+				xmppMessage.setType(Message.Type.chat);
 
-				sendXMPPMessage(xmppAdminJID, pushMessage);
+				sendXMPPMessage(xmppAdminJID, xmppMessage);
+				log.info("Message: '" + xmppMessage.getBody() + "' sent to XMPP JID [" +
+						         xmppAdminJID + "] under subject [" + xmppMessage.getSubject() + "]");
 			}
 		};
 

@@ -132,7 +132,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 					if (pathVariables.length != 3) {
 						httpServletResponse.getWriter().println(
 								"Invalid BULB-control received by the device. Need to be in " +
-										"'/BULB/<ON|OFF>' format.");
+										"'{host}:{port}/BULB/{ON|OFF}' format.");
 						return;
 					}
 
