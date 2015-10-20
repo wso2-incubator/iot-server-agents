@@ -124,7 +124,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				} catch (CommunicationHandlerException e) {
 					log.error("MQTT - Publishing, reply message to the MQTT Queue at: " +
 							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-							          "falied");
+							          "failed");
 				}
 				break;
 
@@ -144,7 +144,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				} catch (CommunicationHandlerException e) {
 					log.error("MQTT - Publishing, reply message to the MQTT Queue at: " +
 							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-							          "falied");
+							          "failed");
 				}
 				break;
 
