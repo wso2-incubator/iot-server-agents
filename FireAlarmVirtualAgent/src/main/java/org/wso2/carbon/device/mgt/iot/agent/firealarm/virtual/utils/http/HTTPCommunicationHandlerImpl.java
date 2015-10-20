@@ -179,7 +179,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 					int currentTemperature = agentManager.getTemperature();
 					pushDataPayload = String.format(AgentConstants.PUSH_DATA_PAYLOAD, deviceOwner,
 					                                deviceID,
-					                                agentManager.getDeviceIP(),
+					                                (agentManager.getDeviceIP() + ":" + port),
 					                                currentTemperature);
 
 					if (log.isDebugEnabled()) {
@@ -362,7 +362,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		String deviceIPRegistrationEP = agentManager.getIpRegistrationEP();
 		String registerEndpointURLString =
 				deviceIPRegistrationEP + File.separator + deviceOwner + File.separator + deviceID +
-						File.separator + deviceIPAddress;
+						File.separator + deviceIPAddress + File.separator + port;
 
 		if (log.isDebugEnabled()) {
 			log.debug(AgentConstants.LOG_APPENDER + "DeviceIP Registration EndPoint: " +

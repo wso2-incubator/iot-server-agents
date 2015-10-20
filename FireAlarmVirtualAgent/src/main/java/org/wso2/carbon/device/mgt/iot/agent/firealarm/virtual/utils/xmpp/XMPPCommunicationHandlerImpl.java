@@ -109,8 +109,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 	public void processIncomingMessage(Message xmppMessage) {
 		String from = xmppMessage.getFrom();
 		String message = xmppMessage.getBody();
-		log.info(AgentConstants.LOG_APPENDER + "Received XMPP message '" + message +
-				         "' from " + from);
+		log.info(AgentConstants.LOG_APPENDER + "Received XMPP message [" + message +
+				         "] from " + from);
 
 		String replyMessage;
 		String[] controlSignal = message.toString().split(":");
@@ -121,7 +121,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				if (controlSignal.length != 2) {
 					replyMessage = "BULB controls need to be in the form - 'BULB:{ON|OFF}'";
 					log.warn(replyMessage);
-					sendXMPPMessage(xmppAdminJID, replyMessage, AgentConstants.BULB_CONTROL);
+					sendXMPPMessage(xmppAdminJID, replyMessage, "CONTROL-REPLY");
 					break;
 				}
 
@@ -139,7 +139,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
 				replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
-				sendXMPPMessage(xmppAdminJID, replyMessage, AgentConstants.TEMPERATURE_CONTROL);
+				sendXMPPMessage(xmppAdminJID, replyMessage, "CONTROL-REPLY");
 				break;
 
 			case AgentConstants.HUMIDITY_CONTROL:
@@ -150,7 +150,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				log.info(AgentConstants.LOG_APPENDER + replyHumidity);
 
 				replyMessage = AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity;
-				sendXMPPMessage(xmppAdminJID, replyMessage, AgentConstants.HUMIDITY_CONTROL);
+				sendXMPPMessage(xmppAdminJID, replyMessage, "CONTROL-REPLY");
 				break;
 
 			default:
