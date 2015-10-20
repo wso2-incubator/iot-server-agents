@@ -1,15 +1,18 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jivesoftware.smack.packet.Message;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.xmpp
+		.XMPPCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
@@ -18,7 +21,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
 	private ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-	private int dataPublishInterval;
+	private ScheduledFuture<?> serviceHandler;
 
 	private String username;
 	private String password;
@@ -28,21 +31,18 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 
 	public XMPPCommunicationHandlerImpl(String server) {
 		super(server);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
 	public XMPPCommunicationHandlerImpl(String server, int port) {
 		super(server, port);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
 	public XMPPCommunicationHandlerImpl(String server, int port, int timeout) {
 		super(server, port, timeout);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
-	public void setDataPublishInterval(int dataPublishInterval) {
-		this.dataPublishInterval = dataPublishInterval;
+	public ScheduledFuture<?> getServiceHandler() {
+		return serviceHandler;
 	}
 
 	@Override
@@ -57,6 +57,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		try {
 			connectToServer();
 			loginToServer(username, password, resource);
+			agentManager.updateAgentStatus("Connected to XMPP Server");
+
 		} catch (CommunicationHandlerException e) {
 			log.warn(AgentConstants.LOG_APPENDER + "Connection/Login to XMPP server at: " +
 					         server + " failed");
@@ -72,7 +74,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		}
 
 		setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID, true);
-		publishDeviceData();
+		publishDeviceData(agentManager.getPushInterval());
 	}
 
 	@Override
@@ -86,6 +88,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 			try {
 				connectToServer();
 				loginToServer(username, password, resource);
+				agentManager.updateAgentStatus("Connected to XMPP Server");
+
 			} catch (CommunicationHandlerException e1) {
 				if (log.isDebugEnabled()) {
 					log.debug(AgentConstants.LOG_APPENDER +
@@ -149,7 +153,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 	}
 
 	@Override
-	public void publishDeviceData() {
+	public void publishDeviceData(int publishInterval) {
 		Runnable pushDataRunnable = new Runnable() {
 			@Override
 			public void run() {
@@ -166,7 +170,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 			}
 		};
 
-		service.scheduleAtFixedRate(pushDataRunnable, 0, dataPublishInterval, TimeUnit.SECONDS);
+		serviceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+		                                             publishInterval, TimeUnit.SECONDS);
 	}
 
 
@@ -175,8 +180,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		Runnable stopConnection = new Runnable() {
 			public void run() {
 				while (isConnected()) {
-
-					service.shutdown();
+					serviceHandler.cancel(true);
 					closeConnection();
 
 					if (log.isDebugEnabled()) {

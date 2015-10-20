@@ -325,6 +325,7 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 		}
 		String topic = iMqttDeliveryToken.getTopics()[0];
 		String client = iMqttDeliveryToken.getClient().getClientId();
+
 		log.info("Message - '" + message + "' of client [" + client + "] for the topic (" + topic +
 				         ") was delivered successfully.");
 	}
@@ -335,7 +336,6 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 	public void closeConnection() throws MqttException {
 		if (client != null && isConnected()) {
 			client.disconnect();
-			client.close();
 		}
 	}
 }

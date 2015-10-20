@@ -95,6 +95,7 @@ public class AgentConstants {
 	public static final String DEFAULT_REFRESH_TOKEN = "1234567890ZYXWVUTSRQPONMKLJIHGFEDCBA";
 	public static final String DEFAULT_NETWORK_INTERFACE = "en0";
 	public static final int DEFAULT_DATA_PUBLISH_INTERVAL = 15;                  // seconds
+	public static final String DEFAULT_PROTOCOL = "HTTP";
 	/*	---------------------------------------------------------------------------------------
 					Control Signal specific constants to match the request context
 	 	---------------------------------------------------------------------------------------	*/

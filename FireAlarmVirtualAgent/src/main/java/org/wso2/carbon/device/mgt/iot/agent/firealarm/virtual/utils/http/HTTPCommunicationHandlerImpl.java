@@ -1,4 +1,4 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.http;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,6 +8,8 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.http
+		.HTTPCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
@@ -26,10 +28,9 @@ import java.net.ProtocolException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
@@ -37,28 +38,23 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
 	private ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-
-	private int dataPublishInterval;
+	private ScheduledFuture<?> serviceHandler;
 
 	public HTTPCommunicationHandlerImpl() {
 		super();
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
 	public HTTPCommunicationHandlerImpl(int port) {
 		super(port);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
 	public HTTPCommunicationHandlerImpl(int port, int reconnectionInterval) {
 		super(port, reconnectionInterval);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
-	public void setDataPublishInterval(int dataPublishInterval) {
-		this.dataPublishInterval = dataPublishInterval;
+	public ScheduledFuture<?> getServiceHandler() {
+		return serviceHandler;
 	}
-
 
 	public void initializeConnection() {
 		processIncomingMessage();
@@ -80,7 +76,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		}
 
 		registerThisDevice();
-		publishDeviceData();
+		publishDeviceData(agentManager.getPushInterval());
 	}
 
 	@Override
@@ -161,7 +157,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 	}
 
 	@Override
-	public void publishDeviceData() {
+	public void publishDeviceData(int publishInterval) {
 		Runnable pushDataRunnable = new Runnable() {
 			@Override
 			public void run() {
@@ -200,6 +196,9 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 
 					responseCode = httpConnection.getResponseCode();
 					httpConnection.disconnect();
+
+					log.info("Message - '" + pushDataPayload + "' was published to server at: " +
+							         httpConnection.getURL());
 
 				} catch (ProtocolException exception) {
 					String errorMsg = AgentConstants.LOG_APPENDER +
@@ -245,7 +244,9 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 			}
 		};
 
-		service.scheduleAtFixedRate(pushDataRunnable, 0, dataPublishInterval, TimeUnit.SECONDS);
+		serviceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+		                                             publishInterval,
+		                                             TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -254,7 +255,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 			public void run() {
 				while (isConnected()) {
 					try {
-						service.shutdown();
+						serviceHandler.cancel(true);
 						closeConnection();
 					} catch (Exception e) {
 						if (log.isDebugEnabled()) {
@@ -288,7 +289,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		final Runnable ipRegistration = new Runnable() {
 			@Override
 			public void run() {
-				while (true) {
+				while (isConnected()) {
 					try {
 						int responseCode = registerDeviceIP(
 								agentManager.getAgentConfigs().getDeviceOwner(),
@@ -467,68 +468,6 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		}
 
 		return ipAddress;
-	}
-
-
-	private Map<String, String> getDeviceIPList() throws AgentCoreOperationException {
-
-		Map<String, String> ipAddressList = new HashMap<String, String>();
-		Enumeration<NetworkInterface> networkInterfaces;
-		String networkInterfaceName = "";
-		String ipAddress;
-
-		try {
-			networkInterfaces = NetworkInterface.getNetworkInterfaces();
-		} catch (SocketException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Error encountered whilst trying to get the list of network-interfaces of " +
-					"the" +
-					" " +
-					"device.";
-			log.error(errorMsg);
-			throw new AgentCoreOperationException(errorMsg, exception);
-		}
-
-		try {
-			for (; networkInterfaces.hasMoreElements(); ) {
-				networkInterfaceName = networkInterfaces.nextElement().getName();
-
-				if (log.isDebugEnabled()) {
-					log.debug(AgentConstants.LOG_APPENDER + "Network Interface: " +
-							          networkInterfaceName);
-					log.debug(AgentConstants.LOG_APPENDER +
-							          "------------------------------------------");
-				}
-
-				Enumeration<InetAddress> interfaceIPAddresses = NetworkInterface.getByName(
-						networkInterfaceName).getInetAddresses();
-
-				for (; interfaceIPAddresses.hasMoreElements(); ) {
-					ipAddress = interfaceIPAddresses.nextElement().getHostAddress();
-
-					if (log.isDebugEnabled()) {
-						log.debug(AgentConstants.LOG_APPENDER + "IP Address: " + ipAddress);
-					}
-
-					if (CommunicationUtils.validateIPv4(ipAddress)) {
-						ipAddressList.put(networkInterfaceName, ipAddress);
-					}
-				}
-
-				if (log.isDebugEnabled()) {
-					log.debug(AgentConstants.LOG_APPENDER +
-							          "------------------------------------------");
-				}
-			}
-		} catch (SocketException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Error encountered whilst trying to get the IP Addresses of the network " +
-					"interface: " + networkInterfaceName;
-			log.error(errorMsg);
-			throw new AgentCoreOperationException(errorMsg, exception);
-		}
-
-		return ipAddressList;
 	}
 
 }

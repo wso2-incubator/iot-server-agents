@@ -2,9 +2,12 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
+
 import java.io.File;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,10 +20,10 @@ public class CommunicationUtils {
 	 *
 	 * @param ipString a network endpoint in the format - '<PROTOCOL>://<HOST>:<PORT>'
 	 * @return a map with keys "Protocol", "Host" & "Port" for the related values from the ipString
-	 * @throws AgentCoreOperationException
+	 * @throws CommunicationHandlerException
 	 */
 	public static Map<String, String> getHostAndPort(String ipString)
-			throws AgentCoreOperationException {
+			throws CommunicationHandlerException {
 		Map<String, String> ipPortMap = new HashMap<String, String>();
 		String[] ipPortArray = ipString.split(":");
 
@@ -28,8 +31,8 @@ public class CommunicationUtils {
 			String errorMsg =
 					"The IP String - '" + ipString +
 							"' is invalid. It needs to be in format '<PROTOCOL>://<HOST>:<PORT>'.";
-			log.info(AgentConstants.LOG_APPENDER + errorMsg);
-			throw new AgentCoreOperationException(errorMsg);
+			log.info(errorMsg);
+			throw new CommunicationHandlerException(errorMsg);
 		}
 
 		ipPortMap.put("Protocol", ipPortArray[0]);
@@ -37,7 +40,6 @@ public class CommunicationUtils {
 		ipPortMap.put("Port", ipPortArray[2]);
 		return ipPortMap;
 	}
-
 
 	/**
 	 * This method validates whether a specific IP Address is of IPv4 type
@@ -65,11 +67,66 @@ public class CommunicationUtils {
 			return !ipAddress.endsWith(".");
 
 		} catch (NumberFormatException nfe) {
-			log.warn(
-					AgentConstants.LOG_APPENDER + "The IP Address: " + ipAddress + " could not " +
-							"be validated against IPv4-style");
+			log.warn("The IP Address: " + ipAddress + " could not " +
+					         "be validated against IPv4-style");
 			return false;
 		}
+	}
+
+
+	public static Map<String, String> getInterfaceIPMap() throws CommunicationHandlerException {
+
+		Map<String, String> interfaceToIPMap = new HashMap<String, String>();
+		Enumeration<NetworkInterface> networkInterfaces;
+		String networkInterfaceName = "";
+		String ipAddress;
+
+		try {
+			networkInterfaces = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException exception) {
+			String errorMsg =
+					"Error encountered whilst trying to get the list of network-interfaces";
+			log.error(errorMsg);
+			throw new CommunicationHandlerException(errorMsg, exception);
+		}
+
+		try {
+			for (; networkInterfaces.hasMoreElements(); ) {
+				networkInterfaceName = networkInterfaces.nextElement().getName();
+
+				if (log.isDebugEnabled()) {
+					log.debug("Network Interface: " + networkInterfaceName);
+					log.debug("------------------------------------------");
+				}
+
+				Enumeration<InetAddress> interfaceIPAddresses = NetworkInterface.getByName(
+						networkInterfaceName).getInetAddresses();
+
+				for (; interfaceIPAddresses.hasMoreElements(); ) {
+					ipAddress = interfaceIPAddresses.nextElement().getHostAddress();
+
+					if (log.isDebugEnabled()) {
+						log.debug("IP Address: " + ipAddress);
+					}
+
+					if (CommunicationUtils.validateIPv4(ipAddress)) {
+						interfaceToIPMap.put(networkInterfaceName, ipAddress);
+					}
+				}
+
+				if (log.isDebugEnabled()) {
+					log.debug("------------------------------------------");
+				}
+			}
+		} catch (SocketException exception) {
+			String errorMsg =
+					"Error encountered whilst trying to get the IP Addresses of the network " +
+							"interface: " + networkInterfaceName;
+			log.error(errorMsg);
+			throw new CommunicationHandlerException(errorMsg, exception);
+		}
+
+		return interfaceToIPMap;
 	}
 
 }

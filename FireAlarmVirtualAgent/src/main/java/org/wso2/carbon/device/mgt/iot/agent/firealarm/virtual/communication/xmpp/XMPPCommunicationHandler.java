@@ -18,7 +18,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 
 public abstract class XMPPCommunicationHandler implements CommunicationHandler<Message> {
 	private static final Log log = LogFactory.getLog(XMPPCommunicationHandler.class);
@@ -211,7 +210,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 * XMPPConnection alongside the set filter.
 	 *
 	 * @param receiverJID the JID (XMPP-Account ID of the receiver) to which the filter is to be
-	 *                       set.
+	 *                    set.
 	 */
 	protected void setFilterOnReceiver(String receiverJID) {
 		filter = new AndFilter(new PacketTypeFilter(Message.class), new ToContainsFilter(
@@ -318,10 +317,10 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 */
 	protected void sendXMPPMessage(String JID, Message xmppMessage) {
 		connection.sendPacket(xmppMessage);
-		if (log.isDebugEnabled()) {
-			log.debug(AgentConstants.LOG_APPENDER + "Message: " + xmppMessage.getBody() +
-					          " to XMPP JID [" + JID + "] sent successfully");
-		}
+//		if (log.isDebugEnabled()) {
+		log.info("Message: " + xmppMessage.getBody() + " to XMPP JID [" + JID +
+				         "] sent successfully");
+//		}
 	}
 
 

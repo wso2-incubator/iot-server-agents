@@ -36,7 +36,6 @@ public class AgentConfiguration {
 	private String authMethod;
 	private String authToken;
 	private String refreshToken;
-//	private String networkInterface;
 	private int dataPushInterval;
 
 	public String getDeviceOwner() {
@@ -134,14 +133,6 @@ public class AgentConfiguration {
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
-
-//	public String getNetworkInterface() {
-//		return networkInterface;
-//	}
-//
-//	public void setNetworkInterface(String networkInterface) {
-//		this.networkInterface = networkInterface;
-//	}
 
 	public int getDataPushInterval() {
 		return dataPushInterval;

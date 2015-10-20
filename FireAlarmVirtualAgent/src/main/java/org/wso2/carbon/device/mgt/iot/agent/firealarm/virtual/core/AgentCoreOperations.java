@@ -96,8 +96,6 @@ public class AgentCoreOperations {
 					AgentConstants.AUTH_TOKEN_PROPERTY));
 			iotServerConfigs.setRefreshToken(properties.getProperty(
 					AgentConstants.REFRESH_TOKEN_PROPERTY));
-//			iotServerConfigs.setNetworkInterface(properties.getProperty(
-//					AgentConstants.NETWORK_INTERFACE_PROPERTY));
 			iotServerConfigs.setDataPushInterval(Integer.parseInt(properties.getProperty(
 					AgentConstants.PUSH_INTERVAL_PROPERTY)));
 
@@ -124,8 +122,6 @@ public class AgentCoreOperations {
 					         iotServerConfigs.getAuthToken());
 			log.info(AgentConstants.LOG_APPENDER + "Refresh Token: " +
 					         iotServerConfigs.getRefreshToken());
-//			log.info(AgentConstants.LOG_APPENDER + "Network Interface: " +
-//					         iotServerConfigs.getNetworkInterface());
 			log.info(AgentConstants.LOG_APPENDER + "Data Push Interval: " +
 					         iotServerConfigs.getDataPushInterval());
 
@@ -178,7 +174,6 @@ public class AgentCoreOperations {
 		iotServerConfigs.setAuthMethod(AgentConstants.DEFAULT_AUTH_METHOD);
 		iotServerConfigs.setAuthToken(AgentConstants.DEFAULT_AUTH_TOKEN);
 		iotServerConfigs.setRefreshToken(AgentConstants.DEFAULT_REFRESH_TOKEN);
-//		iotServerConfigs.setNetworkInterface(AgentConstants.DEFAULT_NETWORK_INTERFACE);
 		iotServerConfigs.setDataPushInterval(AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL);
 
 		return iotServerConfigs;
@@ -198,7 +193,6 @@ public class AgentCoreOperations {
 		String backEndContext = agentManager.getAgentConfigs().getControllerContext();
 
 		String deviceControllerAPIEndpoint = apimEndpoint + backEndContext;
-		agentManager.setControllerAPIEP(deviceControllerAPIEndpoint);
 
 		String registerEndpointURL =
 				deviceControllerAPIEndpoint + AgentConstants.DEVICE_REGISTER_API_EP;

@@ -13,7 +13,7 @@ public interface CommunicationHandler<T> {
 
 	void processIncomingMessage();
 
-	void publishDeviceData();
+	void publishDeviceData(int publishInterval);
 
 	void terminateConnection();
 }

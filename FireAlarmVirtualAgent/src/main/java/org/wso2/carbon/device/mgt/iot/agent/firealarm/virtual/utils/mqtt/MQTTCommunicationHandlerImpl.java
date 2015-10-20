@@ -1,4 +1,4 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,12 +6,15 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt
+		.MQTTCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
@@ -20,23 +23,21 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
 	private ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-	private int dataPublishInterval;
+	private ScheduledFuture<?> serviceHandler;
 
 	public MQTTCommunicationHandlerImpl(String deviceOwner, String deviceType,
 	                                    String mqttBrokerEndPoint, String subscribeTopic) {
 		super(deviceOwner, deviceType, mqttBrokerEndPoint, subscribeTopic);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
 	public MQTTCommunicationHandlerImpl(String deviceOwner, String deviceType,
 	                                    String mqttBrokerEndPoint, String subscribeTopic,
 	                                    int intervalInMillis) {
 		super(deviceOwner, deviceType, mqttBrokerEndPoint, subscribeTopic, intervalInMillis);
-		dataPublishInterval = AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL;
 	}
 
-	public void setDataPublishInterval(int dataPublishInterval) {
-		this.dataPublishInterval = dataPublishInterval;
+	public ScheduledFuture<?> getServiceHandler() {
+		return serviceHandler;
 	}
 
 	@Override
@@ -44,6 +45,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 		try {
 			connectToQueue();
 			subscribeToQueue();
+			agentManager.updateAgentStatus("Connected to MQTT Queue");
 		} catch (CommunicationHandlerException e) {
 			log.warn(AgentConstants.LOG_APPENDER + "Connection/Subscription to MQTT Broker at: " +
 					         mqttBrokerEndPoint + " failed");
@@ -58,7 +60,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 			reconnectThread.start();
 		}
 
-		publishDeviceData();
+		publishDeviceData(agentManager.getPushInterval());
 	}
 
 	@Override
@@ -72,6 +74,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 			try {
 				connectToQueue();
 				subscribeToQueue();
+				agentManager.updateAgentStatus("Connected to MQTT Queue");
 			} catch (CommunicationHandlerException e1) {
 				if (log.isDebugEnabled()) {
 					log.debug(AgentConstants.LOG_APPENDER +
@@ -119,7 +122,9 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				try {
 					publishToQueue(tempPublishTopic, replyMessage);
 				} catch (CommunicationHandlerException e) {
-//					TODO:: Handle Exception
+					log.error("MQTT - Publishing, reply message to the MQTT Queue at: " +
+							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+							          "falied");
 				}
 				break;
 
@@ -137,7 +142,9 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				try {
 					publishToQueue(humidPublishTopic, replyMessage);
 				} catch (CommunicationHandlerException e) {
-//					TODO:: Handle Exception
+					log.error("MQTT - Publishing, reply message to the MQTT Queue at: " +
+							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+							          "falied");
 				}
 				break;
 
@@ -151,21 +158,26 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
 
 	@Override
-	public void publishDeviceData() {
+	public void publishDeviceData(int publishInterval) {
 		Runnable pushDataRunnable = new Runnable() {
 			@Override
 			public void run() {
 				int currentTemperature = agentManager.getTemperature();
 				String payLoad =
-						"PUBLISHER:" + AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
+						"PUBLISHER:" + AgentConstants.TEMPERATURE_CONTROL + ":" +
+								currentTemperature;
 
 				MqttMessage pushMessage = new MqttMessage();
 				pushMessage.setPayload(payLoad.getBytes(StandardCharsets.UTF_8));
 				pushMessage.setQos(DEFAULT_MQTT_QUALITY_OF_SERVICE);
 				pushMessage.setRetained(true);
 
+				String topic = String.format(AgentConstants.MQTT_PUBLISH_TOPIC,
+				                             agentManager.getAgentConfigs().getDeviceOwner(),
+				                             agentManager.getAgentConfigs().getDeviceId());
+
 				try {
-					publishToQueue(AgentConstants.MQTT_PUBLISH_TOPIC, pushMessage);
+					publishToQueue(topic, pushMessage);
 				} catch (CommunicationHandlerException e) {
 					log.warn("Data Publish attempt to topic - [" +
 							         AgentConstants.MQTT_PUBLISH_TOPIC + "] failed for payload [" +
@@ -174,7 +186,8 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 			}
 		};
 
-		service.scheduleAtFixedRate(pushDataRunnable, 0, dataPublishInterval, TimeUnit.SECONDS);
+		serviceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+		                                             publishInterval, TimeUnit.SECONDS);
 	}
 
 
@@ -184,8 +197,9 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 			public void run() {
 				while (isConnected()) {
 					try {
-						service.shutdown();
+						serviceHandler.cancel(true);
 						closeConnection();
+
 					} catch (MqttException e) {
 						if (log.isDebugEnabled()) {
 							log.warn("Unable to 'STOP' MQTT connection at broker at: " +
