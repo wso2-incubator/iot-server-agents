@@ -19,18 +19,13 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jivesoftware.smack.packet.Message;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp.XMPPClient;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**

@@ -35,16 +35,18 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 /**
- * This class contains the Device specific implementation for all the MQTT functionality. This
- * includes connecting to a MQTT Broker & subscribing to the appropriate MQTT-topic, action plan
- * upon losing connection or successfully delivering a message to the broker and processing
+ * This class contains the IoT-Server specific implementation for all the MQTT functionality.
+ * This includes connecting to a MQTT Broker & subscribing to the appropriate MQTT-topic, action
+ * plan upon losing connection or successfully delivering a message to the broker and processing
  * incoming messages. Makes use of the 'Paho-MQTT' library provided by Eclipse Org.
  * <p/>
- * It is an abstract class with an abstract method 'postMessageArrived' allowing the user to have
- * their own implementation of the actions to be taken upon receiving a message to the subscribed
- * MQTT-Topic.
+ * It is an abstract class that implements the common interface "CommunicationHandler" and the
+ * "MqttCallback". Whilst providing some methods which handle key MQTT relevant tasks, this class
+ * implements only the most generic methods of the "CommunicationHandler" interface. The rest of
+ * the methods are left for any extended concrete-class to implement as per its need.
  */
-public abstract class MQTTCommunicationHandler implements MqttCallback, CommunicationHandler<MqttMessage> {
+public abstract class MQTTCommunicationHandler
+		implements MqttCallback, CommunicationHandler<MqttMessage> {
 	private static final Log log = LogFactory.getLog(MQTTCommunicationHandler.class);
 
 	public static final int DEFAULT_MQTT_QUALITY_OF_SERVICE = 0;
@@ -59,8 +61,8 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 	protected String subscribeTopic;
 
 	/**
-	 * Constructor for the MQTTClient which takes in the owner, type of the device and the MQTT
-	 * Broker URL and the topic to subscribe.
+	 * Constructor for the MQTTCommunicationHandler which takes in the owner, type of the device
+	 * and the MQTT Broker URL and the topic to subscribe.
 	 *
 	 * @param deviceOwner        the owner of the device.
 	 * @param deviceType         the CDMF Device-Type of the device.
@@ -79,16 +81,16 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 	}
 
 	/**
-	 * Constructor for the MQTTClient which takes in the owner, type of the device and the MQTT
-	 * Broker URL and the topic to subscribe. Additionally this constructor takes in the
-	 * reconnection-time interval between successive attempts to connect to the broker.
+	 * Constructor for the MQTTCommunicationHandler which takes in the owner, type of the device
+	 * and the MQTT Broker URL and the topic to subscribe. Additionally this constructor takes in
+	 * the reconnection-time interval between successive attempts to connect to the broker.
 	 *
-	 * @param deviceOwner                  the owner of the device.
-	 * @param deviceType                   the CDMF Device-Type of the device.
-	 * @param mqttBrokerEndPoint           the IP/URL of the MQTT broker endpoint.
-	 * @param subscribeTopic               the MQTT topic to which the client is to be subscribed
-	 * @param intervalInMillis the time interval in MILLI-SECONDS between successive
-	 *                                        attempts to connect to the broker.
+	 * @param deviceOwner        the owner of the device.
+	 * @param deviceType         the CDMF Device-Type of the device.
+	 * @param mqttBrokerEndPoint the IP/URL of the MQTT broker endpoint.
+	 * @param subscribeTopic     the MQTT topic to which the client is to be subscribed
+	 * @param intervalInMillis   the time interval in MILLI-SECONDS between successive
+	 *                           attempts to connect to the broker.
 	 */
 	protected MQTTCommunicationHandler(String deviceOwner, String deviceType,
 	                                   String mqttBrokerEndPoint, String subscribeTopic,
@@ -207,8 +209,8 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 	 * Invocation of this method calls its overloaded-method with a QoS equal to that of the
 	 * default value.
 	 *
-	 * @param topic the topic to which the reply message is to be published.
-	 * @param payLoad      the reply-message (payload) of the MQTT publish action.
+	 * @param topic   the topic to which the reply message is to be published.
+	 * @param payLoad the reply-message (payload) of the MQTT publish action.
 	 */
 	protected void publishToQueue(String topic, String payLoad)
 			throws CommunicationHandlerException {
@@ -219,10 +221,10 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 	 * This is an overloaded method that publishes MQTT reply-messages for control signals
 	 * received form the IoT-Server.
 	 *
-	 * @param topic the topic to which the reply message is to be published
-	 * @param payLoad      the reply-message (payload) of the MQTT publish action.
-	 * @param qos          the Quality-of-Service of the current publish action.
-	 *                     Could be 0(At-most once), 1(At-least once) or 2(Exactly once)
+	 * @param topic   the topic to which the reply message is to be published
+	 * @param payLoad the reply-message (payload) of the MQTT publish action.
+	 * @param qos     the Quality-of-Service of the current publish action.
+	 *                Could be 0(At-most once), 1(At-least once) or 2(Exactly once)
 	 */
 	protected void publishToQueue(String topic, String payLoad, int qos, boolean retained)
 			throws CommunicationHandlerException {
@@ -294,7 +296,8 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 	@Override
 	public void messageArrived(final String topic, final MqttMessage mqttMessage) {
 		if (log.isDebugEnabled()) {
-			log.info("Got an MQTT message '" + mqttMessage.toString() + "' for topic '" + topic + "'.");
+			log.info("Got an MQTT message '" + mqttMessage.toString() + "' for topic '" + topic +
+					         "'.");
 		}
 
 		Thread messageProcessorThread = new Thread() {
@@ -328,8 +331,8 @@ public abstract class MQTTCommunicationHandler implements MqttCallback, Communic
 
 		if (log.isDebugEnabled()) {
 			log.debug("Message - '" + message + "' of client [" + client + "] for the topic (" +
-					         topic +
-					         ") was delivered successfully.");
+					          topic +
+					          ") was delivered successfully.");
 		}
 	}
 

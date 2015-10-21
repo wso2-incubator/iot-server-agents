@@ -105,6 +105,13 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		}
 	}
 
+	/**
+	 * This is an abstract method used for post processing the received XMPP-message. This
+	 * method will be implemented as per requirement at the time of creating an object of this
+	 * class.
+	 *
+	 * @param xmppMessage the xmpp message received by the listener.
+	 */
 	@Override
 	public void processIncomingMessage(Message xmppMessage) {
 		String from = xmppMessage.getFrom();

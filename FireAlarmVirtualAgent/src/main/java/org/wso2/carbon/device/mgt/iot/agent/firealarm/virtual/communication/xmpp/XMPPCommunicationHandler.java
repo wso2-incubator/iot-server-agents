@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.xmpp;
 
 import org.apache.commons.logging.Log;
@@ -19,6 +37,17 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.Comm
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
 
+/**
+ * This class contains the IoT-Server specific implementation for all the XMPP functionality.
+ * This includes connecting to a XMPP Server & Login-In using the device's/server's XMPP-Account,
+ * Setting listeners and filters on incoming XMPP messages and Sending XMPP replies for messages
+ * received. Makes use of the 'Smack-XMPP' library provided by jivesoftware/igniterealtime.
+ * <p/>
+ * It is an abstract class that implements the common interface "CommunicationHandler". Whilst
+ * providing some methods which handle key XMPP relevant tasks, this class implements only the
+ * most generic methods of the "CommunicationHandler" interface. The rest of the methods are left
+ * for any extended concrete-class to implement as per its need.
+ */
 public abstract class XMPPCommunicationHandler implements CommunicationHandler<Message> {
 	private static final Log log = LogFactory.getLog(XMPPCommunicationHandler.class);
 
@@ -34,7 +63,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Constructor for XMPPClient passing server-IP and the XMPP-port.
+	 * Constructor for XMPPCommunicationHandler passing only the server-IP.
 	 *
 	 * @param server the IP of the XMPP server.
 	 */
@@ -46,7 +75,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	}
 
 	/**
-	 * Constructor for XMPPClient passing server-IP and the XMPP-port.
+	 * Constructor for XMPPCommunicationHandler passing server-IP and the XMPP-port.
 	 *
 	 * @param server the IP of the XMPP server.
 	 * @param port   the XMPP server's port to connect to. (default - 5222)
@@ -59,7 +88,8 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	}
 
 	/**
-	 * Constructor for XMPPClient passing server-IP and the XMPP-port.
+	 * Constructor for XMPPCommunicationHandler passing server-IP, the XMPP-port and the
+	 * timeoutInterval used by listeners to the server and for reconnection schedules.
 	 *
 	 * @param server          the IP of the XMPP server.
 	 * @param port            the XMPP server's port to connect to. (default - 5222)
@@ -94,7 +124,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 	/**
 	 * Initializes the XMPP Client. Sets the time-out-limit whilst waiting for XMPP-replies from
-	 * server. Creates the XMPP configurations to connect to the server and creates the
+	 * server. Sets the XMPP configurations to connect to the server and creates the
 	 * XMPPConnection object used for connecting and Logging-In.
 	 */
 	private void initXMPPClient() {
@@ -138,8 +168,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 * @param password the password of the device's XMPP-Account.
 	 * @param resource the resource the resource, specific to the XMPP-Account to which the login
 	 *                 is made to
-	 * @throws CommunicationHandlerException in the event of 'Connecting to' or 'Logging into' the
-	 *                                       XMPP server fails.
+	 * @throws CommunicationHandlerException in the event of 'Logging into' the XMPP server fails.
 	 */
 	protected void loginToServer(String username, String password, String resource)
 			throws CommunicationHandlerException {
@@ -175,7 +204,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Sets a filter on all the incoming XMPP-Messages for the JID (XMPP-Account ID) passed in.
+	 * Sets a filter for all the incoming XMPP-Messages on the Sender's JID (XMPP-Account ID).
 	 * Also creates a listener for the incoming messages and connects the listener to the
 	 * XMPPConnection alongside the set filter.
 	 *
@@ -205,7 +234,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Sets a filter on all the incoming XMPP-Messages for the JID (XMPP-Account ID) passed in.
+	 * Sets a filter for all the incoming XMPP-Messages on the Receiver's JID (XMPP-Account ID).
 	 * Also creates a listener for the incoming messages and connects the listener to the
 	 * XMPPConnection alongside the set filter.
 	 *
@@ -236,7 +265,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Sets a filter on all the incoming XMPP-Messages for the From-JID & To-JID (XMPP-Account IDs)
+	 * Sets a filter for all the incoming XMPP-Messages on the From-JID & To-JID (XMPP-Account IDs)
 	 * passed in. Also creates a listener for the incoming messages and connects the listener to
 	 * the XMPPConnection alongside the set filter.
 	 *
@@ -281,13 +310,13 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Sends an XMPP message
+	 * Sends an XMPP message. Calls the overloaded method with Subject set to "Reply-From-Device"
 	 *
 	 * @param JID     the JID (XMPP Account ID) to which the message is to be sent to.
 	 * @param message the XMPP-Message that is to be sent.
 	 */
 	protected void sendXMPPMessage(String JID, String message) {
-		sendXMPPMessage(JID, message, "Reply-From-Device");
+		sendXMPPMessage(JID, message, "XMPP-Message");
 	}
 
 
@@ -310,7 +339,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Sends an XMPP message
+	 * Sends an XMPP message.
 	 *
 	 * @param JID         the JID (XMPP Account ID) to which the message is to be sent to.
 	 * @param xmppMessage the XMPP-Message that is to be sent.
