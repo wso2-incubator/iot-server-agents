@@ -37,8 +37,9 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 	private static final Log log = LogFactory.getLog(HTTPCommunicationHandlerImpl.class);
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
-	private ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-	private ScheduledFuture<?> serviceHandler;
+	private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
+	private ScheduledFuture<?> dataPushServiceHandler;
+	private ScheduledFuture<?> connectorServiceHandler;
 
 	public HTTPCommunicationHandlerImpl() {
 		super();
@@ -52,51 +53,33 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		super(port, reconnectionInterval);
 	}
 
-	public ScheduledFuture<?> getServiceHandler() {
-		return serviceHandler;
+	public ScheduledFuture<?> getDataPushServiceHandler() {
+		return dataPushServiceHandler;
 	}
 
-	public void initializeConnection() {
-		processIncomingMessage();
+	public void connect() {
+		Runnable connect = new Runnable() {
+			public void run() {
+				if (!isConnected()) {
+					try {
+						processIncomingMessage();
+						server.start();
+						registerThisDevice();
+						publishDeviceData(agentManager.getPushInterval());
+						log.info("HTTP Server started at port: " + port);
 
-		try {
-			server.start();
-			log.info("HTTP Server started at port: " + port);
-		} catch (Exception ex) {
-			log.warn("Unable to start HTTP server at port: " + port);
-
-			Runnable reconnect = new Runnable() {
-				public void run() {
-					attemptReconnection();
-				}
-			};
-			Thread reconnectThread = new Thread(reconnect);
-			reconnectThread.setDaemon(true);
-			reconnectThread.start();
-		}
-
-		registerThisDevice();
-		publishDeviceData(agentManager.getPushInterval());
-	}
-
-	@Override
-	public void attemptReconnection() {
-		while (!isConnected()) {
-			incrementPort();
-			try {
-				server.start();
-			} catch (Exception e) {
-				if (log.isDebugEnabled()) {
-					log.warn("Unable to 'START' HTTP server at port: " + port);
-				}
-
-				try {
-					Thread.sleep(timeoutInterval);
-				} catch (InterruptedException e1) {
-					log.error("HTTP-Connector: Thread Sleep Interrupt Exception");
+					} catch (Exception e) {
+						if (log.isDebugEnabled()) {
+							log.warn("Unable to 'START' HTTP server. Will retry after " +
+									         timeoutInterval / 1000 + " seconds.");
+						}
+					}
 				}
 			}
-		}
+		};
+
+		connectorServiceHandler = service.scheduleAtFixedRate(connect, 0, timeoutInterval,
+		                                                      TimeUnit.MILLISECONDS);
 	}
 
 
@@ -197,40 +180,42 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 					responseCode = httpConnection.getResponseCode();
 					httpConnection.disconnect();
 
-					log.info("Message - '" + pushDataPayload + "' was published to server at: " +
-							         httpConnection.getURL());
+					log.info(AgentConstants.LOG_APPENDER + "Message - '" + pushDataPayload +
+							         "' was published to server at: " + httpConnection.getURL());
 
 				} catch (ProtocolException exception) {
-					String errorMsg = AgentConstants.LOG_APPENDER +
+					String errorMsg =
 							"Protocol specific error occurred when trying to set method to " +
-							AgentConstants.HTTP_POST + " for:" + pushDataEndPointURL;
-					log.error(errorMsg);
+									AgentConstants.HTTP_POST + " for:" + pushDataEndPointURL;
+					log.error(AgentConstants.LOG_APPENDER + errorMsg);
 
 				} catch (IOException exception) {
-					String errorMsg = AgentConstants.LOG_APPENDER +
+					String errorMsg =
 							"An IO error occurred whilst trying to get the response code from: " +
-							pushDataEndPointURL + " for a " + AgentConstants.HTTP_POST + " " +
-							"method.";
-					log.error(errorMsg);
+									pushDataEndPointURL + " for a " + AgentConstants.HTTP_POST +
+									" " + "method.";
+					log.error(AgentConstants.LOG_APPENDER + errorMsg);
 
 				} catch (CommunicationHandlerException exception) {
 					log.error(AgentConstants.LOG_APPENDER +
-							          "Error encountered whilst trying to create HTTP-Connection" +
-							          " to IoT-Server EP at: " + pushDataEndPointURL);
+							          "Error encountered whilst trying to create HTTP-Connection " +
+							          "to IoT-Server EP at: " +
+							          pushDataEndPointURL);
 				}
 
 				if (responseCode == HttpStatus.CONFLICT_409 ||
 						responseCode == HttpStatus.PRECONDITION_FAILED_412) {
 					log.warn(AgentConstants.LOG_APPENDER +
 							         "DeviceIP is being Re-Registered due to Push-Data failure " +
-							         "with response code: " + responseCode);
+							         "with response code: " +
+							         responseCode);
 					registerThisDevice();
 
 				} else if (responseCode != HttpStatus.NO_CONTENT_204) {
 					if (log.isDebugEnabled()) {
 						log.error(AgentConstants.LOG_APPENDER + "Status Code: " + responseCode +
-								          " encountered whilst trying to Push-Device-Data to IoT" +
-								          " Server at: " +
+								          " encountered whilst trying to Push-Device-Data to IoT " +
+								          "Server at: " +
 								          agentManager.getPushDataAPIEP());
 					}
 					agentManager.updateAgentStatus(AgentConstants.SERVER_NOT_RESPONDING);
@@ -244,28 +229,32 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 			}
 		};
 
-		serviceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
-		                                             publishInterval,
-		                                             TimeUnit.SECONDS);
+		dataPushServiceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+		                                                     publishInterval,
+		                                                     TimeUnit.SECONDS);
 	}
 
 	@Override
-	public void terminateConnection() {
+	public void disconnect() {
 		Runnable stopConnection = new Runnable() {
 			public void run() {
 				while (isConnected()) {
 					try {
-						serviceHandler.cancel(true);
+						dataPushServiceHandler.cancel(true);
+						connectorServiceHandler.cancel(true);
 						closeConnection();
 					} catch (Exception e) {
 						if (log.isDebugEnabled()) {
-							log.warn("Unable to 'STOP' HTTP server at port: " + port);
+							log.warn(AgentConstants.LOG_APPENDER +
+									         "Unable to 'STOP' HTTP server at port: " + port);
 						}
 
 						try {
 							Thread.sleep(timeoutInterval);
 						} catch (InterruptedException e1) {
-							log.error("HTTP-Termination: Thread Sleep Interrupt Exception");
+							log.error(AgentConstants.LOG_APPENDER +
+									          "HTTP-Termination: Thread Sleep Interrupt " +
+									          "Exception");
 						}
 					}
 				}
@@ -309,8 +298,8 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 					} catch (AgentCoreOperationException exception) {
 						log.error(AgentConstants.LOG_APPENDER +
 								          "Error encountered whilst trying to register the " +
-								          "Device's " +
-								          "IP at: " + agentManager.getIpRegistrationEP() +
+								          "Device's IP at: " +
+								          agentManager.getIpRegistrationEP() +
 								          ".\nCheck whether the network-interface provided is " +
 								          "accurate");
 						agentManager.updateAgentStatus(AgentConstants.REGISTRATION_FAILED);
@@ -319,7 +308,8 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 					try {
 						Thread.sleep(timeoutInterval);
 					} catch (InterruptedException e1) {
-						log.error("Device Registration: Thread Sleep Interrupt Exception");
+						log.error(AgentConstants.LOG_APPENDER +
+								          "Device Registration: Thread Sleep Interrupt Exception");
 					}
 				}
 			}
@@ -373,10 +363,11 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		try {
 			httpConnection = getHttpConnection(registerEndpointURLString);
 		} catch (CommunicationHandlerException e) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
+			String errorMsg =
 					"Protocol specific error occurred when trying to fetch an HTTPConnection to:" +
-					" " + registerEndpointURLString;
-			log.error(errorMsg);
+							" " +
+							registerEndpointURLString;
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
 			throw new AgentCoreOperationException();
 		}
 
@@ -388,17 +379,16 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 			responseCode = httpConnection.getResponseCode();
 
 		} catch (ProtocolException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Protocol specific error occurred when trying to set method to " +
+			String errorMsg = "Protocol specific error occurred when trying to set method to " +
 					AgentConstants.HTTP_POST + " for:" + registerEndpointURLString;
-			log.error(errorMsg);
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
 			throw new AgentCoreOperationException(errorMsg, exception);
 
 		} catch (IOException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"An IO error occurred whilst trying to get the response code from: " +
+			String errorMsg = "An IO error occurred whilst trying to get the response code from:" +
+					" " +
 					registerEndpointURLString + " for a " + AgentConstants.HTTP_POST + " method.";
-			log.error(errorMsg);
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
 			throw new AgentCoreOperationException(errorMsg, exception);
 		}
 
@@ -425,9 +415,8 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		try {
 			return Inet4Address.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Error encountered whilst trying to get the device IP address.";
-			log.error(errorMsg);
+			String errorMsg = "Error encountered whilst trying to get the device IP address.";
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
 			throw new AgentCoreOperationException(errorMsg, e);
 		}
 	}
@@ -459,11 +448,11 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 				}
 			}
 		} catch (SocketException | NullPointerException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Error encountered whilst trying to get IP Addresses of the network " +
-					"interface: " + networkInterfaceName +
-					".\nPlease check whether the name of the network interface used is correct";
-			log.error(errorMsg);
+			String errorMsg =
+					"Error encountered whilst trying to get IP Addresses of the network interface: " +
+							networkInterfaceName +
+							".\nPlease check whether the name of the network interface used is correct";
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
 			throw new AgentCoreOperationException(errorMsg, exception);
 		}
 

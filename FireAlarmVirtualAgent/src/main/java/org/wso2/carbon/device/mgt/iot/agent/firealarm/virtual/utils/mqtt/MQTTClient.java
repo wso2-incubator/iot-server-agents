@@ -204,7 +204,7 @@ public abstract class MQTTClient implements MqttCallback, CommunicationHandler<M
 
 		Thread reconnectThread = new Thread() {
 			public void run() {
-				attemptReconnection();
+				connect();
 			}
 		};
 		reconnectThread.setDaemon(true);

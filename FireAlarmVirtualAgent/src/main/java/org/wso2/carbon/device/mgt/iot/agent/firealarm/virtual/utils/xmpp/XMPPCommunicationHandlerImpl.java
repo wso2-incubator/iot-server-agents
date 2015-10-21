@@ -20,8 +20,9 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 	private static final Log log = LogFactory.getLog(XMPPCommunicationHandlerImpl.class);
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
-	private ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-	private ScheduledFuture<?> serviceHandler;
+	private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
+	private ScheduledFuture<?> dataPushServiceHandler;
+	private ScheduledFuture<?> connectorServiceHandler;
 
 	private String username;
 	private String password;
@@ -41,12 +42,12 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		super(server, port, timeout);
 	}
 
-	public ScheduledFuture<?> getServiceHandler() {
-		return serviceHandler;
+	public ScheduledFuture<?> getDataPushServiceHandler() {
+		return dataPushServiceHandler;
 	}
 
 	@Override
-	public void initializeConnection() {
+	public void connect() {
 		username = agentManager.getAgentConfigs().getDeviceId();
 		password = agentManager.getAgentConfigs().getAuthToken();
 		resource = agentManager.getAgentConfigs().getDeviceOwner();
@@ -54,55 +55,31 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		xmppDeviceJID = username + "@" + server;
 		xmppAdminJID = AgentConstants.XMPP_ADMIN_ACCOUNT_UNAME + "@" + server;
 
-		try {
-			connectToServer();
-			loginToServer(username, password, resource);
-			agentManager.updateAgentStatus("Connected to XMPP Server");
 
-		} catch (CommunicationHandlerException e) {
-			log.warn(AgentConstants.LOG_APPENDER + "Connection/Login to XMPP server at: " +
-					         server + " failed");
+		Runnable connect = new Runnable() {
+			public void run() {
+				if (!isConnected()) {
+					try {
+						connectToServer();
+						loginToServer(username, password, resource);
+						agentManager.updateAgentStatus("Connected to XMPP Server");
 
-			Runnable reconnect = new Runnable() {
-				public void run() {
-					attemptReconnection();
-				}
-			};
-			Thread reconnectThread = new Thread(reconnect);
-			reconnectThread.setDaemon(true);
-			reconnectThread.start();
-		}
+						setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID, true);
+						publishDeviceData(agentManager.getPushInterval());
 
-		setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID, true);
-		publishDeviceData(agentManager.getPushInterval());
-	}
-
-	@Override
-	public void attemptReconnection() {
-		while (!isConnected()) {
-			if (log.isDebugEnabled()) {
-				log.debug(
-						AgentConstants.LOG_APPENDER + "Subscriber trying to reach MQTT queue....");
-			}
-
-			try {
-				connectToServer();
-				loginToServer(username, password, resource);
-				agentManager.updateAgentStatus("Connected to XMPP Server");
-
-			} catch (CommunicationHandlerException e1) {
-				if (log.isDebugEnabled()) {
-					log.debug(AgentConstants.LOG_APPENDER +
-							          "Attempt to connect/subscribe to MQTT-Queue failed");
-				}
-
-				try {
-					Thread.sleep(timeoutInterval);
-				} catch (InterruptedException e) {
-					log.error("XMPP-Login: Thread Sleep Interrupt Exception");
+					} catch (CommunicationHandlerException e) {
+						if (log.isDebugEnabled()) {
+							log.warn(AgentConstants.LOG_APPENDER +
+									         "Connection/Login to XMPP server at: " + server +
+									         " failed");
+						}
+					}
 				}
 			}
-		}
+		};
+
+		connectorServiceHandler = service.scheduleAtFixedRate(connect, 0, timeoutInterval,
+		                                                      TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -116,8 +93,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 	public void processIncomingMessage(Message xmppMessage) {
 		String from = xmppMessage.getFrom();
 		String message = xmppMessage.getBody();
-		log.info(AgentConstants.LOG_APPENDER + "Received XMPP message [" + message +
-				         "] from " + from);
+		log.info(AgentConstants.LOG_APPENDER + "Received XMPP message [" + message + "] from " +
+				         from);
 
 		String replyMessage;
 		String[] controlSignal = message.toString().split(":");
@@ -161,7 +138,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				break;
 
 			default:
-				replyMessage = "'" + controlSignal[0] + "' is invalid and not-supported for this device-type";
+				replyMessage = "'" + controlSignal[0] +
+						"' is invalid and not-supported for this device-type";
 				log.warn(replyMessage);
 				sendXMPPMessage(xmppAdminJID, replyMessage, "CONTROL-ERROR");
 				break;
@@ -183,32 +161,37 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				xmppMessage.setType(Message.Type.chat);
 
 				sendXMPPMessage(xmppAdminJID, xmppMessage);
-				log.info("Message: '" + xmppMessage.getBody() + "' sent to XMPP JID [" +
-						         xmppAdminJID + "] under subject [" + xmppMessage.getSubject() + "]");
+				log.info(AgentConstants.LOG_APPENDER + "Message: '" + xmppMessage.getBody() +
+						         "' sent to XMPP JID [" + xmppAdminJID + "] under subject [" +
+						         xmppMessage.getSubject() + "]");
 			}
 		};
 
-		serviceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
-		                                             publishInterval, TimeUnit.SECONDS);
+		dataPushServiceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+		                                                     publishInterval, TimeUnit.SECONDS);
 	}
 
 
 	@Override
-	public void terminateConnection() {
+	public void disconnect() {
 		Runnable stopConnection = new Runnable() {
 			public void run() {
 				while (isConnected()) {
-					serviceHandler.cancel(true);
+					dataPushServiceHandler.cancel(true);
+					connectorServiceHandler.cancel(true);
 					closeConnection();
 
 					if (log.isDebugEnabled()) {
-						log.warn("Unable to 'STOP' connection to XMPP server at: " + server);
+						log.warn(AgentConstants.LOG_APPENDER +
+								         "Unable to 'STOP' connection to XMPP server at: " +
+								         server);
 					}
 
 					try {
 						Thread.sleep(timeoutInterval);
 					} catch (InterruptedException e1) {
-						log.error("XMPP-Terminator: Thread Sleep Interrupt Exception");
+						log.error(AgentConstants.LOG_APPENDER +
+								          "XMPP-Terminator: Thread Sleep Interrupt Exception");
 					}
 
 				}

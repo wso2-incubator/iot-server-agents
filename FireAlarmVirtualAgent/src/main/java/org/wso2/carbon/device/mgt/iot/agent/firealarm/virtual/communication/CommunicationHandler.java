@@ -3,9 +3,7 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication;
 public interface CommunicationHandler<T> {
 	int DEFAULT_TIMEOUT_INTERVAL = 5000;      // millis ~ 10 sec
 
-	void initializeConnection();
-
-	void attemptReconnection();
+	void connect();
 
 	boolean isConnected();
 
@@ -15,5 +13,5 @@ public interface CommunicationHandler<T> {
 
 	void publishDeviceData(int publishInterval);
 
-	void terminateConnection();
+	void disconnect();
 }

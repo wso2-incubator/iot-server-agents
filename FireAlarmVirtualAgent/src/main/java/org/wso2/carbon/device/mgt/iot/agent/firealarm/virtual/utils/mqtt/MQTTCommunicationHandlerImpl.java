@@ -22,8 +22,8 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 	private static final Log log = LogFactory.getLog(MQTTCommunicationHandlerImpl.class);
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
-	private ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-	private ScheduledFuture<?> serviceHandler;
+	private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
+	private ScheduledFuture<?> dataPushServiceHandler;
 
 	public MQTTCommunicationHandlerImpl(String deviceOwner, String deviceType,
 	                                    String mqttBrokerEndPoint, String subscribeTopic) {
@@ -36,58 +36,40 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 		super(deviceOwner, deviceType, mqttBrokerEndPoint, subscribeTopic, intervalInMillis);
 	}
 
-	public ScheduledFuture<?> getServiceHandler() {
-		return serviceHandler;
+	public ScheduledFuture<?> getDataPushServiceHandler() {
+		return dataPushServiceHandler;
 	}
 
 	@Override
-	public void initializeConnection() {
-		try {
-			connectToQueue();
-			subscribeToQueue();
-			agentManager.updateAgentStatus("Connected to MQTT Queue");
-		} catch (CommunicationHandlerException e) {
-			log.warn(AgentConstants.LOG_APPENDER + "Connection/Subscription to MQTT Broker at: " +
-					         mqttBrokerEndPoint + " failed");
+	public void connect() {
+		Runnable connector = new Runnable() {
+			public void run() {
+				while (!isConnected()) {
+					try {
+						connectToQueue();
+						subscribeToQueue();
+						agentManager.updateAgentStatus("Connected to MQTT Queue");
+						publishDeviceData(agentManager.getPushInterval());
 
-			Runnable reconnect = new Runnable() {
-				public void run() {
-					attemptReconnection();
-				}
-			};
-			Thread reconnectThread = new Thread(reconnect);
-			reconnectThread.setDaemon(true);
-			reconnectThread.start();
-		}
+					} catch (CommunicationHandlerException e) {
+						log.warn(AgentConstants.LOG_APPENDER +
+								         "Connection/Subscription to MQTT Broker at: " +
+								         mqttBrokerEndPoint + " failed");
 
-		publishDeviceData(agentManager.getPushInterval());
-	}
-
-	@Override
-	public void attemptReconnection() {
-		while (!isConnected()) {
-			if (log.isDebugEnabled()) {
-				log.debug(
-						AgentConstants.LOG_APPENDER + "Subscriber trying to reach MQTT queue....");
-			}
-
-			try {
-				connectToQueue();
-				subscribeToQueue();
-				agentManager.updateAgentStatus("Connected to MQTT Queue");
-			} catch (CommunicationHandlerException e1) {
-				if (log.isDebugEnabled()) {
-					log.debug(AgentConstants.LOG_APPENDER +
-							          "Attempt to connect/subscribe to MQTT-Queue failed");
-				}
-
-				try {
-					Thread.sleep(timeoutInterval);
-				} catch (InterruptedException e) {
-					log.error("MQTT-Subscriber: Thread Sleep Interrupt Exception");
+						try {
+							Thread.sleep(timeoutInterval);
+						} catch (InterruptedException ex) {
+							log.error(AgentConstants.LOG_APPENDER +
+									          "MQTT-Subscriber: Thread Sleep Interrupt Exception");
+						}
+					}
 				}
 			}
-		}
+		};
+
+		Thread connectorThread = new Thread(connector);
+		connectorThread.setDaemon(true);
+		connectorThread.start();
 	}
 
 	@Override
@@ -122,7 +104,8 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				try {
 					publishToQueue(tempPublishTopic, replyMessage);
 				} catch (CommunicationHandlerException e) {
-					log.error("MQTT - Publishing, reply message to the MQTT Queue at: " +
+					log.error(AgentConstants.LOG_APPENDER +
+							          "MQTT - Publishing, reply message to the MQTT Queue at: " +
 							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
 							          "failed");
 				}
@@ -142,16 +125,16 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				try {
 					publishToQueue(humidPublishTopic, replyMessage);
 				} catch (CommunicationHandlerException e) {
-					log.error("MQTT - Publishing, reply message to the MQTT Queue at: " +
+					log.error(AgentConstants.LOG_APPENDER +
+							          "MQTT - Publishing, reply message to the MQTT Queue at: " +
 							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
 							          "failed");
 				}
 				break;
 
 			default:
-				log.warn(
-						"'" + controlSignal[0] + "' is invalid and not-supported for " +
-								"this device-type");
+				log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
+						         "' is invalid and not-supported for " + "this device-type");
 				break;
 		}
 	}
@@ -178,42 +161,45 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
 				try {
 					publishToQueue(topic, pushMessage);
-					log.info("Message: '" + pushMessage + "' published to MQTT Queue at [" +
-							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-							          "] under topic [" + topic + "]");
+					log.info(AgentConstants.LOG_APPENDER + "Message: '" + pushMessage +
+							         "' published to MQTT Queue at [" +
+							         agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+							         "] under topic [" + topic + "]");
 
 				} catch (CommunicationHandlerException e) {
-					log.warn("Data Publish attempt to topic - [" +
+					log.warn(AgentConstants.LOG_APPENDER + "Data Publish attempt to topic - [" +
 							         AgentConstants.MQTT_PUBLISH_TOPIC + "] failed for payload [" +
 							         payLoad + "]");
 				}
 			}
 		};
 
-		serviceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
-		                                             publishInterval, TimeUnit.SECONDS);
+		dataPushServiceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+		                                                     publishInterval, TimeUnit.SECONDS);
 	}
 
 
 	@Override
-	public void terminateConnection() {
+	public void disconnect() {
 		Runnable stopConnection = new Runnable() {
 			public void run() {
 				while (isConnected()) {
 					try {
-						serviceHandler.cancel(true);
+						dataPushServiceHandler.cancel(true);
 						closeConnection();
 
 					} catch (MqttException e) {
 						if (log.isDebugEnabled()) {
-							log.warn("Unable to 'STOP' MQTT connection at broker at: " +
+							log.warn(AgentConstants.LOG_APPENDER +
+									         "Unable to 'STOP' MQTT connection at broker at: " +
 									         mqttBrokerEndPoint);
 						}
 
 						try {
 							Thread.sleep(timeoutInterval);
 						} catch (InterruptedException e1) {
-							log.error("MQTT-Terminator: Thread Sleep Interrupt Exception");
+							log.error(AgentConstants.LOG_APPENDER +
+									          "MQTT-Terminator: Thread Sleep Interrupt Exception");
 						}
 					}
 				}

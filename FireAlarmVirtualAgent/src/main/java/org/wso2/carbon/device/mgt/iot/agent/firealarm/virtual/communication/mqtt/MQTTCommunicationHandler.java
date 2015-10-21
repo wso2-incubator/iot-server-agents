@@ -278,7 +278,7 @@ public abstract class MQTTCommunicationHandler
 
 		Thread reconnectThread = new Thread() {
 			public void run() {
-				attemptReconnection();
+				connect();
 			}
 		};
 		reconnectThread.setDaemon(true);

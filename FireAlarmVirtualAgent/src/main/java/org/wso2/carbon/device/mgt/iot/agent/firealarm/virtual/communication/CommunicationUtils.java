@@ -4,16 +4,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class CommunicationUtils {
 	private static final Log log = LogFactory.getLog(CommunicationUtils.class);
 
+	public static final int MIN_PORT_NUMBER = 9000;
+	public static final int MAX_PORT_NUMBER = 11000;
 
 	/**
 	 * Given a server endpoint as a String, this method splits it into Protocol, Host and Port
@@ -127,6 +134,73 @@ public class CommunicationUtils {
 		}
 
 		return interfaceToIPMap;
+	}
+
+
+	/**
+	 * Attempts to find a free port between the MIN_PORT_NUMBER(9000) and MAX_PORT_NUMBER(11000).
+	 * Tries 'RANDOMLY picked' port numbers between this range up-until "randomAttempts" number of
+	 * times. If still fails, then tries each port in descending order from the MAX_PORT_NUMBER
+	 * whilst skipping already attempted ones via random selection.
+	 *
+	 * @param randomAttempts no of times to TEST port numbers picked randomly over the given range
+	 * @return an available/free port
+	 */
+	public static synchronized int getAvailablePort(int randomAttempts) {
+		ArrayList<Integer> failedPorts = new ArrayList<Integer>(randomAttempts);
+
+		Random randomNum = new Random();
+		int randomPort = MAX_PORT_NUMBER;
+
+		while (randomAttempts > 0) {
+			randomPort = randomNum.nextInt(MAX_PORT_NUMBER - MIN_PORT_NUMBER) + MIN_PORT_NUMBER;
+
+			if (checkIfPortAvailable(randomPort)) {
+				return randomPort;
+			}
+			failedPorts.add(randomPort);
+			randomAttempts--;
+		}
+
+		randomPort = MAX_PORT_NUMBER;
+
+		while (true) {
+			if (!failedPorts.contains(randomPort) && checkIfPortAvailable(randomPort)) {
+				return randomPort;
+			}
+			randomPort--;
+		}
+	}
+
+
+	private static boolean checkIfPortAvailable(int port) {
+		ServerSocket tcpSocket = null;
+		DatagramSocket udpSocket = null;
+
+		try {
+			tcpSocket = new ServerSocket(port);
+			tcpSocket.setReuseAddress(true);
+
+			udpSocket = new DatagramSocket(port);
+			udpSocket.setReuseAddress(true);
+			return true;
+		} catch (IOException ex) {
+			// denotes the port is in use
+		} finally {
+			if (tcpSocket != null) {
+				try {
+					tcpSocket.close();
+				} catch (IOException e) {
+						/* not to be thrown */
+				}
+			}
+
+			if (udpSocket != null) {
+				udpSocket.close();
+			}
+		}
+
+		return false;
 	}
 
 }

@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationUtils;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 
 import java.io.BufferedReader;
@@ -20,13 +21,12 @@ import java.nio.charset.StandardCharsets;
 public abstract class HTTPCommunicationHandler implements CommunicationHandler {
 	private static final Log log = LogFactory.getLog(HTTPCommunicationHandler.class);
 
-	public static final int DEFAULT_SERVER_PORT = 9876;
 	protected Server server;
 	protected int port;
 	protected int timeoutInterval;
 
 	protected HTTPCommunicationHandler() {
-		this.port = DEFAULT_SERVER_PORT;
+		this.port = CommunicationUtils.getAvailablePort(10);
 		this.server = new Server(port);
 		timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
 	}
@@ -59,6 +59,7 @@ public abstract class HTTPCommunicationHandler implements CommunicationHandler {
 
 	protected void incrementPort() {
 		this.port = this.port + 1;
+		server = new Server(port);
 	}
 
 	/**

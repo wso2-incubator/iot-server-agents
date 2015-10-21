@@ -157,19 +157,19 @@ public class AgentManager {
 			}
 		});
 
-		agentCommunicator.get(protocol).initializeConnection();
+		agentCommunicator.get(protocol).connect();
 
 	}
 
 
 	private void switchCommunicator(String stopProtocol, String startProtocol){
-		agentCommunicator.get(stopProtocol).terminateConnection();
+		agentCommunicator.get(stopProtocol).disconnect();
 
 		while(agentCommunicator.get(stopProtocol).isConnected()) {
 			// wait for the communicator to shutdown successfully
 		}
 
-		agentCommunicator.get(startProtocol).initializeConnection();
+		agentCommunicator.get(startProtocol).connect();
 	}
 
 	public void setPushInterval(int pushInterval) {
@@ -178,13 +178,13 @@ public class AgentManager {
 
 		switch (protocol) {
 			case AgentConstants.HTTP_PROTOCOL:
-				((HTTPCommunicationHandlerImpl) communicationHandler).getServiceHandler().cancel(true);
+				((HTTPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
 				break;
 			case AgentConstants.MQTT_PROTOCOL:
-				((MQTTCommunicationHandlerImpl) communicationHandler).getServiceHandler().cancel(true);
+				((MQTTCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
 				break;
 			case AgentConstants.XMPP_PROTOCOL:
-				((XMPPCommunicationHandlerImpl) communicationHandler).getServiceHandler().cancel(true);
+				((XMPPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
 				break;
 		}
 		communicationHandler.publishDeviceData(pushInterval);
