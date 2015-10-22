@@ -108,6 +108,20 @@ public class AgentUI extends javax.swing.JFrame {
                         if (policy != null){
                             txtAreaLogs.append("\n" + policy);
                         }
+                        if (isTemperatureRandomized) {
+                            txtTemperatureMinActionPerformed(null);
+                            txtTemperatureMaxActionPerformed(null);
+                            if (isTemperatureSmoothed) {
+                                txtTemperatureSVFActionPerformed(null);
+                            }
+                        }
+                        if (isHumidityRandomized) {
+                            txtHumidityMinActionPerformed(null);
+                            txtHumidityMaxActionPerformed(null);
+                            if (isHumiditySmoothed) {
+                                txtHumiditySVFActionPerformed(null);
+                            }
+                        }
                     }
                 });
                 try {
