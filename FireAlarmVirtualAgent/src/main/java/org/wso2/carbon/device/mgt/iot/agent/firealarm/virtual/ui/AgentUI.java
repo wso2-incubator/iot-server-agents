@@ -17,6 +17,7 @@
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui;
 
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
 
 import javax.imageio.ImageIO;
@@ -739,11 +740,14 @@ public class AgentUI extends javax.swing.JFrame {
         for (String item : AgentManager.getInstance().getInterfaceList()){
             cmbInterface.addItem(item);
         }
+        cmbInterface.setEnabled(false);
 
         cmbProtocol.removeAllItems();
         for (String item : AgentManager.getInstance().getProtocolList()){
             cmbProtocol.addItem(item);
         }
+        cmbProtocol.setSelectedItem(AgentConstants.DEFAULT_PROTOCOL);
+
 
         try {
             BufferedImage imgBulbOn = ImageIO.read(this.getClass().getResource("/bulb-on.jpg"));
@@ -888,7 +892,15 @@ public class AgentUI extends javax.swing.JFrame {
     }
 
     private void cmbProtocolActionPerformed(java.awt.event.ActionEvent evt) {
+        if (cmbProtocol.getSelectedIndex() != -1 && cmbProtocol.getItemAt(
+                cmbProtocol.getSelectedIndex()).equals(AgentConstants.HTTP_PROTOCOL)) {
+            cmbInterface.setEnabled(true);
+        } else {
+            cmbInterface.setEnabled(false);
+        }
+
         AgentManager.getInstance().setProtocol(cmbProtocol.getSelectedIndex());
+
     }
 
     private void txtTemperatureSVFActionPerformed(java.awt.event.ActionEvent evt) {
