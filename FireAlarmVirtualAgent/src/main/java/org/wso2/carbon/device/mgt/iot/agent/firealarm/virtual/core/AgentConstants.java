@@ -33,27 +33,30 @@ public class AgentConstants {
 	public static final String PUSH_DATA_PAYLOAD =
 			"{\"owner\":\"%s\",\"deviceId\":\"%s\",\"reply\":\"%s\",\"value\":\"%s\"}";
 
-//	public static final String AGENT_CONTROL_APP_EP = "/firealarm-webapp";
-	public static final String AGENT_CONTROL_APP_EP = "/store/pages/device/%s/%s";
+	public static final String AGENT_CONTROL_APP_EP = "/firealarm-webapp";
+	public static final String DEVICE_DETAILS_PAGE_EP = "/store/pages/device/%s/%s";
 	public static final String DEVICE_ANALYTICS_PAGE_URL =
 			"/store/pages/analytics?deviceId=%s&deviceType=%s";
 	/*	---------------------------------------------------------------------------------------
 				HTTP Connection specific information for communicating with IoT-Server
  		---------------------------------------------------------------------------------------	*/
-	public static final String TCP_PREFIX = "tcp://";
-	public static final String HTTP_PREFIX = "http://";
-	public static final String HTTPS_PREFIX = "https://";
 	public static final String HTTP_POST = "POST";
 	public static final String HTTP_GET = "GET";
 	public static final String APPLICATION_JSON_TYPE = "application/json";
-	public static final int DEVICE_SERVER_PORT = 9090;
+	public static final int DEFAULT_DEVICE_SERVER_PORT = 9090;
+	public static final String REGISTERED = "Registered";
+	public static final String NOT_REGISTERED = "Not-Registered";
+	public static final String REGISTRATION_FAILED = "Registration Failed";
+	public static final String RETRYING_TO_REGISTER = "Registration Failed. Re-trying..";
+	public static final String SERVER_NOT_RESPONDING = "Server not responding..";
+
 	/*	---------------------------------------------------------------------------------------
 								MQTT Connection specific information
  		---------------------------------------------------------------------------------------	*/
 	public static final int DEFAULT_MQTT_RECONNECTION_INTERVAL = 2;        // time in seconds
 	public static final int DEFAULT_MQTT_QUALITY_OF_SERVICE = 0;
 	public static final String MQTT_SUBSCRIBE_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s";
-	public static final String MQTT_PUBLISH_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s/reply";
+	public static final String MQTT_PUBLISH_TOPIC = "wso2/iot/%s/" + DEVICE_TYPE + "/%s/publisher";
 	/*	---------------------------------------------------------------------------------------
 								XMPP Connection specific information
  		---------------------------------------------------------------------------------------	*/
@@ -90,8 +93,9 @@ public class AgentConstants {
 	public static final String DEFAULT_AUTH_METHOD = "token";
 	public static final String DEFAULT_AUTH_TOKEN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321";
 	public static final String DEFAULT_REFRESH_TOKEN = "1234567890ZYXWVUTSRQPONMKLJIHGFEDCBA";
-	public static final String DEFAULT_NETWORK_INTERFACE = "lo0";
-	public static final int DEFAULT_PUSH_INTERVAL = 15;
+	public static final String DEFAULT_NETWORK_INTERFACE = "en0";
+	public static final int DEFAULT_DATA_PUBLISH_INTERVAL = 15;                  // seconds
+	public static final String DEFAULT_PROTOCOL = "MQTT";
 	/*	---------------------------------------------------------------------------------------
 					Control Signal specific constants to match the request context
 	 	---------------------------------------------------------------------------------------	*/
@@ -100,5 +104,14 @@ public class AgentConstants {
 	public static final String HUMIDITY_CONTROL = "HUMIDITY";
 	public static final String CONTROL_ON = "ON";
 	public static final String CONTROL_OFF = "OFF";
-	private static final String FILE_SEPERATOR = File.separator;
+	/*	---------------------------------------------------------------------------------------
+					Communication protocol specific Strings
+		---------------------------------------------------------------------------------------	*/
+	public static final String TCP_PREFIX = "tcp://";
+	public static final String HTTP_PREFIX = "http://";
+	public static final String HTTPS_PREFIX = "https://";
+	public static final String HTTP_PROTOCOL = "HTTP";
+	public static final String MQTT_PROTOCOL = "MQTT";
+	public static final String XMPP_PROTOCOL = "XMPP";
+
 }
