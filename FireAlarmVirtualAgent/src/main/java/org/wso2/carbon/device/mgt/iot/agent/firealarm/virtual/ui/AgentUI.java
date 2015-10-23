@@ -601,7 +601,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel9.setText("Protocol:");
 
-        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MQTT", "XMPP", "HTTP" }));
+        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"MQTT", "XMPP", "HTTP"}));
         cmbProtocol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbProtocolActionPerformed(evt);
@@ -750,6 +750,9 @@ public class AgentUI extends javax.swing.JFrame {
         );
 
         pack();
+
+        cmbInterface.setVisible(false);
+        jLabel12.setVisible(false);
 
         chkbxTemperatureSmooth.setEnabled(false);
         chkbxTemperatureSmooth.setEnabled(false);
