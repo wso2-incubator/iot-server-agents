@@ -18,6 +18,10 @@
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class AgentConstants {
 	public static final String DEVICE_TYPE = "virtual_firealarm";
@@ -32,6 +36,9 @@ public class AgentConstants {
 	public static final String DEVICE_PUSH_TEMPERATURE_API_EP = "/push_temperature";
 	public static final String PUSH_DATA_PAYLOAD =
 			"{\"owner\":\"%s\",\"deviceId\":\"%s\",\"reply\":\"%s\",\"value\":\"%s\"}";
+
+	public static final String PUSH_SIMULATION_DATA_PAYLOAD =
+			"{\"owner\":\"%s\",\"deviceId\":\"%s\",\"reply\":\"%s\",\"value\":\"%s\",\"isSimulated\":\"%s\",\"duration\":\"%s\",\"frequency\":\"%s\"}";
 
 	public static final String AGENT_CONTROL_APP_EP = "/firealarm-webapp";
 	public static final String DEVICE_DETAILS_PAGE_EP = "/store/pages/device/%s/%s";
@@ -101,6 +108,7 @@ public class AgentConstants {
 	 	---------------------------------------------------------------------------------------	*/
 	public static final String BULB_CONTROL = "BULB";
 	public static final String TEMPERATURE_CONTROL = "TEMPERATURE";
+	public static final String POLICY_SIGNAL = "POLICY";
 	public static final String HUMIDITY_CONTROL = "HUMIDITY";
 	public static final String CONTROL_ON = "ON";
 	public static final String CONTROL_OFF = "OFF";
@@ -113,5 +121,21 @@ public class AgentConstants {
 	public static final String HTTP_PROTOCOL = "HTTP";
 	public static final String MQTT_PROTOCOL = "MQTT";
 	public static final String XMPP_PROTOCOL = "XMPP";
+
+	public static final String CEP_FILE_NAME = "cep_query.txt";
+
+	public static final String CEP_QUERY = "define stream fireAlarmEventStream (deviceID string, temp int);\n" +
+											"from fireAlarmEventStream#window.time(30 sec)\n" +
+											"select deviceID, max(temp) as maxValue\n" +
+											"group by deviceID\n" +
+											"insert into analyzeStream for expired-events;\n" +
+											"from analyzeStream[maxValue < 50]\n" +
+											"select maxValue\n" +
+											"insert into bulbOnStream;\n" +
+											"from fireAlarmEventStream[temp > 50]\n" +
+											"select deviceID, temp\n" +
+											"insert into bulbOffStream;";
+
+	public static Properties prop = new Properties();
 
 }

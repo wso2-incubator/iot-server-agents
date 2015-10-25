@@ -10,7 +10,11 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt
 		.MQTTCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui.AgentUI;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -81,6 +85,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 		String replyMessage;
 
 		String[] controlSignal = message.toString().split(":");
+		log.info("########## Incoming Message : "+ controlSignal);
 		// message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format.(ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
 		switch (controlSignal[0].toUpperCase()) {
@@ -132,10 +137,50 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 				}
 				break;
 
+			case AgentConstants.POLICY_SIGNAL:
+				postMessageArrived(controlSignal[1]);
+				break;
+
 			default:
 				log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
 						         "' is invalid and not-supported for " + "this device-type");
 				break;
+		}
+	}
+
+	protected void postMessageArrived(String message){
+		AgentConstants agentConstants = new AgentConstants();
+		System.out.println(" Message : " + message);
+		String fileLocation = "cep_query.txt";
+		writeToFile(message, fileLocation);
+		AgentManager.getInstance().addToPolicyLog(message);
+	}
+
+
+	private boolean writeToFile(String policy,String fileLocation){
+		File file = new File(fileLocation);
+
+		try (FileOutputStream fop = new FileOutputStream(file)) {
+
+			// if file doesn't exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			// get the content in bytes
+			byte[] contentInBytes = policy.getBytes();
+
+			fop.write(contentInBytes);
+			fop.flush();
+			fop.close();
+
+			System.out.println("Done");
+			AgentManager.setUpdated(true);
+			return true;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 
