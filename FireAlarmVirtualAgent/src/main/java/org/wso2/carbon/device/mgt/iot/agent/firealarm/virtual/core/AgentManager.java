@@ -23,12 +23,15 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.Comm
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.sidhdhi.SidhdhiQuery;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http.HTTPCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt.MQTTCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp.XMPPCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui.AgentUI;
+import org.wso2.siddhi.core.util.SiddhiClassLoader;
 
 import javax.swing.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +43,8 @@ public class AgentManager {
 
 	private static AgentManager agentManager = new AgentManager();
 	private AgentUI agentUI;
+	private static Boolean policyUpdated = false;
+	private static final Object lock = new Object();
 
 	private int temperature = 30, humidity = 30;
 	private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
@@ -158,7 +163,26 @@ public class AgentManager {
 		});
 
 		agentCommunicator.get(protocol).connect();
+		(new Thread(new SidhdhiQuery())).start();
 
+		String executionPlan = SidhdhiQuery.readFile(AgentConstants.CEP_FILE_NAME, StandardCharsets.UTF_8);
+//		addToPolicyLog(executionPlan);
+
+
+	}
+
+	public static void setUpdated(Boolean x) {
+		synchronized (lock) {
+			policyUpdated = x;
+		}
+	}
+
+	public static Boolean isUpdated() {
+		synchronized (lock) {
+			Boolean temp = policyUpdated;
+			policyUpdated = false;
+			return temp;
+		}
 	}
 
 
@@ -222,6 +246,7 @@ public class AgentManager {
 
 	public void changeBulbStatus(boolean isOn) {
 		agentUI.setBulbStatus(isOn);
+		SidhdhiQuery.isBulbOn = isOn;
 	}
 
 	public void updateAgentStatus(String status) {
@@ -255,6 +280,10 @@ public class AgentManager {
 			agentUI.updateTemperature(temperature);
 		}
 		return temperature;
+	}
+
+	public void addToPolicyLog(String policy){
+		agentUI.addToPolicyLog(policy);
 	}
 
 	public void setTemperature(int temperature) {

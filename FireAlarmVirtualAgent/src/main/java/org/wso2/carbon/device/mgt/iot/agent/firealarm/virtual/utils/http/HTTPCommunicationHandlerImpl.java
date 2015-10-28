@@ -141,97 +141,107 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 
 	@Override
 	public void publishDeviceData(int publishInterval) {
+
+		final String deviceOwner = agentManager.getAgentConfigs().getDeviceOwner();
+		final String deviceID = agentManager.getAgentConfigs().getDeviceId();
+		final int currentTemperature = agentManager.getTemperature();
+		boolean simulationMode = false;
+		int duration = 2*60;
+		int frequency = 5;
+		int interval = duration*1000;
+
 		Runnable pushDataRunnable = new Runnable() {
 			@Override
 			public void run() {
-				int responseCode = -1;
-				String deviceOwner = agentManager.getAgentConfigs().getDeviceOwner();
-				String deviceID = agentManager.getAgentConfigs().getDeviceId();
-				String pushDataEndPointURL = agentManager.getPushDataAPIEP();
-				String pushDataPayload = null;
-				HttpURLConnection httpConnection = null;
-
-				try {
-					httpConnection = getHttpConnection(agentManager.getPushDataAPIEP());
-					httpConnection.setRequestMethod(AgentConstants.HTTP_POST);
-					httpConnection.setRequestProperty("Authorization", "Bearer " +
-							agentManager.getAgentConfigs().getAuthToken());
-					httpConnection.setRequestProperty("Content-Type",
-					                                  AgentConstants.APPLICATION_JSON_TYPE);
-
-					int currentTemperature = agentManager.getTemperature();
-					pushDataPayload = String.format(AgentConstants.PUSH_DATA_PAYLOAD, deviceOwner,
-					                                deviceID,
-					                                (agentManager.getDeviceIP() + ":" + port),
-					                                currentTemperature);
-
-					if (log.isDebugEnabled()) {
-						log.debug(AgentConstants.LOG_APPENDER + "Push Data Payload is: " +
-								          pushDataPayload);
-					}
-
-					httpConnection.setDoOutput(true);
-					DataOutputStream dataOutPutWriter = new DataOutputStream(
-							httpConnection.getOutputStream());
-					dataOutPutWriter.writeBytes(pushDataPayload);
-					dataOutPutWriter.flush();
-					dataOutPutWriter.close();
-
-					responseCode = httpConnection.getResponseCode();
-					httpConnection.disconnect();
-
-					log.info(AgentConstants.LOG_APPENDER + "Message - '" + pushDataPayload +
-							         "' was published to server at: " + httpConnection.getURL());
-
-				} catch (ProtocolException exception) {
-					String errorMsg =
-							"Protocol specific error occurred when trying to set method to " +
-									AgentConstants.HTTP_POST + " for:" + pushDataEndPointURL;
-					log.error(AgentConstants.LOG_APPENDER + errorMsg);
-
-				} catch (IOException exception) {
-					String errorMsg =
-							"An IO error occurred whilst trying to get the response code from: " +
-									pushDataEndPointURL + " for a " + AgentConstants.HTTP_POST +
-									" " + "method.";
-					log.error(AgentConstants.LOG_APPENDER + errorMsg);
-
-				} catch (CommunicationHandlerException exception) {
-					log.error(AgentConstants.LOG_APPENDER +
-							          "Error encountered whilst trying to create HTTP-Connection " +
-							          "to IoT-Server EP at: " +
-							          pushDataEndPointURL);
-				}
-
-				if (responseCode == HttpStatus.CONFLICT_409 ||
-						responseCode == HttpStatus.PRECONDITION_FAILED_412) {
-					log.warn(AgentConstants.LOG_APPENDER +
-							         "DeviceIP is being Re-Registered due to Push-Data failure " +
-							         "with response code: " +
-							         responseCode);
-					registerThisDevice();
-
-				} else if (responseCode != HttpStatus.NO_CONTENT_204) {
-					if (log.isDebugEnabled()) {
-						log.error(AgentConstants.LOG_APPENDER + "Status Code: " + responseCode +
-								          " encountered whilst trying to Push-Device-Data to IoT " +
-								          "Server at: " +
-								          agentManager.getPushDataAPIEP());
-					}
-					agentManager.updateAgentStatus(AgentConstants.SERVER_NOT_RESPONDING);
-				}
-
-				if (log.isDebugEnabled()) {
-					log.debug(AgentConstants.LOG_APPENDER + "Push-Data call with payload - " +
-							          pushDataPayload + ", to IoT Server returned status " +
-							          responseCode);
-				}
+				String pushDataPayload = String.format(AgentConstants.PUSH_DATA_PAYLOAD, deviceOwner,
+						deviceID, (agentManager.getDeviceIP() + ":" + port),
+						currentTemperature);
+				executeDataPush(pushDataPayload);
 			}
 		};
 
-		dataPushServiceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
-		                                                     publishInterval,
-		                                                     TimeUnit.SECONDS);
+		if(!simulationMode) {
+			dataPushServiceHandler = service.scheduleAtFixedRate(pushDataRunnable, publishInterval,
+					publishInterval,
+					TimeUnit.SECONDS);
+		}else {
+			String pushDataPayload = String.format(AgentConstants.PUSH_SIMULATION_DATA_PAYLOAD, deviceOwner,
+					deviceID, (agentManager.getDeviceIP() + ":" + port),
+					currentTemperature, true, duration, frequency);
+			executeDataPush(pushDataPayload);
+
+		}
+	}
+
+	private void executeDataPush(String pushDataPayload){
+		int responseCode = -1;
+		String pushDataEndPointURL = agentManager.getPushDataAPIEP();
+		HttpURLConnection httpConnection = null;
+
+		try {
+			httpConnection = getHttpConnection(agentManager.getPushDataAPIEP());
+			httpConnection.setRequestMethod(AgentConstants.HTTP_POST);
+			httpConnection.setRequestProperty("Authorization", "Bearer " +
+					agentManager.getAgentConfigs().getAuthToken());
+			httpConnection.setRequestProperty("Content-Type",
+					AgentConstants.APPLICATION_JSON_TYPE);
+
+			httpConnection.setDoOutput(true);
+			DataOutputStream dataOutPutWriter = new DataOutputStream(
+					httpConnection.getOutputStream());
+			dataOutPutWriter.writeBytes(pushDataPayload);
+			dataOutPutWriter.flush();
+			dataOutPutWriter.close();
+
+			responseCode = httpConnection.getResponseCode();
+			httpConnection.disconnect();
+
+			log.info(AgentConstants.LOG_APPENDER + "Message - '" + pushDataPayload +
+					"' was published to server at: " + httpConnection.getURL());
+
+		} catch (ProtocolException exception) {
+			String errorMsg =
+					"Protocol specific error occurred when trying to set method to " +
+							AgentConstants.HTTP_POST + " for:" + pushDataEndPointURL;
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
+
+		} catch (IOException exception) {
+			String errorMsg =
+					"An IO error occurred whilst trying to get the response code from: " +
+							pushDataEndPointURL + " for a " + AgentConstants.HTTP_POST +
+							" " + "method.";
+			log.error(AgentConstants.LOG_APPENDER + errorMsg);
+
+		} catch (CommunicationHandlerException exception) {
+			log.error(AgentConstants.LOG_APPENDER +
+					"Error encountered whilst trying to create HTTP-Connection " +
+					"to IoT-Server EP at: " +
+					pushDataEndPointURL);
+		}
+
+		if (responseCode == HttpStatus.CONFLICT_409 ||
+				responseCode == HttpStatus.PRECONDITION_FAILED_412) {
+			log.warn(AgentConstants.LOG_APPENDER +
+					"DeviceIP is being Re-Registered due to Push-Data failure " +
+					"with response code: " +
+					responseCode);
+			registerThisDevice();
+
+		} else if (responseCode != HttpStatus.NO_CONTENT_204) {
+			if (log.isDebugEnabled()) {
+				log.error(AgentConstants.LOG_APPENDER + "Status Code: " + responseCode +
+						" encountered whilst trying to Push-Device-Data to IoT " +
+						"Server at: " +
+						agentManager.getPushDataAPIEP());
+			}
+			agentManager.updateAgentStatus(AgentConstants.SERVER_NOT_RESPONDING);
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug(AgentConstants.LOG_APPENDER + "Push-Data call with payload - " +
+					pushDataPayload + ", to IoT Server returned status " +
+					responseCode);
+		}
 	}
 
 	@Override
