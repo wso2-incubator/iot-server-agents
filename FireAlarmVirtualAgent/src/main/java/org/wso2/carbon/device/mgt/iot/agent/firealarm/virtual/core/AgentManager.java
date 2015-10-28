@@ -111,8 +111,8 @@ public class AgentManager {
 		int xmppPort = Integer.parseInt(xmppIPPortMap.get("Port"));
 
 		String mqttTopic = String.format(AgentConstants.MQTT_SUBSCRIBE_TOPIC,
-		                             agentManager.getAgentConfigs().getDeviceOwner(),
-		                             agentManager.getAgentConfigs().getDeviceId());
+		                             agentConfigs.getDeviceOwner(),
+		                             agentConfigs.getDeviceId());
 
 		CommunicationHandler httpCommunicator = new HTTPCommunicationHandlerImpl();
 		CommunicationHandler xmppCommunicator = new XMPPCommunicationHandlerImpl(xmppServer, xmppPort);
