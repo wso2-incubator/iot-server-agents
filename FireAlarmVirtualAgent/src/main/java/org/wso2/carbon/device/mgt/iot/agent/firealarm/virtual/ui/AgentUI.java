@@ -35,11 +35,7 @@ public class AgentUI extends javax.swing.JFrame {
 
     private volatile boolean isBulbOn = false;
 
-    private final Object _lock = new Object();
-
     private JLabel picLabelBulbOn, picLabelBulbOff;
-
-    private volatile java.util.List<String> policyLogs = new ArrayList<>();
 
     // Variables declaration - do not modify
     private javax.swing.JButton btnControl;
@@ -76,7 +72,6 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JLabel lblAgentName;
@@ -194,7 +189,6 @@ public class AgentUI extends javax.swing.JFrame {
         cmbProtocol = new javax.swing.JComboBox();
         jLabel12 = new javax.swing.JLabel();
         cmbInterface = new javax.swing.JComboBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
         txtAreaLogs = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
         chkbxEmulate = new javax.swing.JCheckBox();
@@ -601,7 +595,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel9.setText("Protocol:");
 
-        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MQTT", "XMPP", "HTTP" }));
+        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"MQTT", "XMPP", "HTTP"}));
         cmbProtocol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbProtocolActionPerformed(evt);
@@ -655,13 +649,6 @@ public class AgentUI extends javax.swing.JFrame {
                                 .addContainerGap())
         );
 
-        txtAreaLogs.setBackground(new java.awt.Color(1, 1, 1));
-        txtAreaLogs.setColumns(20);
-        txtAreaLogs.setFont(new java.awt.Font("Courier 10 Pitch", 1, 18)); // NOI18N
-        txtAreaLogs.setForeground(new java.awt.Color(0, 255, 0));
-        txtAreaLogs.setRows(5);
-        jScrollPane1.setViewportView(txtAreaLogs);
-
         jPanel4.setBackground(new java.awt.Color(169, 253, 173));
 
         chkbxEmulate.setText("Emulate data");
@@ -711,7 +698,6 @@ public class AgentUI extends javax.swing.JFrame {
                         .addGroup(layout.createSequentialGroup()
                                           .addContainerGap()
                                           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addComponent(jScrollPane1)
                                                             .addComponent(lblAgentName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addGroup(layout.createSequentialGroup()
@@ -739,8 +725,6 @@ public class AgentUI extends javax.swing.JFrame {
                                                                               .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -750,6 +734,9 @@ public class AgentUI extends javax.swing.JFrame {
         );
 
         pack();
+
+        cmbInterface.setVisible(false);
+        jLabel12.setVisible(false);
 
         chkbxTemperatureSmooth.setEnabled(false);
         chkbxTemperatureSmooth.setEnabled(false);
@@ -976,21 +963,12 @@ public class AgentUI extends javax.swing.JFrame {
     }
 
     public void addToPolicyLog(String policy) {
-        synchronized (this._lock) {
-            policyLogs.add(policy);
-        }
+        //TODO: remove this method after removing policy
     }
 
     private String getPolicyLog() {
-        synchronized (this._lock) {
-            if (policyLogs.size() > 0) {
-                String policy = policyLogs.get(0);
-                policyLogs.remove(0);
-                return policy;
-            } else {
-                return null;
-            }
-        }
+        return null;
+        //TODO: remove this method after removing policy
     }
 
 }
