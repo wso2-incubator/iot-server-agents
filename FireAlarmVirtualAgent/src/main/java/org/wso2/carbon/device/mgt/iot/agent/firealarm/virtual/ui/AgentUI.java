@@ -20,13 +20,10 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
+import java.net.URL;
 
 public class AgentUI extends javax.swing.JFrame {
 
@@ -753,22 +750,17 @@ public class AgentUI extends javax.swing.JFrame {
         }
         cmbProtocol.setSelectedItem(AgentConstants.DEFAULT_PROTOCOL);
 
+        URL urlAlarmOn = this.getClass().getResource("/alarm-on.gif");
+        ImageIcon imageIconAlarmOn = new ImageIcon(urlAlarmOn);
 
-        try {
-            BufferedImage imgBulbOn = ImageIO.read(this.getClass().getResource("/bulb-on.jpg"));
-            Image scaledBulbOn = imgBulbOn.getScaledInstance(pnlBulbStatus.getWidth(), pnlBulbStatus.getHeight(),
-                                                             Image.SCALE_SMOOTH);
-            picLabelBulbOn = new JLabel(new ImageIcon(scaledBulbOn));
+        URL urlAlarmOff = this.getClass().getResource("/alarm-off.gif");
+        ImageIcon imageIconAlarmOff = new ImageIcon(urlAlarmOff);
+
+        picLabelBulbOn = new JLabel(imageIconAlarmOn);
             picLabelBulbOn.setSize(pnlBulbStatus.getSize());
 
-            BufferedImage imgBulbOff = ImageIO.read(this.getClass().getResource("/bulb-off.jpg"));
-            Image scaledBulbOff = imgBulbOff.getScaledInstance(pnlBulbStatus.getWidth(), pnlBulbStatus.getHeight(),
-                                                               Image.SCALE_SMOOTH);
-            picLabelBulbOff = new JLabel(new ImageIcon(scaledBulbOff));
+        picLabelBulbOff = new JLabel(imageIconAlarmOff);
             picLabelBulbOff.setSize(pnlBulbStatus.getSize());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         new Thread(uiUpdater).start();
 
