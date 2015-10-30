@@ -207,7 +207,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         lblAgentName.setFont(new java.awt.Font("Cantarell", 1, 24)); // NOI18N
         lblAgentName.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        lblAgentName.setText(AgentManager.getInstance().getDeviceName());
+        lblAgentName.setText("Device Name: " + AgentManager.getInstance().getDeviceName());
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Copyright (c) 2015, WSO2 Inc.");
@@ -216,7 +216,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel3.setFont(new java.awt.Font("Cantarell", 0, 18)); // NOI18N
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("Bulb Status");
+        jLabel3.setText("Alarm Status");
 
         pnlBulbStatus.setBackground(new java.awt.Color(220, 220, 220));
 
