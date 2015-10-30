@@ -17,15 +17,25 @@
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
 
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.Sequencer;
+import javax.sound.sampled.Clip;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -34,9 +44,9 @@ import java.util.Properties;
  * queue and to a XMPP Server. Pushing temperature data to the IoT-Server at timely intervals.
  * Reading device specific configuration from a configs file etc....
  */
-public class AgentCoreOperations {
+public class AgentUtilOperations {
 
-	private static final Log log = LogFactory.getLog(AgentCoreOperations.class);
+	private static final Log log = LogFactory.getLog(AgentUtilOperations.class);
 	private static final AgentManager agentManager = AgentManager.getInstance();
 
 	/**
@@ -55,12 +65,15 @@ public class AgentCoreOperations {
 		String propertiesFileName = AgentConstants.AGENT_PROPERTIES_FILE_NAME;
 
 		try {
-			ClassLoader loader = AgentCoreOperations.class.getClassLoader();
+			ClassLoader loader = AgentUtilOperations.class.getClassLoader();
 			URL path = loader.getResource(propertiesFileName);
 			System.out.println(path);
 			String root = path.getPath().replace(
-					"wso2-firealarm-virtual-agent.jar!/deviceConfig.properties",
+					"wso2-firealarm-virtual-agent-advanced.jar!/deviceConfig.properties",
 					"").replace("jar:", "").replace("file:", "");
+
+			agentManager.setRootPath(root);
+
 			propertiesInputStream = new FileInputStream(
 					root + AgentConstants.AGENT_PROPERTIES_FILE_NAME);
 
@@ -205,6 +218,82 @@ public class AgentCoreOperations {
 	}
 
 
+	public static Sequencer initializeAudioSequencer(){
+		InputStream audioSrc = AgentUtilOperations.class.getResourceAsStream(
+				"/" + AgentConstants.AUDIO_FILE_NAME);
+//		File audioFile = new File(rootPath + AgentConstants.AUDIO_FILE_NAME);
+
+		Sequence sequence = null;
+		try {
+			sequence = MidiSystem.getSequence(audioSrc);
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		Sequencer sequencer = null;
+		try {
+			sequencer = MidiSystem.getSequencer();
+		} catch (MidiUnavailableException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			sequencer.open();
+		} catch (MidiUnavailableException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			sequencer.setSequence(sequence);
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+		}
+
+		sequencer.setLoopCount(Clip.LOOP_CONTINUOUSLY);
+		return sequencer;
+	}
+
+
+	public static String formatMessage(String message) {
+		StringBuilder formattedMsg = new StringBuilder(message);
+
+		ArrayList<String> keyWordList = new ArrayList<String>();
+		keyWordList.add("define");
+		keyWordList.add("from");
+		keyWordList.add("select");
+		keyWordList.add("group");
+		keyWordList.add("insert");
+		keyWordList.add(";");
+
+
+		for (String keyWord : keyWordList) {
+			int startIndex = 0;
+
+			while (true) {
+				int keyWordIndex = formattedMsg.indexOf(keyWord, startIndex);
+
+				if (keyWordIndex == -1) {
+					break;
+				}
+
+				if (keyWord.equals(";")) {
+					if (keyWordIndex != 0 && (keyWordIndex + 1) != formattedMsg.length() && formattedMsg.charAt(keyWordIndex + 1) == ' ') {
+						formattedMsg.setCharAt((keyWordIndex + 1), '\n');
+					}
+				} else {
+					if (keyWordIndex != 0 && formattedMsg.charAt(keyWordIndex - 1) == ' ') {
+						formattedMsg.setCharAt((keyWordIndex - 1), '\n');
+					}
+				}
+				startIndex = keyWordIndex + 1;
+			}
+		}
+		return formattedMsg.toString();
+	}
+
+
 	/**
 	 * This method calls the "Register-API" of the IoT Server in order to register the device's IP
 	 * against its ID.
@@ -289,7 +378,8 @@ public class AgentCoreOperations {
 	 *                    (Read from configuration file)
 	 */
 //	public static void initiateDeviceDataPush(final String deviceOwner, final String deviceID) {
-//		initiateDeviceDataPush(deviceOwner, deviceID, AgentConstants.DEFAULT_DATA_PUBLISH_INTERVAL);
+//		initiateDeviceDataPush(deviceOwner, deviceID, AgentConstants
+// .DEFAULT_DATA_PUBLISH_INTERVAL);
 //	}
 
 	/**
@@ -394,7 +484,8 @@ public class AgentCoreOperations {
 //		service.scheduleAtFixedRate(pushDataThread, 0, interval, TimeUnit.SECONDS);
 //
 //		ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-//		service.scheduleAtFixedRate(CommunicationUtils.PUSH_DATA_THREAD, 0, interval, TimeUnit.SECONDS);
+//		service.scheduleAtFixedRate(CommunicationUtils.PUSH_DATA_THREAD, 0, interval, TimeUnit
+// .SECONDS);
 //	}
 
 	/**

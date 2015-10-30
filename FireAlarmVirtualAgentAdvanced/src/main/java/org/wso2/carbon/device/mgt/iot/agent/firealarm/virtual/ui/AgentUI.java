@@ -83,7 +83,7 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JSpinner spinnerHumidity;
     private javax.swing.JSpinner spinnerInterval;
     private javax.swing.JSpinner spinnerTemperature;
-    private javax.swing.JTextArea txtAreaLogs;
+	private javax.swing.JTextArea txtAreaLogs;
     private javax.swing.JTextField txtHumidityMax;
     private javax.swing.JTextField txtHumidityMin;
     private javax.swing.JTextField txtHumiditySVF;
@@ -106,6 +106,7 @@ public class AgentUI extends javax.swing.JFrame {
                         String policy = getPolicyLog();
                         if (policy != null){
                             txtAreaLogs.append("\n" + policy);
+	                        txtAreaLogs.append("\n--------------------------------------------------\n");
                         }
                         if (isTemperatureRandomized) {
                             txtTemperatureMinActionPerformed(null);
@@ -132,12 +133,12 @@ public class AgentUI extends javax.swing.JFrame {
         }
     };
 
+
     /**
      * Creates new form AgentUI
      */
     public AgentUI() {
-        initComponents();
-
+	    initComponents();
     }
 
     /**
@@ -216,7 +217,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel3.setFont(new java.awt.Font("Cantarell", 0, 18)); // NOI18N
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("Bulb Status");
+        jLabel3.setText("Alarm Status");
 
         pnlBulbStatus.setBackground(new java.awt.Color(220, 220, 220));
 
@@ -655,7 +656,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         txtAreaLogs.setBackground(new java.awt.Color(1, 1, 1));
         txtAreaLogs.setColumns(20);
-        txtAreaLogs.setFont(new java.awt.Font("Courier 10 Pitch", 1, 18)); // NOI18N
+	    txtAreaLogs.setFont(new java.awt.Font("Courier 10 Pitch", Font.BOLD, 9)); // NOI18N
         txtAreaLogs.setForeground(new java.awt.Color(0, 255, 0));
         txtAreaLogs.setRows(5);
         jScrollPane1.setViewportView(txtAreaLogs);
@@ -776,8 +777,10 @@ public class AgentUI extends javax.swing.JFrame {
         picLabelBulbOff = new JLabel(imageIconAlarmOff);
         picLabelBulbOff.setSize(pnlBulbStatus.getSize());
 
+        addToPolicyLog(AgentManager.getInstance().getInitialPolicy());
         new Thread(uiUpdater).start();
 
+	    AgentManager.getInstance().setUIReady(true);
     }
 
     private void btnControlMouseClicked(java.awt.event.MouseEvent evt) {

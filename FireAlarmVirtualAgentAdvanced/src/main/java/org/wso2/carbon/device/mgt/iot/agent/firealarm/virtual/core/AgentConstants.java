@@ -50,7 +50,6 @@ public class AgentConstants {
 	public static final String HTTP_POST = "POST";
 	public static final String HTTP_GET = "GET";
 	public static final String APPLICATION_JSON_TYPE = "application/json";
-	public static final int DEFAULT_DEVICE_SERVER_PORT = 9090;
 	public static final String REGISTERED = "Registered";
 	public static final String NOT_REGISTERED = "Not-Registered";
 	public static final String REGISTRATION_FAILED = "Registration Failed";
@@ -112,6 +111,7 @@ public class AgentConstants {
 	public static final String HUMIDITY_CONTROL = "HUMIDITY";
 	public static final String CONTROL_ON = "ON";
 	public static final String CONTROL_OFF = "OFF";
+	public static final String AUDIO_FILE_NAME = "fireAlarmSound.mid";
 	/*	---------------------------------------------------------------------------------------
 					Communication protocol specific Strings
 		---------------------------------------------------------------------------------------	*/
@@ -123,7 +123,6 @@ public class AgentConstants {
 	public static final String XMPP_PROTOCOL = "XMPP";
 
 	public static final String CEP_FILE_NAME = "cep_query.txt";
-
 	public static final String CEP_QUERY = "define stream fireAlarmEventStream (deviceID string, temp int);\n" +
 											"from fireAlarmEventStream#window.time(30 sec)\n" +
 											"select deviceID, max(temp) as maxValue\n" +
@@ -135,7 +134,5 @@ public class AgentConstants {
 											"from fireAlarmEventStream[temp > 50]\n" +
 											"select deviceID, temp\n" +
 											"insert into bulbOffStream;";
-
-	public static Properties prop = new Properties();
 
 }

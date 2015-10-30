@@ -732,9 +732,6 @@ public class AgentUI extends javax.swing.JFrame {
 
         pack();
 
-        cmbInterface.setVisible(false);
-        jLabel12.setVisible(false);
-
         chkbxTemperatureSmooth.setEnabled(false);
         chkbxTemperatureSmooth.setEnabled(false);
 

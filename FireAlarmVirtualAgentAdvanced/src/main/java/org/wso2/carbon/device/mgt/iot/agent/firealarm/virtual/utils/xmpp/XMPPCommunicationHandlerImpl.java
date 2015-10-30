@@ -100,6 +100,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 		String[] controlSignal = message.toString().split(":");
 		//message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format. (ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
+
 		switch (controlSignal[0].toUpperCase()) {
 			case AgentConstants.BULB_CONTROL:
 				if (controlSignal.length != 2) {
@@ -119,7 +120,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				int currentTemperature = agentManager.getTemperature();
 
 				String replyTemperature =
-						"The current temperature was read to be: '" + currentTemperature + "C'";
+						"The current temperature was read to be: '" + currentTemperature +
+								"C'";
 				log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
 				replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
@@ -144,6 +146,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 				sendXMPPMessage(xmppAdminJID, replyMessage, "CONTROL-ERROR");
 				break;
 		}
+
 	}
 
 	@Override

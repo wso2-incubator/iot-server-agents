@@ -24,13 +24,23 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationUtils;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.sidhdhi.SidhdhiQuery;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http.HTTPCommunicationHandlerImpl;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt.MQTTCommunicationHandlerImpl;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp.XMPPCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui.AgentUI;
-import org.wso2.siddhi.core.util.SiddhiClassLoader;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http
+		.HTTPCommunicationHandlerImpl;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt
+		.MQTTCommunicationHandlerImpl;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp
+		.XMPPCommunicationHandlerImpl;
 
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.Sequencer;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,8 +53,13 @@ public class AgentManager {
 
 	private static AgentManager agentManager = new AgentManager();
 	private AgentUI agentUI;
+	private String rootPath = "";
+
+	private boolean UIReady = false;
 	private static Boolean policyUpdated = false;
 	private static final Object lock = new Object();
+	private String initialPolicy;
+	private Sequencer sequencer = null;
 
 	private int temperature = 30, humidity = 30;
 	private int temperatureMin = 20, temperatureMax = 50, humidityMin = 20, humidityMax = 50;
@@ -78,10 +93,13 @@ public class AgentManager {
 	public void init() {
 
 		// Read IoT-Server specific configurations from the 'deviceConfig.properties' file
-		this.agentConfigs = AgentCoreOperations.readIoTServerConfigs();
+		this.agentConfigs = AgentUtilOperations.readIoTServerConfigs();
+
+		// Initialize Audio Sequencer to play Fire-Alarm-Audio
+//		setAudioSequencer();
 
 		// Initialise IoT-Server URL endpoints from the configuration read from file
-		AgentCoreOperations.initializeHTTPEndPoints();
+		AgentUtilOperations.initializeHTTPEndPoints();
 
 		String analyticsPageContext = String.format(AgentConstants.DEVICE_ANALYTICS_PAGE_URL,
 		                                            agentConfigs.getDeviceId(),
@@ -106,7 +124,8 @@ public class AgentManager {
 
 		Map<String, String> xmppIPPortMap = null;
 		try {
-			xmppIPPortMap = CommunicationUtils.getHostAndPort(agentConfigs.getXmppServerEndpoint());
+			xmppIPPortMap = CommunicationUtils.getHostAndPort(agentConfigs.getXmppServerEndpoint
+					());
 		} catch (CommunicationHandlerException e) {
 			log.error("XMPP Endpoint String - " + agentConfigs.getXmppServerEndpoint() +
 					          ", provided in the configuration file is invalid.");
@@ -116,11 +135,12 @@ public class AgentManager {
 		int xmppPort = Integer.parseInt(xmppIPPortMap.get("Port"));
 
 		String mqttTopic = String.format(AgentConstants.MQTT_SUBSCRIBE_TOPIC,
-		                             agentConfigs.getDeviceOwner(),
-		                             agentConfigs.getDeviceId());
+		                                 agentConfigs.getDeviceOwner(),
+		                                 agentConfigs.getDeviceId());
 
 		CommunicationHandler httpCommunicator = new HTTPCommunicationHandlerImpl();
-		CommunicationHandler xmppCommunicator = new XMPPCommunicationHandlerImpl(xmppServer, xmppPort);
+		CommunicationHandler xmppCommunicator = new XMPPCommunicationHandlerImpl(xmppServer,
+		                                                                         xmppPort);
 		CommunicationHandler mqttCommunicator = new MQTTCommunicationHandlerImpl(
 				agentConfigs.getDeviceOwner(), agentConfigs.getDeviceId(),
 				agentConfigs.getMqttBrokerEndpoint(), mqttTopic);
@@ -136,7 +156,7 @@ public class AgentManager {
 			log.error("An error occurred whilst retrieving all NetworkInterface-IP mappings");
 		}
 
-		try {
+ 		try {
 			// Set System L&F
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (UnsupportedLookAndFeelException e) {
@@ -154,6 +174,9 @@ public class AgentManager {
 					"'IllegalAccessException' error occurred whilst initializing the Agent UI.");
 		}
 
+		String siddhiQueryFilePath = rootPath + AgentConstants.CEP_FILE_NAME;
+		initialPolicy = SidhdhiQuery.readFile(siddhiQueryFilePath, StandardCharsets.UTF_8);
+		(new Thread(new SidhdhiQuery())).start();
 
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -162,14 +185,19 @@ public class AgentManager {
 			}
 		});
 
+
+		while (!UIReady) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				log.info(AgentConstants.LOG_APPENDER + "Sleep error in 'UIReady-flag' checking thread");
+			}
+		}
+
+		setAudioSequencer();
 		agentCommunicator.get(protocol).connect();
-		(new Thread(new SidhdhiQuery())).start();
-
-		String executionPlan = SidhdhiQuery.readFile(AgentConstants.CEP_FILE_NAME, StandardCharsets.UTF_8);
-//		addToPolicyLog(executionPlan);
-
-
 	}
+
 
 	public static void setUpdated(Boolean x) {
 		synchronized (lock) {
@@ -185,16 +213,42 @@ public class AgentManager {
 		}
 	}
 
+	private void setAudioSequencer(){
+		InputStream audioSrc = AgentUtilOperations.class.getResourceAsStream(
+				"/" + AgentConstants.AUDIO_FILE_NAME);
+		Sequence sequence = null;
 
-	private void switchCommunicator(String stopProtocol, String startProtocol){
+		try {
+			sequence = MidiSystem.getSequence(audioSrc);
+			sequencer = MidiSystem.getSequencer();
+			sequencer.open();
+			sequencer.setSequence(sequence);
+		} catch (InvalidMidiDataException e) {
+			log.error("AudioReader: Error whilst setting MIDI Audio reader sequence");
+		} catch (IOException e) {
+			log.error("AudioReader: Error whilst getting audio sequence from stream");
+		} catch (MidiUnavailableException e) {
+			log.error("AudioReader: Error whilst openning MIDI Audio reader sequencer");
+		}
+
+		sequencer.setLoopCount(Clip.LOOP_CONTINUOUSLY);
+	}
+
+	private void switchCommunicator(String stopProtocol, String startProtocol) {
 		agentCommunicator.get(stopProtocol).disconnect();
 
-		while(agentCommunicator.get(stopProtocol).isConnected()) {
-			// wait for the communicator to shutdown successfully
+		while (agentCommunicator.get(stopProtocol).isConnected()) {
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				log.info(AgentConstants.LOG_APPENDER +
+						         "Sleep error in 'Switch-Communicator' Thread's shutdown wait.");
+			}
 		}
 
 		agentCommunicator.get(startProtocol).connect();
 	}
+
 
 	public void setPushInterval(int pushInterval) {
 		this.pushInterval = pushInterval;
@@ -202,13 +256,16 @@ public class AgentManager {
 
 		switch (protocol) {
 			case AgentConstants.HTTP_PROTOCOL:
-				((HTTPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
+				((HTTPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
+						.cancel(true);
 				break;
 			case AgentConstants.MQTT_PROTOCOL:
-				((MQTTCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
+				((MQTTCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
+						.cancel(true);
 				break;
 			case AgentConstants.XMPP_PROTOCOL:
-				((XMPPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
+				((XMPPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
+						.cancel(true);
 				break;
 		}
 		communicationHandler.publishDeviceData(pushInterval);
@@ -218,6 +275,7 @@ public class AgentManager {
 		}
 	}
 
+
 	public void setInterface(int interfaceId) {
 		if (interfaceId != -1) {
 			String newInterface = interfaceList.get(interfaceId);
@@ -225,7 +283,8 @@ public class AgentManager {
 			if (!newInterface.equals(networkInterface)) {
 				networkInterface = newInterface;
 
-				if (protocol.equals(AgentConstants.HTTP_PROTOCOL) && !protocol.equals(prevProtocol)) {
+				if (protocol.equals(AgentConstants.HTTP_PROTOCOL) && !protocol.equals(
+						prevProtocol)) {
 					switchCommunicator(protocol, protocol);
 				}
 			}
@@ -246,6 +305,13 @@ public class AgentManager {
 
 	public void changeBulbStatus(boolean isOn) {
 		agentUI.setBulbStatus(isOn);
+
+		if (isOn) {
+			sequencer.start();
+		} else {
+			sequencer.stop();
+		}
+
 		SidhdhiQuery.isBulbOn = isOn;
 	}
 
@@ -269,9 +335,29 @@ public class AgentManager {
 
 	}
 
+	public void addToPolicyLog(String policy) {
+		agentUI.addToPolicyLog(policy);
+	}
+
 	/*------------------------------------------------------------------------------------------*/
 	/* 		            Getter and Setter Methods for the private variables                 	*/
 	/*------------------------------------------------------------------------------------------*/
+
+	public String getRootPath() {
+		return rootPath;
+	}
+
+	public void setRootPath(String rootPath) {
+		this.rootPath = rootPath;
+	}
+
+	public void setUIReady(boolean UIReady) {
+		this.UIReady = UIReady;
+	}
+
+	public String getInitialPolicy() {
+		return initialPolicy;
+	}
 
 	public int getTemperature() {
 		if (isTemperatureRandomized) {
@@ -280,10 +366,6 @@ public class AgentManager {
 			agentUI.updateTemperature(temperature);
 		}
 		return temperature;
-	}
-
-	public void addToPolicyLog(String policy){
-		agentUI.addToPolicyLog(policy);
 	}
 
 	public void setTemperature(int temperature) {

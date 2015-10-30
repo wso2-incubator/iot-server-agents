@@ -121,21 +121,4 @@ public class AgentConstants {
 	public static final String HTTP_PROTOCOL = "HTTP";
 	public static final String MQTT_PROTOCOL = "MQTT";
 	public static final String XMPP_PROTOCOL = "XMPP";
-
-	public static final String CEP_FILE_NAME = "cep_query.txt";
-
-	public static final String CEP_QUERY = "define stream fireAlarmEventStream (deviceID string, temp int);\n" +
-											"from fireAlarmEventStream#window.time(30 sec)\n" +
-											"select deviceID, max(temp) as maxValue\n" +
-											"group by deviceID\n" +
-											"insert into analyzeStream for expired-events;\n" +
-											"from analyzeStream[maxValue < 50]\n" +
-											"select maxValue\n" +
-											"insert into bulbOnStream;\n" +
-											"from fireAlarmEventStream[temp > 50]\n" +
-											"select deviceID, temp\n" +
-											"insert into bulbOffStream;";
-
-	public static Properties prop = new Properties();
-
 }

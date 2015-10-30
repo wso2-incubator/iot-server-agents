@@ -1,5 +1,7 @@
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -10,7 +12,7 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt
 		.MQTTCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui.AgentUI;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentUtilOperations;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
 	private static final Log log = LogFactory.getLog(MQTTCommunicationHandlerImpl.class);
+	private static final Gson gson = new Gson();
 
 	private static final AgentManager agentManager = AgentManager.getInstance();
 	private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
@@ -85,102 +88,79 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 		String replyMessage;
 
 		String[] controlSignal = message.toString().split(":");
-		log.info("########## Incoming Message : "+ controlSignal);
+//		log.info("########## Incoming Message : " + controlSignal[0]);
 		// message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format.(ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
-		switch (controlSignal[0].toUpperCase()) {
-			case AgentConstants.BULB_CONTROL:
-				agentManager.changeBulbStatus(controlSignal[1].equals(AgentConstants.CONTROL_ON));
-				log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
-						         controlSignal[1] + "'");
-				break;
 
-			case AgentConstants.TEMPERATURE_CONTROL:
-				int currentTemperature = agentManager.getTemperature();
+		if (isJSONValid(message.toString())) {
+			JsonObject jobj = new Gson().fromJson(message.toString(), JsonObject.class);
+			String type = jobj.get("type").toString();
 
-				String replyTemperature =
-						"Current temperature was read as: '" + currentTemperature + "C'";
-				log.info(AgentConstants.LOG_APPENDER + replyTemperature);
-
-				String tempPublishTopic = String.format(
-						AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
-				replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
-
-				try {
-					publishToQueue(tempPublishTopic, replyMessage);
-				} catch (CommunicationHandlerException e) {
-					log.error(AgentConstants.LOG_APPENDER +
-							          "MQTT - Publishing, reply message to the MQTT Queue at: " +
-							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-							          "failed");
-				}
-				break;
-
-			case AgentConstants.HUMIDITY_CONTROL:
-				int currentHumidity = agentManager.getHumidity();
-
-				String replyHumidity =
-						"Current humidity was read as: '" + currentHumidity + "%'";
-				log.info(AgentConstants.LOG_APPENDER + replyHumidity);
-
-				String humidPublishTopic = String.format(
-						AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
-				replyMessage = AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity;
-
-				try {
-					publishToQueue(humidPublishTopic, replyMessage);
-				} catch (CommunicationHandlerException e) {
-					log.error(AgentConstants.LOG_APPENDER +
-							          "MQTT - Publishing, reply message to the MQTT Queue at: " +
-							          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-							          "failed");
-				}
-				break;
-
-			case AgentConstants.POLICY_SIGNAL:
-				postMessageArrived(controlSignal[1]);
-				break;
-
-			default:
-				log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
-						         "' is invalid and not-supported for " + "this device-type");
-				break;
-		}
-	}
-
-	protected void postMessageArrived(String message){
-		AgentConstants agentConstants = new AgentConstants();
-		System.out.println(" Message : " + message);
-		String fileLocation = "cep_query.txt";
-		writeToFile(message, fileLocation);
-		AgentManager.getInstance().addToPolicyLog(message);
-	}
-
-
-	private boolean writeToFile(String policy,String fileLocation){
-		File file = new File(fileLocation);
-
-		try (FileOutputStream fop = new FileOutputStream(file)) {
-
-			// if file doesn't exists, then create it
-			if (!file.exists()) {
-				file.createNewFile();
+			if (type.equalsIgnoreCase("\"policy\"")) {
+				String content = jobj.get("content").toString();
+				updatePolicy(content);
 			}
+		} else {
+			switch (controlSignal[0].toUpperCase()) {
+				case AgentConstants.BULB_CONTROL:
+					boolean stateToSwitch = controlSignal[1].equals(AgentConstants.CONTROL_ON);
 
-			// get the content in bytes
-			byte[] contentInBytes = policy.getBytes();
+					agentManager.changeBulbStatus(stateToSwitch);
+					log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
+							         controlSignal[1] + "'");
+					break;
 
-			fop.write(contentInBytes);
-			fop.flush();
-			fop.close();
+				case AgentConstants.TEMPERATURE_CONTROL:
+					int currentTemperature = agentManager.getTemperature();
 
-			System.out.println("Done");
-			AgentManager.setUpdated(true);
-			return true;
+					String replyTemperature =
+							"Current temperature was read as: '" + currentTemperature + "C'";
+					log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+					String tempPublishTopic = String.format(
+							AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
+					replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
+
+					try {
+						publishToQueue(tempPublishTopic, replyMessage);
+					} catch (CommunicationHandlerException e) {
+						log.error(AgentConstants.LOG_APPENDER +
+								          "MQTT - Publishing, reply message to the MQTT Queue " +
+								          "at:" +
+								          " " +
+								          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+								          "failed");
+					}
+					break;
+
+				case AgentConstants.HUMIDITY_CONTROL:
+					int currentHumidity = agentManager.getHumidity();
+
+					String replyHumidity =
+							"Current humidity was read as: '" + currentHumidity + "%'";
+					log.info(AgentConstants.LOG_APPENDER + replyHumidity);
+
+					String humidPublishTopic = String.format(
+							AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
+					replyMessage = AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity;
+
+					try {
+						publishToQueue(humidPublishTopic, replyMessage);
+					} catch (CommunicationHandlerException e) {
+						log.error(AgentConstants.LOG_APPENDER +
+								          "MQTT - Publishing, reply message to the MQTT Queue " +
+								          "at:" +
+								          " " +
+								          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+								          "failed");
+					}
+					break;
+
+				default:
+					log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
+							         "' is invalid and not-supported for " + "this device-type");
+					break;
+			}
 		}
 	}
 
@@ -260,5 +240,53 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 	public void processIncomingMessage() {
 
 	}
+
+
+	private boolean isJSONValid(String JSON_STRING) {
+		try {
+			gson.fromJson(JSON_STRING, Object.class);
+			return true;
+		} catch (com.google.gson.JsonSyntaxException ex) {
+			return false;
+		}
+	}
+
+
+	private void updatePolicy(String message) {
+		System.out.println(" Message : " + message);
+		String fileLocation = agentManager.getRootPath() + AgentConstants.CEP_FILE_NAME;
+		message = AgentUtilOperations.formatMessage(message);
+		writeToFile(message, fileLocation);
+		AgentManager.getInstance().addToPolicyLog(message);
+	}
+
+
+	private boolean writeToFile(String policy, String fileLocation) {
+		File file = new File(fileLocation);
+
+		try (FileOutputStream fop = new FileOutputStream(file)) {
+
+			// if file doesn't exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			// get the content in bytes
+			byte[] contentInBytes = policy.getBytes();
+
+			fop.write(contentInBytes);
+			fop.flush();
+			fop.close();
+
+			System.out.println("Done");
+			AgentManager.setUpdated(true);
+			return true;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 
 }

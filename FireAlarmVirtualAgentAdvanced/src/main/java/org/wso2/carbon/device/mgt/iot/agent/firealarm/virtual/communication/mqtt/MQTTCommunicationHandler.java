@@ -179,7 +179,7 @@ public abstract class MQTTCommunicationHandler
 	}
 
 	/**
-	 * Subscribes to the MQTT-Topic specific to this MQTTClient. (The MQTT-Topic specific to the
+	 * Subscribes to the MQTT-Topic specific to this MQTT Client. (The MQTT-Topic specific to the
 	 * device is taken in as a constructor parameter of this class) .
 	 *
 	 * @throws CommunicationHandlerException in the event of 'Subscribing to' the MQTT broker
