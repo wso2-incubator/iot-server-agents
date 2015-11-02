@@ -1,13 +1,12 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.http;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.http;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
-		.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 
 import java.io.BufferedReader;
 import java.io.IOException;

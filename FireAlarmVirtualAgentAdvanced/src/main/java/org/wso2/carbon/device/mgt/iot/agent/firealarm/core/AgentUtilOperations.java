@@ -15,11 +15,11 @@
  *
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
@@ -44,7 +44,6 @@ import java.util.Properties;
 public class AgentUtilOperations {
 
 	private static final Log log = LogFactory.getLog(AgentUtilOperations.class);
-	private static final AgentManager agentManager = AgentManager.getInstance();
 
 	/**
 	 * This method reads the agent specific configurations for the device from the
@@ -56,6 +55,7 @@ public class AgentUtilOperations {
 	 * configuration attributes
 	 */
 	public static AgentConfiguration readIoTServerConfigs() {
+		AgentManager agentManager = AgentManager.getInstance();
 		AgentConfiguration iotServerConfigs = new AgentConfiguration();
 		Properties properties = new Properties();
 		InputStream propertiesInputStream = null;
@@ -194,6 +194,7 @@ public class AgentUtilOperations {
 	 *                                     from the configs file
 	 */
 	public static void initializeHTTPEndPoints() {
+        AgentManager agentManager = AgentManager.getInstance();
 		String apimEndpoint = agentManager.getAgentConfigs().getHTTP_ServerEndpoint();
 		String backEndContext = agentManager.getAgentConfigs().getControllerContext();
 

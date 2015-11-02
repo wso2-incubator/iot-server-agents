@@ -1,4 +1,4 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.mqtt;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -6,13 +6,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
-        .CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt
-        .MQTTCommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentUtilOperations;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentUtilOperations;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt.MQTTCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -105,7 +103,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
                 case AgentConstants.BULB_CONTROL:
                     boolean stateToSwitch = controlSignal[1].equals(AgentConstants.CONTROL_ON);
 
-                    agentManager.changeBulbStatus(stateToSwitch);
+                    agentManager.changeAlarmStatus(stateToSwitch);
                     log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
                                      controlSignal[1] + "'");
                     break;

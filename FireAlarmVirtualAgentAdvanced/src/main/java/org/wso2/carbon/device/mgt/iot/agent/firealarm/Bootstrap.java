@@ -15,9 +15,9 @@
  *
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm;
 
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 
 public class Bootstrap {
 
@@ -26,11 +26,10 @@ public class Bootstrap {
      */
     public static void main(String[] args) {
 	    System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-//	    System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "debug");
+	    System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "info");
 	    System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
 	    System.setProperty("org.apache.commons.logging.simplelog.dateTimeFormat", "HH:mm:ss");
-        AgentManager agentManager = AgentManager.getInstance();
-        agentManager.init();
+        AgentManager.getInstance().init();
     }
 
 }

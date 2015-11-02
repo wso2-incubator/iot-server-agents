@@ -1,18 +1,16 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.http;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
-		.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.http
-		.HTTPCommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.http.HTTPCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -127,7 +125,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 					} else {
 						boolean status = switchState.toUpperCase().equals(
 								AgentConstants.CONTROL_ON);
-						agentManager.changeBulbStatus(status);
+						agentManager.changeAlarmStatus(status);
 						httpServletResponse.getWriter().println("Bulb is " + (status ?
 								AgentConstants.CONTROL_ON : AgentConstants.CONTROL_OFF));
 					}

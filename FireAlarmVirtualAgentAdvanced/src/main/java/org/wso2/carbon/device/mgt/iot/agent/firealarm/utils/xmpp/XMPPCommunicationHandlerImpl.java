@@ -1,14 +1,12 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jivesoftware.smack.packet.Message;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
-        .CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.xmpp
-        .XMPPCommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp.XMPPCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -110,7 +108,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
                     break;
                 }
 
-                agentManager.changeBulbStatus(
+                agentManager.changeAlarmStatus(
                         controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
                 log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
                                  controlSignal[1] + "'");

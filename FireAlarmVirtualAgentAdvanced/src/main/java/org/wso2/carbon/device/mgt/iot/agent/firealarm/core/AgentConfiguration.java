@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
 
 /**
  * A Configuration class that holds all the Agent specific details that are read from the

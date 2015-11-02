@@ -15,7 +15,7 @@
  *
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

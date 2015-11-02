@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.mqtt;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,9 +27,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
-		.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

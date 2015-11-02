@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.sidhdhi;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.sidhdhi;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,8 +22,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.input.InputHandler;
@@ -64,7 +64,7 @@ public class SidhdhiQuery implements Runnable {
 
 	//keeps track of bulb status. The start status is assumed as off
 	//TODO : pick up current bulb status from a API
-	public static boolean isBulbOn = false;
+	public static boolean isAlarmOn = false;
 
 	public void run() {
 
@@ -197,10 +197,10 @@ public class SidhdhiQuery implements Runnable {
 				public void receive(Event[] events) {
 					System.out.println("Bulb on Event Fired!");
 					if (events.length > 0) {
-						if (!isBulbOn) {
-							AgentManager.getInstance().changeBulbStatus(true);
+						if (!isAlarmOn) {
+							AgentManager.getInstance().changeAlarmStatus(true);
 							System.out.println("#### Performed HTTP call! ON.");
-							isBulbOn = true;
+							isAlarmOn = true;
 						}
 					}
 				}
@@ -210,10 +210,10 @@ public class SidhdhiQuery implements Runnable {
 				@Override
 				public void receive(Event[] inEvents) {
 					System.out.println("Bulb off Event Fired");
-					if (isBulbOn) {
-						AgentManager.getInstance().changeBulbStatus(false);
+					if (isAlarmOn) {
+						AgentManager.getInstance().changeAlarmStatus(false);
 						System.out.println("#### Performed HTTP call! OFF.");
-						isBulbOn = false;
+						isAlarmOn = false;
 					}
 				}
 
