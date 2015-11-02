@@ -170,8 +170,6 @@ public class VirtualHardwareManager {
         } else {
             sequencer.stop();
         }
-
-        SidhdhiQuery.isAlarmOn = isOn;
     }
 
     public void addToPolicyLog(String policy) {

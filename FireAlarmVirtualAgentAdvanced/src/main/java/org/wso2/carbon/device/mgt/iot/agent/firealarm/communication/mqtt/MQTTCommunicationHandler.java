@@ -213,7 +213,7 @@ public abstract class MQTTCommunicationHandler
 	 */
 	protected void publishToQueue(String topic, String payLoad)
 			throws CommunicationHandlerException {
-		publishToQueue(topic, payLoad, DEFAULT_MQTT_QUALITY_OF_SERVICE, true);
+		publishToQueue(topic, payLoad, DEFAULT_MQTT_QUALITY_OF_SERVICE, false);
 	}
 
 	/**

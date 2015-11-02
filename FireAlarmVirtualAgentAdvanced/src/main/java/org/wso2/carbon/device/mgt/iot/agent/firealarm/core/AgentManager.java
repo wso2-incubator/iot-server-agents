@@ -42,6 +42,7 @@ public class AgentManager {
     private static Boolean policyUpdated = false;
     private String rootPath = "";
     private boolean deviceReady = false;
+    private boolean isAlarmOn = false;
     private String initialPolicy;
 
     private String deviceMgtControlUrl, deviceMgtAnalyticUrl;
@@ -213,7 +214,7 @@ public class AgentManager {
 
     public void changeAlarmStatus(boolean isOn) {
         VirtualHardwareManager.getInstance().changeAlarmStatus(isOn);
-        SidhdhiQuery.isAlarmOn = isOn;
+        isAlarmOn = isOn;
     }
 
     public void updateAgentStatus(String status) {
@@ -313,6 +314,8 @@ public class AgentManager {
                 ((XMPPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
                         .cancel(true);
                 break;
+            default:
+                log.warn("Unknown protocol " + protocol);
         }
         communicationHandler.publishDeviceData(pushInterval);
 
@@ -345,4 +348,7 @@ public class AgentManager {
         return VirtualHardwareManager.getInstance().getHumidity();
     }
 
+    public boolean isAlarmOn() {
+        return isAlarmOn;
+    }
 }

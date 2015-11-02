@@ -62,10 +62,6 @@ public class SidhdhiQuery implements Runnable {
 		SidhdhiQuery.siddhiManager = siddhiManager;
 	}
 
-	//keeps track of bulb status. The start status is assumed as off
-	//TODO : pick up current bulb status from a API
-	public static boolean isAlarmOn = false;
-
 	public void run() {
 
 		//Start the execution plan with pre-defined or previously persisted Siddhi query
@@ -78,20 +74,19 @@ public class SidhdhiQuery implements Runnable {
 			FileOutputStream out = null;
 			try {
 				out = new FileOutputStream(sidhdhiQueryPath);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			try {
 				out.write(AgentConstants.CEP_QUERY.getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
-			try {
-				out.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+			} finally {
+                if (out != null){
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
 
 		StartExecutionPlan startExecutionPlan = new StartExecutionPlan().invoke();
 
@@ -109,12 +104,11 @@ public class SidhdhiQuery implements Runnable {
 			//Sending events to Siddhi
 			try {
 				int sonarReading = AgentManager.getInstance().getTemperature();
-//				log.info("Pushing data to CEP - Tempreature : " + sonarReading);
 				inputHandler.send(new Object[]{"FIRE_1", sonarReading});
 				Thread.sleep(3000);
-//                executionPlanRuntime.shutdown();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				break;
 			}
 		}
 	}
@@ -197,10 +191,9 @@ public class SidhdhiQuery implements Runnable {
 				public void receive(Event[] events) {
 					System.out.println("Bulb on Event Fired!");
 					if (events.length > 0) {
-						if (!isAlarmOn) {
+						if (!AgentManager.getInstance().isAlarmOn()) {
 							AgentManager.getInstance().changeAlarmStatus(true);
 							System.out.println("#### Performed HTTP call! ON.");
-							isAlarmOn = true;
 						}
 					}
 				}
@@ -210,10 +203,9 @@ public class SidhdhiQuery implements Runnable {
 				@Override
 				public void receive(Event[] inEvents) {
 					System.out.println("Bulb off Event Fired");
-					if (isAlarmOn) {
+					if (AgentManager.getInstance().isAlarmOn()) {
 						AgentManager.getInstance().changeAlarmStatus(false);
 						System.out.println("#### Performed HTTP call! OFF.");
-						isAlarmOn = false;
 					}
 				}
 
