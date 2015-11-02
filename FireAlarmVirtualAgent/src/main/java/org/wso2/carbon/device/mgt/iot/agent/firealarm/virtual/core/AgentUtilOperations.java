@@ -15,24 +15,17 @@
  *
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception.AgentCoreOperationException;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.Sequencer;
-import javax.sound.sampled.Clip;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -44,6 +37,7 @@ import java.util.Properties;
 public class AgentUtilOperations {
 
 	private static final Log log = LogFactory.getLog(AgentUtilOperations.class);
+	private static final AgentManager agentManager = AgentManager.getInstance();
 
 	/**
 	 * This method reads the agent specific configurations for the device from the
@@ -55,7 +49,6 @@ public class AgentUtilOperations {
 	 * configuration attributes
 	 */
 	public static AgentConfiguration readIoTServerConfigs() {
-		AgentManager agentManager = AgentManager.getInstance();
 		AgentConfiguration iotServerConfigs = new AgentConfiguration();
 		Properties properties = new Properties();
 		InputStream propertiesInputStream = null;
@@ -66,11 +59,8 @@ public class AgentUtilOperations {
 			URL path = loader.getResource(propertiesFileName);
 			System.out.println(path);
 			String root = path.getPath().replace(
-					"wso2-firealarm-virtual-agent-advanced.jar!/deviceConfig.properties",
+					"wso2-firealarm-virtual-agent.jar!/deviceConfig.properties",
 					"").replace("jar:", "").replace("file:", "");
-
-			agentManager.setRootPath(root);
-
 			propertiesInputStream = new FileInputStream(
 					root + AgentConstants.AGENT_PROPERTIES_FILE_NAME);
 
@@ -194,7 +184,6 @@ public class AgentUtilOperations {
 	 *                                     from the configs file
 	 */
 	public static void initializeHTTPEndPoints() {
-        AgentManager agentManager = AgentManager.getInstance();
 		String apimEndpoint = agentManager.getAgentConfigs().getHTTP_ServerEndpoint();
 		String backEndContext = agentManager.getAgentConfigs().getControllerContext();
 
@@ -214,82 +203,5 @@ public class AgentUtilOperations {
 				         registerEndpointURL);
 		log.info(AgentConstants.LOG_APPENDER + "Push-Data API EndPoint: " + pushDataEndPointURL);
 	}
-
-
-	public static Sequencer initializeAudioSequencer(){
-		InputStream audioSrc = AgentUtilOperations.class.getResourceAsStream(
-				"/" + AgentConstants.AUDIO_FILE_NAME);
-//		File audioFile = new File(rootPath + AgentConstants.AUDIO_FILE_NAME);
-
-		Sequence sequence = null;
-		try {
-			sequence = MidiSystem.getSequence(audioSrc);
-		} catch (InvalidMidiDataException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		Sequencer sequencer = null;
-		try {
-			sequencer = MidiSystem.getSequencer();
-		} catch (MidiUnavailableException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			sequencer.open();
-		} catch (MidiUnavailableException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			sequencer.setSequence(sequence);
-		} catch (InvalidMidiDataException e) {
-			e.printStackTrace();
-		}
-
-		sequencer.setLoopCount(Clip.LOOP_CONTINUOUSLY);
-		return sequencer;
-	}
-
-
-	public static String formatMessage(String message) {
-		StringBuilder formattedMsg = new StringBuilder(message);
-
-		ArrayList<String> keyWordList = new ArrayList<String>();
-		keyWordList.add("define");
-		keyWordList.add("from");
-		keyWordList.add("select");
-		keyWordList.add("group");
-		keyWordList.add("insert");
-		keyWordList.add(";");
-
-
-		for (String keyWord : keyWordList) {
-			int startIndex = 0;
-
-			while (true) {
-				int keyWordIndex = formattedMsg.indexOf(keyWord, startIndex);
-
-				if (keyWordIndex == -1) {
-					break;
-				}
-
-				if (keyWord.equals(";")) {
-					if (keyWordIndex != 0 && (keyWordIndex + 1) != formattedMsg.length() && formattedMsg.charAt(keyWordIndex + 1) == ' ') {
-						formattedMsg.setCharAt((keyWordIndex + 1), '\n');
-					}
-				} else {
-					if (keyWordIndex != 0 && formattedMsg.charAt(keyWordIndex - 1) == ' ') {
-						formattedMsg.setCharAt((keyWordIndex - 1), '\n');
-					}
-				}
-				startIndex = keyWordIndex + 1;
-			}
-		}
-		return formattedMsg.toString();
-	}
-
 }
 
