@@ -1,4 +1,4 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication;
 
 public class CommunicationHandlerException extends Exception {
 	private static final long serialVersionUID = 2736466230451105440L;

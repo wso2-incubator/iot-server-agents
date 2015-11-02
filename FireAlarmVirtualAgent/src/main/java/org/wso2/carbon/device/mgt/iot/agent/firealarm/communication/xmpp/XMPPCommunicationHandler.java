@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,9 +33,8 @@ import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.filter.ToContainsFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
-		.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
 
 /**
  * This class contains the IoT-Server specific implementation for all the XMPP functionality.

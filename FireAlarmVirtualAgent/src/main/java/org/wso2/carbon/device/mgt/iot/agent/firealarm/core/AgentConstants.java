@@ -15,13 +15,7 @@
  *
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
 
 public class AgentConstants {
 	public static final String DEVICE_TYPE = "virtual_firealarm";
@@ -50,7 +44,6 @@ public class AgentConstants {
 	public static final String HTTP_POST = "POST";
 	public static final String HTTP_GET = "GET";
 	public static final String APPLICATION_JSON_TYPE = "application/json";
-	public static final int DEFAULT_DEVICE_SERVER_PORT = 9090;
 	public static final String REGISTERED = "Registered";
 	public static final String NOT_REGISTERED = "Not-Registered";
 	public static final String REGISTRATION_FAILED = "Registration Failed";
@@ -112,6 +105,7 @@ public class AgentConstants {
 	public static final String HUMIDITY_CONTROL = "HUMIDITY";
 	public static final String CONTROL_ON = "ON";
 	public static final String CONTROL_OFF = "OFF";
+	public static final String AUDIO_FILE_NAME = "fireAlarmSound.mid";
 	/*	---------------------------------------------------------------------------------------
 					Communication protocol specific Strings
 		---------------------------------------------------------------------------------------	*/

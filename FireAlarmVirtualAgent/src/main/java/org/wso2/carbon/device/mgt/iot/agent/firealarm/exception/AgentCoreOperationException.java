@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.exception;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.exception;
 
 
 public class AgentCoreOperationException extends Exception{
