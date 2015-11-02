@@ -27,6 +27,7 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.http.HTTPCom
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.mqtt.MQTTCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.utils.xmpp.XMPPCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui.AgentUI;
+import sun.management.Agent;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -73,10 +74,10 @@ public class AgentManager {
 	public void init() {
 
 		// Read IoT-Server specific configurations from the 'deviceConfig.properties' file
-		this.agentConfigs = AgentCoreOperations.readIoTServerConfigs();
+		this.agentConfigs = AgentUtilOperations.readIoTServerConfigs();
 
 		// Initialise IoT-Server URL endpoints from the configuration read from file
-		AgentCoreOperations.initializeHTTPEndPoints();
+		AgentUtilOperations.initializeHTTPEndPoints();
 
 		String analyticsPageContext = String.format(AgentConstants.DEVICE_ANALYTICS_PAGE_URL,
 		                                            agentConfigs.getDeviceId(),
@@ -184,6 +185,8 @@ public class AgentManager {
 			case AgentConstants.XMPP_PROTOCOL:
 				((XMPPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler().cancel(true);
 				break;
+			default:
+				log.warn(AgentConstants.LOG_APPENDER + "[" + protocol + "] Protocol implementation not found");
 		}
 		communicationHandler.publishDeviceData(pushInterval);
 

@@ -96,7 +96,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 
 				AgentManager agentManager = AgentManager.getInstance();
 				String pathContext = request.getPathInfo();
-				String separator = File.separator;
+				String separator = File.separatorChar == '\\' ? "\\\\" : File.separator;
 
 				if (pathContext.toUpperCase().contains(
 						separator + AgentConstants.TEMPERATURE_CONTROL)) {
@@ -148,7 +148,6 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 		boolean simulationMode = false;
 		int duration = 2*60;
 		int frequency = 5;
-		int interval = duration*1000;
 
 		Runnable pushDataRunnable = new Runnable() {
 			@Override
