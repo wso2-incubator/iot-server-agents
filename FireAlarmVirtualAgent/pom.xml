@@ -45,7 +45,7 @@
                     <archive>
                         <manifest>
                             <mainClass>
-                                org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.Bootstrap
+                                org.wso2.carbon.device.mgt.iot.agent.firealarm.Bootstrap
                             </mainClass>
                         </manifest>
                     </archive>

@@ -17,8 +17,9 @@
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui;
 
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.VirtualHardwareManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +32,7 @@ public class AgentUI extends javax.swing.JFrame {
     private boolean isTemperatureRandomized, isHumidityRandomized;
     private boolean isTemperatureSmoothed, isHumiditySmoothed;
 
-    private volatile boolean isBulbOn = false;
+    private volatile boolean isAlarmOn = false;
 
     private final Object _lock = new Object();
 
@@ -92,6 +93,7 @@ public class AgentUI extends javax.swing.JFrame {
     private javax.swing.JTextField txtTemperatureSVF;
     // End of variables declaration
 
+    //Update UI from AgentManager changes
     private Runnable uiUpdater = new Runnable() {
         @Override
         public void run() {
@@ -100,7 +102,7 @@ public class AgentUI extends javax.swing.JFrame {
                     @Override
                     public void run() {
                         pnlBulbStatus.removeAll();
-                        pnlBulbStatus.add(isBulbOn ? picLabelBulbOn : picLabelBulbOff);
+                        pnlBulbStatus.add(isAlarmOn ? picLabelBulbOn : picLabelBulbOff);
                         pnlBulbStatus.updateUI();
                         lblStatus.setText(AgentManager.getInstance().getAgentStatus());
                         String policy = getPolicyLog();
@@ -780,7 +782,7 @@ public class AgentUI extends javax.swing.JFrame {
         addToPolicyLog(AgentManager.getInstance().getInitialPolicy());
         new Thread(uiUpdater).start();
 
-	    AgentManager.getInstance().setUIReady(true);
+	    AgentManager.getInstance().setDeviceReady(true);
     }
 
     private void btnControlMouseClicked(java.awt.event.MouseEvent evt) {
@@ -809,7 +811,7 @@ public class AgentUI extends javax.swing.JFrame {
 
     private void chkbxTemperatureRandomActionPerformed(java.awt.event.ActionEvent evt) {
         isTemperatureRandomized = chkbxTemperatureRandom.isSelected();
-        AgentManager.getInstance().setIsTemperatureRandomized(isTemperatureRandomized);
+        VirtualHardwareManager.getInstance().setIsTemperatureRandomized(isTemperatureRandomized);
         spinnerTemperature.setEnabled(!isTemperatureRandomized);
         txtTemperatureMax.setEnabled(isTemperatureRandomized);
         txtTemperatureMin.setEnabled(isTemperatureRandomized);
@@ -819,7 +821,7 @@ public class AgentUI extends javax.swing.JFrame {
 
     private void chkbxHumidityRandomActionPerformed(java.awt.event.ActionEvent evt) {
         isHumidityRandomized = chkbxHumidityRandom.isSelected();
-        AgentManager.getInstance().setIsHumidityRandomized(isHumidityRandomized);
+        VirtualHardwareManager.getInstance().setIsHumidityRandomized(isHumidityRandomized);
         spinnerHumidity.setEnabled(!isHumidityRandomized);
         txtHumidityMax.setEnabled(isHumidityRandomized);
         txtHumidityMin.setEnabled(isHumidityRandomized);
@@ -831,10 +833,10 @@ public class AgentUI extends javax.swing.JFrame {
         if (!isTemperatureRandomized) {
             try {
                 int temperature = Integer.parseInt(spinnerTemperature.getValue().toString());
-                AgentManager.getInstance().setTemperature(temperature);
+                VirtualHardwareManager.getInstance().setTemperature(temperature);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Invalid temperature value", "Error", JOptionPane.ERROR_MESSAGE);
-                spinnerTemperature.setValue(AgentManager.getInstance().getTemperature());
+                spinnerTemperature.setValue(VirtualHardwareManager.getInstance().getTemperature());
             }
         }
     }
@@ -843,10 +845,10 @@ public class AgentUI extends javax.swing.JFrame {
         if (!isHumidityRandomized) {
             try {
                 int humidity = Integer.parseInt(spinnerHumidity.getValue().toString());
-                AgentManager.getInstance().setHumidity(humidity);
+                VirtualHardwareManager.getInstance().setHumidity(humidity);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
-                spinnerHumidity.setValue(AgentManager.getInstance().getHumidity());
+                spinnerHumidity.setValue(VirtualHardwareManager.getInstance().getHumidity());
             }
         }
     }
@@ -854,7 +856,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtTemperatureMinActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int temperature = Integer.parseInt(txtTemperatureMin.getText());
-            AgentManager.getInstance().setTemperatureMin(temperature);
+            VirtualHardwareManager.getInstance().setTemperatureMin(temperature);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid temperature value", "Error", JOptionPane.ERROR_MESSAGE);
             txtTemperatureMin.setText("20");
@@ -864,7 +866,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtTemperatureMaxActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int temperature = Integer.parseInt(txtTemperatureMax.getText());
-            AgentManager.getInstance().setTemperatureMax(temperature);
+            VirtualHardwareManager.getInstance().setTemperatureMax(temperature);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid temperature value", "Error", JOptionPane.ERROR_MESSAGE);
             txtTemperatureMax.setText("50");
@@ -874,7 +876,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtHumidityMinActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int humidity = Integer.parseInt(txtHumidityMin.getText());
-            AgentManager.getInstance().setHumidityMin(humidity);
+            VirtualHardwareManager.getInstance().setHumidityMin(humidity);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
             txtHumidityMin.setText("20");
@@ -884,7 +886,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtHumidityMaxActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int humidity = Integer.parseInt(txtHumidityMax.getText());
-            AgentManager.getInstance().setHumidityMax(humidity);
+            VirtualHardwareManager.getInstance().setHumidityMax(humidity);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid humidity value", "Error", JOptionPane.ERROR_MESSAGE);
             txtHumidityMax.setText("50");
@@ -920,7 +922,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtTemperatureSVFActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int temperatureSVF = Integer.parseInt(txtTemperatureSVF.getText());
-            AgentManager.getInstance().setTemperatureSVF(temperatureSVF);
+            VirtualHardwareManager.getInstance().setTemperatureSVF(temperatureSVF);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid value", "Error", JOptionPane.ERROR_MESSAGE);
             txtTemperatureSVF.setText("50");
@@ -930,7 +932,7 @@ public class AgentUI extends javax.swing.JFrame {
     private void txtHumiditySVFActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             int humiditySVF = Integer.parseInt(txtHumiditySVF.getText());
-            AgentManager.getInstance().setHumiditySVF(humiditySVF);
+            VirtualHardwareManager.getInstance().setHumiditySVF(humiditySVF);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Invalid value", "Error", JOptionPane.ERROR_MESSAGE);
             txtHumiditySVF.setText("50");
@@ -940,13 +942,13 @@ public class AgentUI extends javax.swing.JFrame {
     private void chkbxTemperatureSmoothActionPerformed(java.awt.event.ActionEvent evt) {
         isTemperatureSmoothed = chkbxTemperatureSmooth.isSelected();
         txtTemperatureSVF.setEnabled(isTemperatureSmoothed);
-        AgentManager.getInstance().setIsTemperatureSmoothed(isTemperatureSmoothed);
+        VirtualHardwareManager.getInstance().setIsTemperatureSmoothed(isTemperatureSmoothed);
     }
 
     private void chkbxHumiditySmoothActionPerformed(java.awt.event.ActionEvent evt) {
         isHumiditySmoothed = chkbxHumiditySmooth.isSelected();
         txtHumiditySVF.setEnabled(isHumiditySmoothed);
-        AgentManager.getInstance().setIsHumiditySmoothed(isHumiditySmoothed);
+        VirtualHardwareManager.getInstance().setIsHumiditySmoothed(isHumiditySmoothed);
     }
 
     private void cmbPeriodActionPerformed(java.awt.event.ActionEvent evt) {
@@ -957,8 +959,8 @@ public class AgentUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }
 
-    public void setBulbStatus(boolean isBulbOn) {
-        this.isBulbOn = isBulbOn;
+    public void setAlarmStatus(boolean isAlarmOn) {
+        this.isAlarmOn = isAlarmOn;
     }
 
     public void updateTemperature(int temperature) {
