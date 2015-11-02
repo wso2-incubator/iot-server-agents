@@ -95,9 +95,6 @@ public class AgentManager {
 		// Read IoT-Server specific configurations from the 'deviceConfig.properties' file
 		this.agentConfigs = AgentUtilOperations.readIoTServerConfigs();
 
-		// Initialize Audio Sequencer to play Fire-Alarm-Audio
-//		setAudioSequencer();
-
 		// Initialise IoT-Server URL endpoints from the configuration read from file
 		AgentUtilOperations.initializeHTTPEndPoints();
 

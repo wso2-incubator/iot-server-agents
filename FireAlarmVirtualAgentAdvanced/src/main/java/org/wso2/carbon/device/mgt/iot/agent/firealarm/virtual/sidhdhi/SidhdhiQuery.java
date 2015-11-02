@@ -127,50 +127,6 @@ public class SidhdhiQuery implements Runnable {
 		siddhiManager = new SiddhiManager();
 	}
 
-	/**
-	 * Make http call to specified endpoint with events
-	 * @param inEvents
-	 * @param bulbEP
-	 * @param logText
-	 */
-//    private void performHTTPCall(Event[] inEvents, String bulbEP, String logText) {
-//        if (inEvents != null && inEvents.length > 0) {
-//            EventPrinter.print(inEvents);
-////            String url = constants.prop.getProperty(bulbEP);
-//
-//            CloseableHttpAsyncClient httpclient = null;
-//
-//                httpclient = HttpAsyncClients.createDefault();
-//                httpclient.start();
-////                HttpGet request = new HttpGet(url);
-//                log.info("Bulb Status : " + logText);
-//                final CountDownLatch latch = new CountDownLatch(1);
-//                Future<HttpResponse> future = httpclient.execute(
-//                        request, new FutureCallback<HttpResponse>() {
-//                            @Override
-//                            public void completed(HttpResponse httpResponse) {
-//                                latch.countDown();
-//                            }
-//
-//                            @Override
-//                            public void failed(Exception e) {
-//                                latch.countDown();
-//                            }
-//
-//                            @Override
-//                            public void cancelled() {
-//                                latch.countDown();
-//                            }
-//                        }
-//                );
-//
-//            try {
-//                latch.await();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
 	/**
 	 * Read content from a given file and return as a string
@@ -232,7 +188,6 @@ public class SidhdhiQuery implements Runnable {
 			String sidhdhiQueryPath =
 					AgentManager.getInstance().getRootPath() + AgentConstants.CEP_FILE_NAME;
 			executionPlan = readFile(sidhdhiQueryPath, StandardCharsets.UTF_8);
-//            AgentManager.getInstance().addToPolicyLog(executionPlan);
 
 			//Generating runtime
 			siddhiManager.addExecutionPlan(executionPlan);
@@ -243,7 +198,6 @@ public class SidhdhiQuery implements Runnable {
 					System.out.println("Bulb on Event Fired!");
 					if (events.length > 0) {
 						if (!isBulbOn) {
-//                            performHTTPCall(events, "bulb.on.api.endpoint", "Bulb Switched on!");
 							AgentManager.getInstance().changeBulbStatus(true);
 							System.out.println("#### Performed HTTP call! ON.");
 							isBulbOn = true;
@@ -257,7 +211,6 @@ public class SidhdhiQuery implements Runnable {
 				public void receive(Event[] inEvents) {
 					System.out.println("Bulb off Event Fired");
 					if (isBulbOn) {
-//                        performHTTPCall(inEvents, "bulb.off.api.endpoint", "Bulb Switched off!");
 						AgentManager.getInstance().changeBulbStatus(false);
 						System.out.println("#### Performed HTTP call! OFF.");
 						isBulbOn = false;

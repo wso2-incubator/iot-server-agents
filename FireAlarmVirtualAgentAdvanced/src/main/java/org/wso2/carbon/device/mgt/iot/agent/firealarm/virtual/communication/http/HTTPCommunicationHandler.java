@@ -3,7 +3,6 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.htt
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication.CommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.communication
 		.CommunicationHandlerException;

@@ -191,7 +191,7 @@ public class CommunicationUtils {
 				try {
 					tcpSocket.close();
 				} catch (IOException e) {
-						/* not to be thrown */
+	                    /* not to be thrown */
 				}
 			}
 

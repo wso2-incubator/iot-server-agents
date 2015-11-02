@@ -331,8 +331,7 @@ public abstract class MQTTCommunicationHandler
 
 		if (log.isDebugEnabled()) {
 			log.debug("Message - '" + message + "' of client [" + client + "] for the topic (" +
-					          topic +
-					          ") was delivered successfully.");
+					          topic + ") was delivered successfully.");
 		}
 	}
 
