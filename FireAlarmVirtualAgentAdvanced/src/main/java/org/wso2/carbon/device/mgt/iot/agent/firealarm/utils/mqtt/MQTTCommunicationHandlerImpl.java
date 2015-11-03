@@ -26,7 +26,6 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
     private static final Log log = LogFactory.getLog(MQTTCommunicationHandlerImpl.class);
     private static final Gson gson = new Gson();
 
-    private static final AgentManager agentManager = AgentManager.getInstance();
     private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> dataPushServiceHandler;
 
@@ -47,6 +46,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
     @Override
     public void connect() {
+        final AgentManager agentManager = AgentManager.getInstance();
         Runnable connector = new Runnable() {
             public void run() {
                 while (!isConnected()) {
@@ -79,6 +79,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
     @Override
     public void processIncomingMessage(MqttMessage message) {
+        final AgentManager agentManager = AgentManager.getInstance();
         log.info(AgentConstants.LOG_APPENDER + "Message " + message.toString() + " was received");
 
         String deviceOwner = agentManager.getAgentConfigs().getDeviceOwner();
@@ -165,6 +166,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
     @Override
     public void publishDeviceData(int publishInterval) {
+        final AgentManager agentManager = AgentManager.getInstance();
         Runnable pushDataRunnable = new Runnable() {
             @Override
             public void run() {
@@ -251,34 +253,39 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
 
     private void updatePolicy(String message) {
+        AgentManager agentManager = AgentManager.getInstance();
         System.out.println(" Message : " + message);
         String fileLocation = agentManager.getRootPath() + AgentConstants.CEP_FILE_NAME;
         message = AgentUtilOperations.formatMessage(message);
         writeToFile(message, fileLocation);
-        AgentManager.getInstance().addToPolicyLog(message);
+        agentManager.addToPolicyLog(message);
     }
 
 
     private boolean writeToFile(String policy, String fileLocation) {
         File file = new File(fileLocation);
+        boolean fileCreated = false;
 
         try (FileOutputStream fop = new FileOutputStream(file)) {
 
             // if file doesn't exists, then create it
             if (!file.exists()) {
-                file.createNewFile();
+                fileCreated = file.createNewFile();
             }
 
-            // get the content in bytes
-            byte[] contentInBytes = policy.getBytes();
+            if (fileCreated) {
+                // get the content in bytes
+                byte[] contentInBytes = policy.getBytes(StandardCharsets.UTF_8);
 
-            fop.write(contentInBytes);
-            fop.flush();
-            fop.close();
+                fop.write(contentInBytes);
+                fop.flush();
+                fop.close();
 
-            System.out.println("Done");
-            AgentManager.setUpdated(true);
-            return true;
+                System.out.println("Done");
+                AgentManager.setUpdated(true);
+                return true;
+            }
+            return false;
 
         } catch (IOException e) {
             e.printStackTrace();

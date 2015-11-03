@@ -74,7 +74,7 @@ public class SidhdhiQuery implements Runnable {
 			FileOutputStream out = null;
 			try {
 				out = new FileOutputStream(sidhdhiQueryPath);
-				out.write(AgentConstants.CEP_QUERY.getBytes());
+				out.write(AgentConstants.CEP_QUERY.getBytes(StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -169,7 +169,7 @@ public class SidhdhiQuery implements Runnable {
 	/**
 	 * Initialize SiddhiExecution plan
 	 */
-	private class StartExecutionPlan {
+	private static class StartExecutionPlan {
 		private InputHandler inputHandler;
 
 		public InputHandler getInputHandler() {

@@ -93,7 +93,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 
                 AgentManager agentManager = AgentManager.getInstance();
                 String pathContext = request.getPathInfo();
-                String separator = File.separator;
+                String separator =  (File.separatorChar == '\\') ? ("\\\\") : (File.separator);
 
                 if (pathContext.toUpperCase().contains(
                         separator + AgentConstants.TEMPERATURE_CONTROL)) {

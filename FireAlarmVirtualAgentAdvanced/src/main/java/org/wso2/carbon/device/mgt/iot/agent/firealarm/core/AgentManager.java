@@ -64,7 +64,7 @@ public class AgentManager {
     private AgentManager() {
     }
 
-    public static AgentManager getInstance() {
+    public static synchronized AgentManager getInstance() {
         if (agentManager == null) {
             agentManager = new AgentManager();
         }

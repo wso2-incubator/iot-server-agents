@@ -19,6 +19,7 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.ui;
 
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentUtilOperations;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.VirtualHardwareManager;
 
 import javax.swing.*;
@@ -240,9 +241,16 @@ public class AgentUI extends javax.swing.JFrame {
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                  .addComponent(pnlBulbStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                  .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))
+                                .addGroup(jPanel1Layout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.TRAILING)
+                                                  .addComponent(pnlBulbStatus,
+                                                                javax.swing.GroupLayout
+                                                                        .DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                Short.MAX_VALUE)
+                                                  .addComponent(jLabel3,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                190, Short.MAX_VALUE))
                                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -324,19 +332,34 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addComponent(jLabel10)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(txtTemperatureSVF, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                          .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                           Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
                 jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                  .addComponent(txtTemperatureMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                  .addComponent(txtTemperatureMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout
+                                .createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                 Short.MAX_VALUE)
+                                .addGroup(jPanel7Layout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.BASELINE)
+                                                  .addComponent(txtTemperatureMin,
+                                                                javax.swing.GroupLayout
+                                                                        .PREFERRED_SIZE,
+                                                                javax.swing.GroupLayout
+                                                                        .DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addComponent(txtTemperatureMax,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(jLabel6)
                                                   .addComponent(jLabel5)
                                                   .addComponent(jLabel10)
-                                                  .addComponent(txtTemperatureSVF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                  .addComponent(txtTemperatureSVF,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(35, 35, 35))
         );
 
@@ -382,9 +405,12 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jSeparator1)
                                                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                                                              .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                                                .addComponent(chkbxTemperatureRandom)
-                                                                                                .addComponent(chkbxTemperatureSmooth))
+                                                                              .addGroup(jPanel2Layout.createParallelGroup(
+                                                                                      javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                                                .addComponent(
+                                                                                                        chkbxTemperatureRandom)
+                                                                                                .addComponent(
+                                                                                                        chkbxTemperatureSmooth))
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addGap(0, 0, Short.MAX_VALUE))
@@ -424,8 +450,10 @@ public class AgentUI extends javax.swing.JFrame {
                         .addGroup(jPanel6Layout.createSequentialGroup()
                                           .addContainerGap()
                                           .addComponent(jLabel20)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                          .addPreferredGap(javax.swing.LayoutStyle
+                                                                   .ComponentPlacement.RELATED)
+                                          .addComponent(lblStatus, javax.swing.GroupLayout
+                                                  .DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(btnControl)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -435,11 +463,20 @@ public class AgentUI extends javax.swing.JFrame {
         jPanel6Layout.setVerticalGroup(
                 jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                  .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                  .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                    .addComponent(btnView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                 Short.MAX_VALUE)
+                                .addGroup(jPanel6Layout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                  .addComponent(jLabel20,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                Short.MAX_VALUE)
+                                                  .addGroup(jPanel6Layout.createParallelGroup(
+                                                          javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                    .addComponent(btnView,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  Short.MAX_VALUE)
                                                                     .addComponent(btnControl)
                                                                     .addComponent(lblStatus)))
                                 .addContainerGap())
@@ -504,11 +541,16 @@ public class AgentUI extends javax.swing.JFrame {
                 jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel9Layout.createSequentialGroup()
                                           .addComponent(jLabel24)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                          .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addPreferredGap(javax.swing.LayoutStyle
+                                                                   .ComponentPlacement.RELATED)
+                                          .addComponent(txtHumidityMin, javax.swing.GroupLayout
+                                                  .PREFERRED_SIZE, 45, javax.swing.GroupLayout
+                                                  .PREFERRED_SIZE)
+                                          .addPreferredGap(javax.swing.LayoutStyle
+                                                                   .ComponentPlacement.RELATED)
                                           .addComponent(jLabel25)
-                                          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                          .addPreferredGap(javax.swing.LayoutStyle
+                                                                   .ComponentPlacement.RELATED)
                                           .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                           .addComponent(jLabel11)
@@ -519,14 +561,27 @@ public class AgentUI extends javax.swing.JFrame {
         jPanel9Layout.setVerticalGroup(
                 jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                  .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                 Short.MAX_VALUE)
+                                .addGroup(jPanel9Layout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                  .addGroup(jPanel9Layout.createParallelGroup(
+                                                          javax.swing.GroupLayout.Alignment.BASELINE)
                                                                     .addComponent(jLabel11)
-                                                                    .addComponent(txtHumiditySVF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                  .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                    .addComponent(txtHumidityMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                    .addComponent(txtHumidityMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                    .addComponent(txtHumiditySVF,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                  .addGroup(jPanel9Layout.createParallelGroup(
+                                                          javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                    .addComponent(txtHumidityMin,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                    .addComponent(txtHumidityMax,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                     .addComponent(jLabel25)
                                                                     .addComponent(jLabel24)))
                                 .addGap(35, 35, 35))
@@ -574,16 +629,21 @@ public class AgentUI extends javax.swing.JFrame {
                                           .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                             .addComponent(jSeparator5)
                                                             .addGroup(jPanel8Layout.createSequentialGroup()
-                                                                              .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                                                .addComponent(chkbxHumidityRandom)
-                                                                                                .addComponent(chkbxHumiditySmooth))
+                                                                              .addGroup(jPanel8Layout.createParallelGroup(
+                                                                                      javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                                                .addComponent(
+                                                                                                        chkbxHumidityRandom)
+                                                                                                .addComponent(
+                                                                                                        chkbxHumiditySmooth))
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addGap(0, 1, Short.MAX_VALUE))
                                                             .addGroup(jPanel8Layout.createSequentialGroup()
                                                                               .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                              .addComponent(spinnerHumidity)))
+                                                                              .addPreferredGap
+                                                                                      (javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                              .addComponent
+                                                                                      (spinnerHumidity)))
                                           .addContainerGap())
         );
 
@@ -591,7 +651,8 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel7.setText("Data Push Interval:");
 
-        spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(1), null, Integer.valueOf(1)));
+        spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(5), Integer
+                .valueOf(1), null, Integer.valueOf(1)));
         spinnerInterval.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerIntervalStateChanged(evt);
@@ -602,7 +663,8 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel9.setText("Protocol:");
 
-        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MQTT", "XMPP", "HTTP" }));
+        cmbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MQTT", "XMPP",
+                "HTTP" }));
         cmbProtocol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbProtocolActionPerformed(evt);
@@ -641,18 +703,34 @@ public class AgentUI extends javax.swing.JFrame {
         );
         jPanel3Layout.setVerticalGroup(
                 jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                  .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout
+                                .createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                 Short.MAX_VALUE)
+                                .addGroup(jPanel3Layout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                  .addGroup(jPanel3Layout.createParallelGroup(
+                                                          javax.swing.GroupLayout.Alignment.BASELINE)
                                                                     .addComponent(jLabel12)
-                                                                    .addComponent(cmbInterface, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                  .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                    .addComponent(cmbInterface,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                  .addGroup(jPanel3Layout.createParallelGroup(
+                                                          javax.swing.GroupLayout.Alignment.BASELINE)
                                                                     .addComponent(jLabel7)
-                                                                    .addComponent(spinnerInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                    .addComponent(spinnerInterval,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                  javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                     .addComponent(jLabel8)
                                                                     .addComponent(jLabel9)
-                                                                    .addComponent(cmbProtocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                                    .addComponent(cmbProtocol,
+                                                                                  javax.swing
+                                                                                          .GroupLayout.PREFERRED_SIZE,
+                                                                                  javax.swing
+                                                                                          .GroupLayout.DEFAULT_SIZE,
+                                                                                  javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addContainerGap())
         );
 
@@ -697,10 +775,15 @@ public class AgentUI extends javax.swing.JFrame {
         jPanel4Layout.setVerticalGroup(
                 jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                 Short.MAX_VALUE)
+                                .addGroup(jPanel4Layout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.BASELINE)
                                                   .addComponent(chkbxEmulate)
-                                                  .addComponent(cmbPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                  .addComponent(cmbPeriod,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
                                                   .addComponent(jLabel1))
                                 .addContainerGap())
         );
@@ -719,8 +802,16 @@ public class AgentUI extends javax.swing.JFrame {
                                                                               .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                                                                .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                                                                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                                                                                .addComponent(
+                                                                                                        jPanel8,
+                                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                                        Short.MAX_VALUE)
+                                                                                                .addComponent(
+                                                                                                        jPanel2,
+                                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                                        Short.MAX_VALUE)))
                                                             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -779,7 +870,7 @@ public class AgentUI extends javax.swing.JFrame {
         picLabelBulbOff = new JLabel(imageIconAlarmOff);
         picLabelBulbOff.setSize(pnlBulbStatus.getSize());
 
-        addToPolicyLog(AgentManager.getInstance().getInitialPolicy());
+        addToPolicyLog(AgentUtilOperations.formatMessage(AgentManager.getInstance().getInitialPolicy()));
         new Thread(uiUpdater).start();
 
 	    AgentManager.getInstance().setDeviceReady(true);

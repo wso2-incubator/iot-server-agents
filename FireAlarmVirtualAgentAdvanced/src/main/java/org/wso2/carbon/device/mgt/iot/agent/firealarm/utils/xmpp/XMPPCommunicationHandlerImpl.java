@@ -17,7 +17,6 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 
     private static final Log log = LogFactory.getLog(XMPPCommunicationHandlerImpl.class);
 
-    private static final AgentManager agentManager = AgentManager.getInstance();
     private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> dataPushServiceHandler;
     private ScheduledFuture<?> connectorServiceHandler;
@@ -46,6 +45,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 
     @Override
     public void connect() {
+        final AgentManager agentManager = AgentManager.getInstance();
         username = agentManager.getAgentConfigs().getDeviceId();
         password = agentManager.getAgentConfigs().getAuthToken();
         resource = agentManager.getAgentConfigs().getDeviceOwner();
@@ -89,6 +89,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
      */
     @Override
     public void processIncomingMessage(Message xmppMessage) {
+        final AgentManager agentManager = AgentManager.getInstance();
         String from = xmppMessage.getFrom();
         String message = xmppMessage.getBody();
         log.info(AgentConstants.LOG_APPENDER + "Received XMPP message [" + message + "] from " +
@@ -149,6 +150,8 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
 
     @Override
     public void publishDeviceData(int publishInterval) {
+        final AgentManager agentManager = AgentManager.getInstance();
+
         Runnable pushDataRunnable = new Runnable() {
             @Override
             public void run() {
