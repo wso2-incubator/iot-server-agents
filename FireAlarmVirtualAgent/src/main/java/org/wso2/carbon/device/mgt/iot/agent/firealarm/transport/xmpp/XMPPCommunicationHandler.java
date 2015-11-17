@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,8 +33,8 @@ import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.filter.ToContainsFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
 
 /**
  * This class contains the IoT-Server specific implementation for all the XMPP functionality.
@@ -53,6 +53,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	protected String server;
 	protected int timeoutInterval;    // millis
 
+	//TODO:: Shouldnt be hard-coded. Need to be read from configs
 	private static final int DEFAULT_XMPP_PORT = 5222;
 	private XMPPConnection connection;
 	private int port;
@@ -128,8 +129,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 */
 	private void initXMPPClient() {
 		log.info(String.format("Initializing connection to XMPP Server at %1$s via port " +
-				                       "%2$d......",
-		                       server, port));
+				                       "%2$d.", server, port));
 		SmackConfiguration.setPacketReplyTimeout(timeoutInterval);
 		config = new ConnectionConfiguration(server, port);
 //		TODO:: Need to enable SASL-Authentication appropriately
@@ -138,7 +138,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 		connection = new XMPPConnection(config);
 	}
 
-
+//TODO:: Re-check all exception handling
 	/**
 	 * Connects to the XMPP-Server and if attempt unsuccessful, then throws exception.
 	 *
@@ -190,7 +190,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 				log.info(errorMsg);
 				throw new CommunicationHandlerException(errorMsg, xmppException);
 			}
-		} else {
+		} else {//TODO:: Log not required
 			String errorMsg =
 					"Not connected to XMPP-Server to attempt Login. Please 'connectToServer' " +
 							"before Login";
@@ -347,7 +347,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 		connection.sendPacket(xmppMessage);
 		if (log.isDebugEnabled()) {
 			log.debug("Message: '" + xmppMessage.getBody() + "' sent to XMPP JID [" + JID +
-					          "] sent successfully");
+					          "] sent successfully.");
 		}
 	}
 

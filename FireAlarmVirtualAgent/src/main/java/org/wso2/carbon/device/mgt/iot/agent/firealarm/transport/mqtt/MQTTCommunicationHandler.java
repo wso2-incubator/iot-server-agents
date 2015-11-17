@@ -16,8 +16,9 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.mqtt;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -27,8 +28,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -96,6 +97,7 @@ public abstract class MQTTCommunicationHandler
 	                                   int intervalInMillis) {
 		this.clientId = deviceOwner + ":" + deviceType;
 		this.subscribeTopic = subscribeTopic;
+		//TODO:: Use constant strings
 		this.clientWillTopic = deviceType + File.separator + "disconnection";
 		this.mqttBrokerEndPoint = mqttBrokerEndPoint;
 		this.timeoutInterval = intervalInMillis;
@@ -115,17 +117,21 @@ public abstract class MQTTCommunicationHandler
 	private void initSubscriber() {
 		try {
 			client = new MqttClient(this.mqttBrokerEndPoint, clientId, null);
+			//TODO:: Need to check for debug
 			log.info("MQTT subscriber was created with ClientID : " + clientId);
 		} catch (MqttException ex) {
+			//TODO:: Remove unnecessary formatting and print exception
 			String errorMsg = "MQTT Client Error\n" + "\tReason:  " + ex.getReasonCode() +
 					"\n\tMessage: " + ex.getMessage() + "\n\tLocalMsg: " +
 					ex.getLocalizedMessage() + "\n\tCause: " + ex.getCause() +
 					"\n\tException: " + ex;
 			log.error(errorMsg);
+			//TODO:: Throw the error out
 		}
 
 		options = new MqttConnectOptions();
 		options.setCleanSession(false);
+		//TODO:: Use constant strings
 		options.setWill(clientWillTopic, "Connection-Lost".getBytes(StandardCharsets.UTF_8), 2,
 		                true);
 		client.setCallback(this);
@@ -160,12 +166,14 @@ public abstract class MQTTCommunicationHandler
 					ex.getReasonCode() + "\n\tMessage: " + ex.getMessage() +
 					"\n\tLocalMsg: " + ex.getLocalizedMessage() + "\n\tCause: " +
 					ex.getCause() + "\n\tException: " + ex;
+			//TODO:: Compulsory log of errors and remove formatted error
 			if (log.isDebugEnabled()) {
 				log.debug(errorMsg);
 			}
 			throw new CommunicationHandlerException(errorMsg, ex);
 
 		} catch (MqttException ex) {
+			//TODO:: Compulsory log of errors and remove formatted error
 			String errorMsg = "MQTT Exception when connecting to queue\n" + "\tReason:  " +
 					ex.getReasonCode() + "\n\tMessage: " + ex.getMessage() +
 					"\n\tLocalMsg: " + ex.getLocalizedMessage() + "\n\tCause: " +
@@ -186,9 +194,11 @@ public abstract class MQTTCommunicationHandler
 	 */
 	protected void subscribeToQueue() throws CommunicationHandlerException {
 		try {
+			//TODO:: QoS Level take it from a variable
 			client.subscribe(subscribeTopic, 0);
 			log.info("Subscriber '" + clientId + "' subscribed to topic: " + subscribeTopic);
 		} catch (MqttException ex) {
+			//TODO:: Compulsory log of errors and remove formatted error
 			String errorMsg = "MQTT Exception when trying to subscribe to topic: " +
 					subscribeTopic + "\n\tReason:  " + ex.getReasonCode() +
 					"\n\tMessage: " + ex.getMessage() + "\n\tLocalMsg: " +
@@ -253,6 +263,7 @@ public abstract class MQTTCommunicationHandler
 						          "] published successfully");
 			}
 		} catch (MqttException ex) {
+			//TODO:: Compulsory log of errors and remove formatted error
 			String errorMsg =
 					"MQTT Client Error" + "\n\tReason:  " + ex.getReasonCode() + "\n\tMessage: " +
 							ex.getMessage() + "\n\tLocalMsg: " + ex.getLocalizedMessage() +
@@ -321,6 +332,7 @@ public abstract class MQTTCommunicationHandler
 		try {
 			message = iMqttDeliveryToken.getMessage().toString();
 		} catch (MqttException e) {
+			//TODO:: Throw errors
 			log.error(
 					"Error occurred whilst trying to read the message from the MQTT delivery " +
 							"token.");

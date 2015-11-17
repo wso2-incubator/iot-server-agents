@@ -19,12 +19,12 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.http.HTTPCommunicationHandlerImpl;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.mqtt.MQTTCommunicationHandlerImpl;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.xmpp.XMPPCommunicationHandlerImpl;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.http.HTTPCommunicationHandlerImpl;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt.MQTTCommunicationHandlerImpl;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp.XMPPCommunicationHandlerImpl;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.VirtualHardwareManager;
 
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ public class AgentManager {
     private AgentConfiguration agentConfigs;
 
     private String deviceIP;
+    private String enrollmentEP;
     private String ipRegistrationEP;
     private String pushDataAPIEP;
 
@@ -109,7 +110,7 @@ public class AgentManager {
 
         } catch (CommunicationHandlerException e) {
             log.error("XMPP Endpoint String - " + agentConfigs.getXmppServerEndpoint() +
-                      ", provided in the configuration file is invalid.");
+                              ", provided in the configuration file is invalid.");
         }
         String mqttTopic = String.format(AgentConstants.MQTT_SUBSCRIBE_TOPIC,
                                          agentConfigs.getDeviceOwner(),
@@ -155,7 +156,7 @@ public class AgentManager {
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 log.info(AgentConstants.LOG_APPENDER +
-                         "Sleep error in 'Switch-Communicator' Thread's shutdown wait.");
+                                 "Sleep error in 'Switch-Communicator' Thread's shutdown wait.");
             }
         }
 
@@ -232,6 +233,14 @@ public class AgentManager {
 
     public void setDeviceIP(String deviceIP) {
         this.deviceIP = deviceIP;
+    }
+
+    public String getEnrollmentEP() {
+        return enrollmentEP;
+    }
+
+    public void setEnrollmentEP(String enrollmentEP) {
+        this.enrollmentEP = enrollmentEP;
     }
 
     public String getIpRegistrationEP() {

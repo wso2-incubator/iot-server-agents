@@ -26,6 +26,7 @@ public class AgentConstants {
 								IoT-Server specific information
  		---------------------------------------------------------------------------------------	*/
 	public static final String DEVICE_CONTROLLER_API_EP = "/virtual_firealarm/controller";
+	public static final String DEVICE_ENROLLMENT_API_EP = "/scep?operation=%s";
 	public static final String DEVICE_REGISTER_API_EP = "/register";
 	public static final String DEVICE_PUSH_TEMPERATURE_API_EP = "/push_temperature";
 	public static final String PUSH_DATA_PAYLOAD =

@@ -129,11 +129,12 @@
             <version>4.4.1</version>
         </dependency>
 
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>${log4j.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.bouncycastle.wso2</groupId>
@@ -159,7 +160,20 @@
         </dependency>
 
 
+        <!--<dependency>-->
+        <!--<groupId>com.google.code.jscep</groupId>-->
+        <!--<artifactId>jscep</artifactId>-->
+        <!--<version>${jscep.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+        <!--<groupId>org.bouncycastle.wso2</groupId>-->
+        <!--<artifactId>bcpkix-jdk15on</artifactId>-->
+        <!--<version>${jscep.version}</version>-->
+        <!--</dependency>-->
+
     </dependencies>
+
 
     <repositories>
         <repository>
@@ -185,9 +199,12 @@
         <smack.wso2.version>3.0.4.wso2v1</smack.wso2.version>
         <smackx.wso2.version>3.0.4.wso2v1</smackx.wso2.version>
         <paho.mqtt.version>0.4.0</paho.mqtt.version>
-		<log4j.version>1.2</log4j.version>
+        <log4j.version>1.2</log4j.version>
+
         <jscep.version>2.0.2.wso2v2</jscep.version>
         <!--<jscep.version>2.0.2</jscep.version>-->
+
+
         <bcprov.wso2.version>1.49.wso2v1</bcprov.wso2.version>
         <bcpkix.wso2.version>1.49.wso2v1</bcpkix.wso2.version>
         <bcmail.wso2.version>1.49.wso2v1</bcmail.wso2.version>

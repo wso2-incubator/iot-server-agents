@@ -194,11 +194,15 @@ public class AgentUtilOperations {
 	 *                                     from the configs file
 	 */
 	public static void initializeHTTPEndPoints() {
-        AgentManager agentManager = AgentManager.getInstance();
+		AgentManager agentManager = AgentManager.getInstance();
 		String apimEndpoint = agentManager.getAgentConfigs().getHTTP_ServerEndpoint();
 		String backEndContext = agentManager.getAgentConfigs().getControllerContext();
 
 		String deviceControllerAPIEndpoint = apimEndpoint + backEndContext;
+
+		String deviceEnrollmentEndpoint =
+				deviceControllerAPIEndpoint + AgentConstants.DEVICE_ENROLLMENT_API_EP;
+		agentManager.setEnrollmentEP(deviceEnrollmentEndpoint);
 
 		String registerEndpointURL =
 				deviceControllerAPIEndpoint + AgentConstants.DEVICE_REGISTER_API_EP;
@@ -210,16 +214,17 @@ public class AgentUtilOperations {
 
 		log.info(AgentConstants.LOG_APPENDER + "IoT Server's Device Controller API Endpoint: " +
 				         deviceControllerAPIEndpoint);
+		log.info(AgentConstants.LOG_APPENDER + "Device Enrollment EndPoint: " +
+				         registerEndpointURL);
 		log.info(AgentConstants.LOG_APPENDER + "DeviceIP Registration EndPoint: " +
 				         registerEndpointURL);
 		log.info(AgentConstants.LOG_APPENDER + "Push-Data API EndPoint: " + pushDataEndPointURL);
 	}
 
 
-	public static Sequencer initializeAudioSequencer(){
+	public static Sequencer initializeAudioSequencer() {
 		InputStream audioSrc = AgentUtilOperations.class.getResourceAsStream(
 				"/" + AgentConstants.AUDIO_FILE_NAME);
-//		File audioFile = new File(rootPath + AgentConstants.AUDIO_FILE_NAME);
 
 		Sequence sequence = null;
 		try {
@@ -277,7 +282,8 @@ public class AgentUtilOperations {
 				}
 
 				if (keyWord.equals(";")) {
-					if (keyWordIndex != 0 && (keyWordIndex + 1) != formattedMsg.length() && formattedMsg.charAt(keyWordIndex + 1) == ' ') {
+					if (keyWordIndex != 0 && (keyWordIndex + 1) != formattedMsg.length() &&
+							formattedMsg.charAt(keyWordIndex + 1) == ' ') {
 						formattedMsg.setCharAt((keyWordIndex + 1), '\n');
 					}
 				} else {

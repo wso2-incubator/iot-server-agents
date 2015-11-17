@@ -1,11 +1,11 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.mqtt;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt.MQTTCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.mqtt.MQTTCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 
@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+//TODO:: Lincense heade, comments and SPECIFIC class name since its not generic
 public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
     private static final Log log = LogFactory.getLog(MQTTCommunicationHandlerImpl.class);
@@ -46,6 +47,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
                     try {
                         connectToQueue();
                         subscribeToQueue();
+                        //TODO:: Terminate logs with a period
                         agentManager.updateAgentStatus("Connected to MQTT Queue");
                         publishDeviceData(agentManager.getPushInterval());
 
@@ -57,6 +59,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
                         try {
                             Thread.sleep(timeoutInterval);
                         } catch (InterruptedException ex) {
+                            //TODO: Need to print exception
                             log.error(AgentConstants.LOG_APPENDER +
                                               "MQTT-Subscriber: Thread Sleep Interrupt Exception");
                         }
@@ -82,68 +85,66 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 //		log.info("########## Incoming Message : " + controlSignal[0]);
         // message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format.(ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
+        switch (controlSignal[0].toUpperCase()) {
+            case AgentConstants.BULB_CONTROL:
+                boolean stateToSwitch = controlSignal[1].equals(AgentConstants.CONTROL_ON);
 
+                agentManager.changeAlarmStatus(stateToSwitch);
+                log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
+                                 controlSignal[1] + "'");
+                break;
 
-            switch (controlSignal[0].toUpperCase()) {
-                case AgentConstants.BULB_CONTROL:
-                    boolean stateToSwitch = controlSignal[1].equals(AgentConstants.CONTROL_ON);
+            case AgentConstants.TEMPERATURE_CONTROL:
+                int currentTemperature = agentManager.getTemperature();
 
-                    agentManager.changeAlarmStatus(stateToSwitch);
-                    log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
-                                     controlSignal[1] + "'");
-                    break;
+                String replyTemperature =
+                        "Current temperature was read as: '" + currentTemperature + "C'";
+                log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
-                case AgentConstants.TEMPERATURE_CONTROL:
-                    int currentTemperature = agentManager.getTemperature();
+                String tempPublishTopic = String.format(
+                        AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
+                replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
 
-                    String replyTemperature =
-                            "Current temperature was read as: '" + currentTemperature + "C'";
-                    log.info(AgentConstants.LOG_APPENDER + replyTemperature);
+                try {
+                    publishToQueue(tempPublishTopic, replyMessage);
+                } catch (CommunicationHandlerException e) {
+                    log.error(AgentConstants.LOG_APPENDER +
+                                      "MQTT - Publishing, reply message to the MQTT Queue " +
+                                      "at:" +
+                                      " " +
+                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+                                      "failed");
+                }
+                break;
 
-                    String tempPublishTopic = String.format(
-                            AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
-                    replyMessage = AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
+            case AgentConstants.HUMIDITY_CONTROL:
+                int currentHumidity = agentManager.getHumidity();
 
-                    try {
-                        publishToQueue(tempPublishTopic, replyMessage);
-                    } catch (CommunicationHandlerException e) {
-                        log.error(AgentConstants.LOG_APPENDER +
-                                          "MQTT - Publishing, reply message to the MQTT Queue " +
-                                          "at:" +
-                                          " " +
-                                          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-                                          "failed");
-                    }
-                    break;
+                String replyHumidity =
+                        "Current humidity was read as: '" + currentHumidity + "%'";
+                log.info(AgentConstants.LOG_APPENDER + replyHumidity);
 
-                case AgentConstants.HUMIDITY_CONTROL:
-                    int currentHumidity = agentManager.getHumidity();
+                String humidPublishTopic = String.format(
+                        AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
+                replyMessage = AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity;
 
-                    String replyHumidity =
-                            "Current humidity was read as: '" + currentHumidity + "%'";
-                    log.info(AgentConstants.LOG_APPENDER + replyHumidity);
+                try {
+                    publishToQueue(humidPublishTopic, replyMessage);
+                } catch (CommunicationHandlerException e) {
+                    log.error(AgentConstants.LOG_APPENDER +
+                                      "MQTT - Publishing, reply message to the MQTT Queue " +
+                                      "at:" +
+                                      " " +
+                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
+                                      "failed");
+                }
+                break;
 
-                    String humidPublishTopic = String.format(
-                            AgentConstants.MQTT_PUBLISH_TOPIC, deviceOwner, deviceID);
-                    replyMessage = AgentConstants.HUMIDITY_CONTROL + ":" + currentHumidity;
-
-                    try {
-                        publishToQueue(humidPublishTopic, replyMessage);
-                    } catch (CommunicationHandlerException e) {
-                        log.error(AgentConstants.LOG_APPENDER +
-                                          "MQTT - Publishing, reply message to the MQTT Queue " +
-                                          "at:" +
-                                          " " +
-                                          agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-                                          "failed");
-                    }
-                    break;
-
-                default:
-                    log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
-                                     "' is invalid and not-supported for " + "this device-type");
-                    break;
-            }
+            default:
+                log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
+                                 "' is invalid and not-supported for " + "this device-type");
+                break;
+        }
 
     }
 

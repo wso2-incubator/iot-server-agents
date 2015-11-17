@@ -1,11 +1,11 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jivesoftware.smack.packet.Message;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp.XMPPCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.xmpp.XMPPCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 
 import java.util.concurrent.Executors;
