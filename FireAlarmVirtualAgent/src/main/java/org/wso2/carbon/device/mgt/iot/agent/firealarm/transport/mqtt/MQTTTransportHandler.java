@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.mqtt;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -28,8 +27,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -40,14 +39,14 @@ import java.nio.charset.StandardCharsets;
  * plan upon losing connection or successfully delivering a message to the broker and processing
  * incoming messages. Makes use of the 'Paho-MQTT' library provided by Eclipse Org.
  * <p/>
- * It is an abstract class that implements the common interface "CommunicationHandler" and the
+ * It is an abstract class that implements the common interface "TransportHandler" and the
  * "MqttCallback". Whilst providing some methods which handle key MQTT relevant tasks, this class
- * implements only the most generic methods of the "CommunicationHandler" interface. The rest of
+ * implements only the most generic methods of the "TransportHandler" interface. The rest of
  * the methods are left for any extended concrete-class to implement as per its need.
  */
-public abstract class MQTTCommunicationHandler
-		implements MqttCallback, CommunicationHandler<MqttMessage> {
-	private static final Log log = LogFactory.getLog(MQTTCommunicationHandler.class);
+public abstract class MQTTTransportHandler
+		implements MqttCallback, TransportHandler<MqttMessage> {
+	private static final Log log = LogFactory.getLog(MQTTTransportHandler.class);
 
 	public static final int DEFAULT_MQTT_QUALITY_OF_SERVICE = 0;
 
@@ -61,7 +60,7 @@ public abstract class MQTTCommunicationHandler
 	protected String subscribeTopic;
 
 	/**
-	 * Constructor for the MQTTCommunicationHandler which takes in the owner, type of the device
+	 * Constructor for the MQTTTransportHandler which takes in the owner, type of the device
 	 * and the MQTT Broker URL and the topic to subscribe.
 	 *
 	 * @param deviceOwner        the owner of the device.
@@ -69,9 +68,9 @@ public abstract class MQTTCommunicationHandler
 	 * @param mqttBrokerEndPoint the IP/URL of the MQTT broker endpoint.
 	 * @param subscribeTopic     the MQTT topic to which the client is to be subscribed
 	 */
-	protected MQTTCommunicationHandler(String deviceOwner, String deviceType,
-	                                   String mqttBrokerEndPoint,
-	                                   String subscribeTopic) {
+	protected MQTTTransportHandler(String deviceOwner, String deviceType,
+	                               String mqttBrokerEndPoint,
+	                               String subscribeTopic) {
 		this.clientId = deviceOwner + ":" + deviceType;
 		this.subscribeTopic = subscribeTopic;
 		this.clientWillTopic = deviceType + File.separator + "disconnection";
@@ -81,7 +80,7 @@ public abstract class MQTTCommunicationHandler
 	}
 
 	/**
-	 * Constructor for the MQTTCommunicationHandler which takes in the owner, type of the device
+	 * Constructor for the MQTTTransportHandler which takes in the owner, type of the device
 	 * and the MQTT Broker URL and the topic to subscribe. Additionally this constructor takes in
 	 * the reconnection-time interval between successive attempts to connect to the broker.
 	 *
@@ -92,9 +91,9 @@ public abstract class MQTTCommunicationHandler
 	 * @param intervalInMillis   the time interval in MILLI-SECONDS between successive
 	 *                           attempts to connect to the broker.
 	 */
-	protected MQTTCommunicationHandler(String deviceOwner, String deviceType,
-	                                   String mqttBrokerEndPoint, String subscribeTopic,
-	                                   int intervalInMillis) {
+	protected MQTTTransportHandler(String deviceOwner, String deviceType,
+	                               String mqttBrokerEndPoint, String subscribeTopic,
+	                               int intervalInMillis) {
 		this.clientId = deviceOwner + ":" + deviceType;
 		this.subscribeTopic = subscribeTopic;
 		//TODO:: Use constant strings
@@ -151,9 +150,9 @@ public abstract class MQTTCommunicationHandler
 	/**
 	 * Connects to the MQTT-Broker and if successfully established connection.
 	 *
-	 * @throws CommunicationHandlerException in the event of 'Connecting to' the MQTT broker fails.
+	 * @throws TransportHandlerException in the event of 'Connecting to' the MQTT broker fails.
 	 */
-	protected void connectToQueue() throws CommunicationHandlerException {
+	protected void connectToQueue() throws TransportHandlerException {
 		try {
 			client.connect(options);
 
@@ -170,7 +169,7 @@ public abstract class MQTTCommunicationHandler
 			if (log.isDebugEnabled()) {
 				log.debug(errorMsg);
 			}
-			throw new CommunicationHandlerException(errorMsg, ex);
+			throw new TransportHandlerException(errorMsg, ex);
 
 		} catch (MqttException ex) {
 			//TODO:: Compulsory log of errors and remove formatted error
@@ -181,7 +180,7 @@ public abstract class MQTTCommunicationHandler
 			if (log.isDebugEnabled()) {
 				log.debug(errorMsg);
 			}
-			throw new CommunicationHandlerException(errorMsg, ex);
+			throw new TransportHandlerException(errorMsg, ex);
 		}
 	}
 
@@ -189,10 +188,10 @@ public abstract class MQTTCommunicationHandler
 	 * Subscribes to the MQTT-Topic specific to this MQTT Client. (The MQTT-Topic specific to the
 	 * device is taken in as a constructor parameter of this class) .
 	 *
-	 * @throws CommunicationHandlerException in the event of 'Subscribing to' the MQTT broker
+	 * @throws TransportHandlerException in the event of 'Subscribing to' the MQTT broker
 	 *                                       fails.
 	 */
-	protected void subscribeToQueue() throws CommunicationHandlerException {
+	protected void subscribeToQueue() throws TransportHandlerException {
 		try {
 			//TODO:: QoS Level take it from a variable
 			client.subscribe(subscribeTopic, 0);
@@ -208,7 +207,7 @@ public abstract class MQTTCommunicationHandler
 				log.debug(errorMsg);
 			}
 
-			throw new CommunicationHandlerException(errorMsg, ex);
+			throw new TransportHandlerException(errorMsg, ex);
 		}
 	}
 
@@ -222,7 +221,7 @@ public abstract class MQTTCommunicationHandler
 	 * @param payLoad the reply-message (payload) of the MQTT publish action.
 	 */
 	protected void publishToQueue(String topic, String payLoad)
-			throws CommunicationHandlerException {
+			throws TransportHandlerException {
 		publishToQueue(topic, payLoad, DEFAULT_MQTT_QUALITY_OF_SERVICE, false);
 	}
 
@@ -236,7 +235,7 @@ public abstract class MQTTCommunicationHandler
 	 *                Could be 0(At-most once), 1(At-least once) or 2(Exactly once)
 	 */
 	protected void publishToQueue(String topic, String payLoad, int qos, boolean retained)
-			throws CommunicationHandlerException {
+			throws TransportHandlerException {
 		try {
 			client.publish(topic, payLoad.getBytes(StandardCharsets.UTF_8), qos, retained);
 			if (log.isDebugEnabled()) {
@@ -249,13 +248,13 @@ public abstract class MQTTCommunicationHandler
 							ex.getMessage() + "\n\tLocalMsg: " + ex.getLocalizedMessage() +
 							"\n\tCause: " + ex.getCause() + "\n\tException: " + ex;
 			log.info(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, ex);
+			throw new TransportHandlerException(errorMsg, ex);
 		}
 	}
 
 
 	protected void publishToQueue(String topic, MqttMessage message)
-			throws CommunicationHandlerException {
+			throws TransportHandlerException {
 		try {
 			client.publish(topic, message);
 			if (log.isDebugEnabled()) {
@@ -269,7 +268,7 @@ public abstract class MQTTCommunicationHandler
 							ex.getMessage() + "\n\tLocalMsg: " + ex.getLocalizedMessage() +
 							"\n\tCause: " + ex.getCause() + "\n\tException: " + ex;
 			log.info(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, ex);
+			throw new TransportHandlerException(errorMsg, ex);
 		}
 	}
 

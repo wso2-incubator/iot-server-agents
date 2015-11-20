@@ -4,10 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.mqtt.MQTTCommunicationHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentUtilOperations;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.mqtt.MQTTTransportHandler;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
@@ -16,22 +18,22 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 //TODO:: Lincense heade, comments and SPECIFIC class name since its not generic
-public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
+public class FireAlarmMQTTCommunicator extends MQTTTransportHandler {
 
-    private static final Log log = LogFactory.getLog(MQTTCommunicationHandlerImpl.class);
+    private static final Log log = LogFactory.getLog(FireAlarmMQTTCommunicator.class);
 
     private static final AgentManager agentManager = AgentManager.getInstance();
     private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> dataPushServiceHandler;
 
-    public MQTTCommunicationHandlerImpl(String deviceOwner, String deviceType,
-                                        String mqttBrokerEndPoint, String subscribeTopic) {
+    public FireAlarmMQTTCommunicator(String deviceOwner, String deviceType,
+                                     String mqttBrokerEndPoint, String subscribeTopic) {
         super(deviceOwner, deviceType, mqttBrokerEndPoint, subscribeTopic);
     }
 
-    public MQTTCommunicationHandlerImpl(String deviceOwner, String deviceType,
-                                        String mqttBrokerEndPoint, String subscribeTopic,
-                                        int intervalInMillis) {
+    public FireAlarmMQTTCommunicator(String deviceOwner, String deviceType,
+                                     String mqttBrokerEndPoint, String subscribeTopic,
+                                     int intervalInMillis) {
         super(deviceOwner, deviceType, mqttBrokerEndPoint, subscribeTopic, intervalInMillis);
     }
 
@@ -51,7 +53,7 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
                         agentManager.updateAgentStatus("Connected to MQTT Queue");
                         publishDeviceData(agentManager.getPushInterval());
 
-                    } catch (CommunicationHandlerException e) {
+                    } catch (TransportHandlerException e) {
                         log.warn(AgentConstants.LOG_APPENDER +
                                          "Connection/Subscription to MQTT Broker at: " +
                                          mqttBrokerEndPoint + " failed");
@@ -79,10 +81,18 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
         String deviceOwner = agentManager.getAgentConfigs().getDeviceOwner();
         String deviceID = agentManager.getAgentConfigs().getDeviceId();
+        String receivedMessage;
         String replyMessage;
 
-        String[] controlSignal = message.toString().split(":");
-//		log.info("########## Incoming Message : " + controlSignal[0]);
+        try {
+            receivedMessage = AgentUtilOperations.extractMessageFromPayload(message.toString());
+        } catch (AgentCoreOperationException e) {
+            log.warn(AgentConstants.LOG_APPENDER + "Could not extract message from payload.", e);
+            return;
+        }
+
+
+        String[] controlSignal = receivedMessage.split(":");
         // message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format.(ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
         switch (controlSignal[0].toUpperCase()) {
@@ -90,15 +100,13 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
                 boolean stateToSwitch = controlSignal[1].equals(AgentConstants.CONTROL_ON);
 
                 agentManager.changeAlarmStatus(stateToSwitch);
-                log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
-                                 controlSignal[1] + "'");
+                log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" + controlSignal[1] + "'");
                 break;
 
             case AgentConstants.TEMPERATURE_CONTROL:
                 int currentTemperature = agentManager.getTemperature();
 
-                String replyTemperature =
-                        "Current temperature was read as: '" + currentTemperature + "C'";
+                String replyTemperature = "Current temperature was read as: '" + currentTemperature + "C'";
                 log.info(AgentConstants.LOG_APPENDER + replyTemperature);
 
                 String tempPublishTopic = String.format(
@@ -107,21 +115,16 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
                 try {
                     publishToQueue(tempPublishTopic, replyMessage);
-                } catch (CommunicationHandlerException e) {
+                } catch (TransportHandlerException e) {
                     log.error(AgentConstants.LOG_APPENDER +
-                                      "MQTT - Publishing, reply message to the MQTT Queue " +
-                                      "at:" +
-                                      " " +
-                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-                                      "failed");
+                                      "MQTT - Publishing, reply message to the MQTT Queue  at: "  + agentManager.getAgentConfigs().getMqttBrokerEndpoint() + " failed");
                 }
                 break;
 
             case AgentConstants.HUMIDITY_CONTROL:
                 int currentHumidity = agentManager.getHumidity();
 
-                String replyHumidity =
-                        "Current humidity was read as: '" + currentHumidity + "%'";
+                String replyHumidity = "Current humidity was read as: '" + currentHumidity + "%'";
                 log.info(AgentConstants.LOG_APPENDER + replyHumidity);
 
                 String humidPublishTopic = String.format(
@@ -130,19 +133,14 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
 
                 try {
                     publishToQueue(humidPublishTopic, replyMessage);
-                } catch (CommunicationHandlerException e) {
+                } catch (TransportHandlerException e) {
                     log.error(AgentConstants.LOG_APPENDER +
-                                      "MQTT - Publishing, reply message to the MQTT Queue " +
-                                      "at:" +
-                                      " " +
-                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-                                      "failed");
+                                      "MQTT - Publishing, reply message to the MQTT Queue at: " + agentManager.getAgentConfigs().getMqttBrokerEndpoint() + " failed");
                 }
                 break;
 
             default:
-                log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
-                                 "' is invalid and not-supported for " + "this device-type");
+                log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] + "' is invalid and not-supported for this device-type");
                 break;
         }
 
@@ -155,30 +153,31 @@ public class MQTTCommunicationHandlerImpl extends MQTTCommunicationHandler {
             @Override
             public void run() {
                 int currentTemperature = agentManager.getTemperature();
-                String payLoad =
-                        "PUBLISHER:" + AgentConstants.TEMPERATURE_CONTROL + ":" +
-                                currentTemperature;
-
-                MqttMessage pushMessage = new MqttMessage();
-                pushMessage.setPayload(payLoad.getBytes(StandardCharsets.UTF_8));
-                pushMessage.setQos(DEFAULT_MQTT_QUALITY_OF_SERVICE);
-                pushMessage.setRetained(true);
-
-                String topic = String.format(AgentConstants.MQTT_PUBLISH_TOPIC,
-                                             agentManager.getAgentConfigs().getDeviceOwner(),
-                                             agentManager.getAgentConfigs().getDeviceId());
+                String message = "PUBLISHER:" + AgentConstants.TEMPERATURE_CONTROL + ":" + currentTemperature;
 
                 try {
+                    String payLoad = AgentUtilOperations.prepareSecurePayLoad(message);
+
+                    MqttMessage pushMessage = new MqttMessage();
+                    pushMessage.setPayload(payLoad.getBytes(StandardCharsets.UTF_8));
+                    pushMessage.setQos(DEFAULT_MQTT_QUALITY_OF_SERVICE);
+                    pushMessage.setRetained(true);
+
+                    String topic = String.format(AgentConstants.MQTT_PUBLISH_TOPIC,
+                                                 agentManager.getAgentConfigs().getDeviceOwner(),
+                                                 agentManager.getAgentConfigs().getDeviceId());
+
                     publishToQueue(topic, pushMessage);
                     log.info(AgentConstants.LOG_APPENDER + "Message: '" + pushMessage +
                                      "' published to MQTT Queue at [" +
                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
                                      "] under topic [" + topic + "]");
 
-                } catch (CommunicationHandlerException e) {
+                } catch (TransportHandlerException e) {
                     log.warn(AgentConstants.LOG_APPENDER + "Data Publish attempt to topic - [" +
-                                     AgentConstants.MQTT_PUBLISH_TOPIC + "] failed for payload [" +
-                                     payLoad + "]");
+                                     AgentConstants.MQTT_PUBLISH_TOPIC + "] failed for payload [" + message + "]");
+                } catch (AgentCoreOperationException e) {
+                    log.warn(AgentConstants.LOG_APPENDER + "Preparing Secure payload failed", e);
                 }
             }
         };

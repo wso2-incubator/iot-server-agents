@@ -3,39 +3,29 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.http;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-
-public abstract class HTTPCommunicationHandler implements CommunicationHandler {
-	private static final Log log = LogFactory.getLog(HTTPCommunicationHandler.class);
+public abstract class HTTPTransportHandler implements TransportHandler {
+	private static final Log log = LogFactory.getLog(HTTPTransportHandler.class);
 
 	protected Server server;
 	protected int port;
 	protected int timeoutInterval;
 
-	protected HTTPCommunicationHandler() {
-		this.port = CommunicationUtils.getAvailablePort(10);
+	protected HTTPTransportHandler() {
+		this.port = TransportUtils.getAvailablePort(10);
 		this.server = new Server(port);
 		timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
 	}
 
-	protected HTTPCommunicationHandler(int port) {
+	protected HTTPTransportHandler(int port) {
 		this.port = port;
 		this.server = new Server(this.port);
 		timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
 	}
 
-	protected HTTPCommunicationHandler(int port, int timeoutInterval) {
+	protected HTTPTransportHandler(int port, int timeoutInterval) {
 		this.port = port;
 		this.server = new Server(this.port);
 		this.timeoutInterval = timeoutInterval;

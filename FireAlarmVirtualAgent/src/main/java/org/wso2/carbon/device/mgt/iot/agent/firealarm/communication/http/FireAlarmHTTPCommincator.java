@@ -5,9 +5,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.http.HTTPCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.http.HTTPTransportHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
@@ -31,22 +31,22 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
-    private static final Log log = LogFactory.getLog(HTTPCommunicationHandlerImpl.class);
+public class FireAlarmHTTPCommincator extends HTTPTransportHandler {
+    private static final Log log = LogFactory.getLog(FireAlarmHTTPCommincator.class);
 
     private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> dataPushServiceHandler;
     private ScheduledFuture<?> connectorServiceHandler;
 
-    public HTTPCommunicationHandlerImpl() {
+    public FireAlarmHTTPCommincator() {
         super();
     }
 
-    public HTTPCommunicationHandlerImpl(int port) {
+    public FireAlarmHTTPCommincator(int port) {
         super(port);
     }
 
-    public HTTPCommunicationHandlerImpl(int port, int reconnectionInterval) {
+    public FireAlarmHTTPCommincator(int port, int reconnectionInterval) {
         super(port, reconnectionInterval);
     }
 
@@ -176,7 +176,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
         HttpURLConnection httpConnection = null;
 
         try {
-            httpConnection = CommunicationUtils.getHttpConnection(agentManager.getPushDataAPIEP());
+            httpConnection = TransportUtils.getHttpConnection(agentManager.getPushDataAPIEP());
             httpConnection.setRequestMethod(AgentConstants.HTTP_POST);
             httpConnection.setRequestProperty("Authorization", "Bearer " +
                     agentManager.getAgentConfigs().getAuthToken());
@@ -209,7 +209,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                             " " + "method.";
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
 
-        } catch (CommunicationHandlerException exception) {
+        } catch (TransportHandlerException exception) {
             log.error(AgentConstants.LOG_APPENDER +
                               "Error encountered whilst trying to create HTTP-Connection " +
                               "to IoT-Server EP at: " +
@@ -370,8 +370,8 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
 
         HttpURLConnection httpConnection;
         try {
-            httpConnection = CommunicationUtils.getHttpConnection(registerEndpointURLString);
-        } catch (CommunicationHandlerException e) {
+            httpConnection = TransportUtils.getHttpConnection(registerEndpointURLString);
+        } catch (TransportHandlerException e) {
             String errorMsg =
                     "Protocol specific error occurred when trying to fetch an HTTPConnection to:" +
                             " " +
@@ -452,7 +452,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                     log.debug(AgentConstants.LOG_APPENDER + "IP Address: " + ipAddress);
                 }
 
-                if (CommunicationUtils.validateIPv4(ipAddress)) {
+                if (TransportUtils.validateIPv4(ipAddress)) {
                     return ipAddress;
                 }
             }

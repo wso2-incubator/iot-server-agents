@@ -2,7 +2,7 @@
 
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport;
 
-public interface CommunicationHandler<T> {
+public interface TransportHandler<T> {
 	int DEFAULT_TIMEOUT_INTERVAL = 5000;      // millis ~ 10 sec
 
 	void connect();

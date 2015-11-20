@@ -1,291 +1,159 @@
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.DatagramSocket;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.SocketException;
-import java.net.URL;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 
 public class CommunicationUtils {
-	private static final Log log = LogFactory.getLog(CommunicationUtils.class);
+    private static final Log log = LogFactory.getLog(TransportUtils.class);
 
-	public static final int MIN_PORT_NUMBER = 9000;
-	public static final int MAX_PORT_NUMBER = 11000;
+    private static final String SIGNATURE_ALG = "SHA1withRSA";
+    private static final String CIPHER_PADDING = "RSA/ECB/PKCS1Padding";
+    
+public static String encryptMessage(String message, Key encryptionKey) throws AgentCoreOperationException {
+        Cipher encrypter;
+        byte[] cipherData;
 
-	/**
-	 * Given a server endpoint as a String, this method splits it into Protocol, Host and Port
-	 *
-	 * @param ipString a network endpoint in the format - '<PROTOCOL>://<HOST>:<PORT>'
-	 * @return a map with keys "Protocol", "Host" & "Port" for the related values from the ipString
-	 * @throws CommunicationHandlerException
-	 */
-	public static Map<String, String> getHostAndPort(String ipString)
-			throws CommunicationHandlerException {
-		Map<String, String> ipPortMap = new HashMap<String, String>();
-		String[] ipPortArray = ipString.split(":");
+        try {
+            encrypter = Cipher.getInstance(CIPHER_PADDING);
+            encrypter.init(Cipher.ENCRYPT_MODE, encryptionKey);
+            cipherData = encrypter.doFinal(message.getBytes(StandardCharsets.UTF_8));
 
-		if (ipPortArray.length != 3) {
-			String errorMsg =
-					"The IP String - '" + ipString +
-							"' is invalid. It needs to be in format '<PROTOCOL>://<HOST>:<PORT>'.";
-			log.info(errorMsg);
-			throw new CommunicationHandlerException(errorMsg);
-		}
+        } catch (NoSuchAlgorithmException e) {
+            String errorMsg = "Algorithm not found exception occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (NoSuchPaddingException e) {
+            String errorMsg = "No Padding error occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (InvalidKeyException e) {
+            String errorMsg = "InvalidKey exception occurred for encryptionKey \n[\n" + encryptionKey + "\n]\n";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (BadPaddingException e) {
+            String errorMsg = "Bad Padding error occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (IllegalBlockSizeException e) {
+            String errorMsg = "Illegal blockSize error occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        }
 
-		ipPortMap.put("Protocol", ipPortArray[0]);
-		ipPortMap.put("Host", ipPortArray[1].replace(File.separator, ""));
-		ipPortMap.put("Port", ipPortArray[2]);
-		return ipPortMap;
-	}
-
-	/**
-	 * This method validates whether a specific IP Address is of IPv4 type
-	 *
-	 * @param ipAddress the IP Address which needs to be validated
-	 * @return true if it is of IPv4 type and false otherwise
-	 */
-	public static boolean validateIPv4(String ipAddress) {
-		try {
-			if (ipAddress == null || ipAddress.isEmpty()) {
-				return false;
-			}
-
-			String[] parts = ipAddress.split("\\.");
-			if (parts.length != 4) {
-				return false;
-			}
-
-			for (String s : parts) {
-				int i = Integer.parseInt(s);
-				if ((i < 0) || (i > 255)) {
-					return false;
-				}
-			}
-			return !ipAddress.endsWith(".");
-
-		} catch (NumberFormatException nfe) {
-			log.warn("The IP Address: " + ipAddress + " could not " +
-					         "be validated against IPv4-style");
-			return false;
-		}
-	}
+        return Base64.encodeBase64String(cipherData);
+    }
 
 
-	public static Map<String, String> getInterfaceIPMap() throws CommunicationHandlerException {
+    public static String signMessage(String encryptedData, PrivateKey signatureKey) throws AgentCoreOperationException {
 
-		Map<String, String> interfaceToIPMap = new HashMap<String, String>();
-		Enumeration<NetworkInterface> networkInterfaces;
-		String networkInterfaceName = "";
-		String ipAddress;
+        Signature signature;
+        String signedEncodedString;
 
-		try {
-			networkInterfaces = NetworkInterface.getNetworkInterfaces();
-		} catch (SocketException exception) {
-			String errorMsg =
-					"Error encountered whilst trying to get the list of network-interfaces";
-			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
-		}
+        try {
+            signature = Signature.getInstance(SIGNATURE_ALG);
+            signature.initSign(signatureKey);
+            signature.update(Base64.decodeBase64(encryptedData));
 
-		try {
-			for (; networkInterfaces.hasMoreElements(); ) {
-				networkInterfaceName = networkInterfaces.nextElement().getName();
+            byte[] signatureBytes = signature.sign();
+            signedEncodedString = Base64.encodeBase64String(signatureBytes);
 
-				if (log.isDebugEnabled()) {
-					log.debug("Network Interface: " + networkInterfaceName);
-					log.debug("------------------------------------------");
-				}
+        } catch (NoSuchAlgorithmException e) {
+            String errorMsg = "Algorithm not found exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (SignatureException e) {
+            String errorMsg = "Signature exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (InvalidKeyException e) {
+            String errorMsg = "InvalidKey exception occurred for signatureKey \n[\n" + signatureKey + "\n]\n";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        }
 
-				Enumeration<InetAddress> interfaceIPAddresses = NetworkInterface.getByName(
-						networkInterfaceName).getInetAddresses();
-
-				for (; interfaceIPAddresses.hasMoreElements(); ) {
-					ipAddress = interfaceIPAddresses.nextElement().getHostAddress();
-
-					if (log.isDebugEnabled()) {
-						log.debug("IP Address: " + ipAddress);
-					}
-
-					if (CommunicationUtils.validateIPv4(ipAddress)) {
-						interfaceToIPMap.put(networkInterfaceName, ipAddress);
-					}
-				}
-
-				if (log.isDebugEnabled()) {
-					log.debug("------------------------------------------");
-				}
-			}
-		} catch (SocketException exception) {
-			String errorMsg =
-					"Error encountered whilst trying to get the IP Addresses of the network " +
-							"interface: " + networkInterfaceName;
-			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
-		}
-
-		return interfaceToIPMap;
-	}
+        return signedEncodedString;
+    }
 
 
-	/**
-	 * Attempts to find a free port between the MIN_PORT_NUMBER(9000) and MAX_PORT_NUMBER(11000).
-	 * Tries 'RANDOMLY picked' port numbers between this range up-until "randomAttempts" number of
-	 * times. If still fails, then tries each port in descending order from the MAX_PORT_NUMBER
-	 * whilst skipping already attempted ones via random selection.
-	 *
-	 * @param randomAttempts no of times to TEST port numbers picked randomly over the given range
-	 * @return an available/free port
-	 */
-	public static synchronized int getAvailablePort(int randomAttempts) {
-		ArrayList<Integer> failedPorts = new ArrayList<Integer>(randomAttempts);
+    public static boolean verifySignature(String data, String signedData, PublicKey verificationKey)
+            throws AgentCoreOperationException {
 
-		Random randomNum = new Random();
-		int randomPort = MAX_PORT_NUMBER;
+        Signature signature;
+        boolean verified;
 
-		while (randomAttempts > 0) {
-			randomPort = randomNum.nextInt(MAX_PORT_NUMBER - MIN_PORT_NUMBER) + MIN_PORT_NUMBER;
+        try {
+            signature = Signature.getInstance(SIGNATURE_ALG);
+            signature.initVerify(verificationKey);
+            signature.update(Base64.decodeBase64(data));
 
-			if (checkIfPortAvailable(randomPort)) {
-				return randomPort;
-			}
-			failedPorts.add(randomPort);
-			randomAttempts--;
-		}
+            verified = signature.verify(Base64.decodeBase64(signedData));
 
-		randomPort = MAX_PORT_NUMBER;
+        } catch (NoSuchAlgorithmException e) {
+            String errorMsg = "Algorithm not found exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (SignatureException e) {
+            String errorMsg = "Signature exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (InvalidKeyException e) {
+            String errorMsg = "InvalidKey exception occurred for signatureKey \n[\n" + verificationKey + "\n]\n";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        }
 
-		while (true) {
-			if (!failedPorts.contains(randomPort) && checkIfPortAvailable(randomPort)) {
-				return randomPort;
-			}
-			randomPort--;
-		}
-	}
+        return verified;
+    }
 
 
-	private static boolean checkIfPortAvailable(int port) {
-		ServerSocket tcpSocket = null;
-		DatagramSocket udpSocket = null;
+    public static String decryptMessage(String encryptedMessage, Key decryptKey) throws AgentCoreOperationException {
 
-		try {
-			tcpSocket = new ServerSocket(port);
-			tcpSocket.setReuseAddress(true);
+        Cipher decrypter;
+        String decryptedMessage;
 
-			udpSocket = new DatagramSocket(port);
-			udpSocket.setReuseAddress(true);
-			return true;
-		} catch (IOException ex) {
-			// denotes the port is in use
-		} finally {
-			if (tcpSocket != null) {
-				try {
-					tcpSocket.close();
-				} catch (IOException e) {
-	                    /* not to be thrown */
-				}
-			}
+        try {
 
-			if (udpSocket != null) {
-				udpSocket.close();
-			}
-		}
+            decrypter = Cipher.getInstance(CIPHER_PADDING);
+            decrypter.init(Cipher.DECRYPT_MODE, decryptKey);
+            decryptedMessage = new String(decrypter.doFinal(Base64.decodeBase64(encryptedMessage)), StandardCharsets.UTF_8);
 
-		return false;
-	}
+        } catch (NoSuchAlgorithmException e) {
+            String errorMsg = "Algorithm not found exception occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (NoSuchPaddingException e) {
+            String errorMsg = "No Padding error occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (InvalidKeyException e) {
+            String errorMsg = "InvalidKey exception occurred for encryptionKey \n[\n" + decryptKey + "\n]\n";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (BadPaddingException e) {
+            String errorMsg = "Bad Padding error occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        } catch (IllegalBlockSizeException e) {
+            String errorMsg = "Illegal blockSize error occurred for Cipher instance of [" + CIPHER_PADDING + "]";
+            log.error(errorMsg);
+            throw new AgentCoreOperationException(errorMsg, e);
+        }
 
-
-	/**
-	 * This is a utility method that creates and returns a HTTP connection object.
-	 *
-	 * @param urlString the URL pattern to which the connection needs to be created
-	 * @return an HTTPConnection object which cn be used to send HTTP requests
-	 * @throws CommunicationHandlerException if errors occur when creating the HTTP connection with
-	 *                                       the given URL string
-	 */
-	public static HttpURLConnection getHttpConnection(String urlString) throws
-	                                                                    CommunicationHandlerException {
-		URL connectionUrl;
-		HttpURLConnection httpConnection;
-
-		try {
-			connectionUrl = new URL(urlString);
-			httpConnection = (HttpURLConnection) connectionUrl.openConnection();
-		} catch (MalformedURLException e) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Error occured whilst trying to form HTTP-URL from string: " + urlString;
-			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, e);
-		} catch (IOException exception) {
-			String errorMsg =
-					AgentConstants.LOG_APPENDER + "Error occured whilst trying to open a" +
-							" connection to: " + urlString;
-			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
-		}
-		return httpConnection;
-	}
-
-	/**
-	 * This is a utility method that reads and returns the response from a HTTP connection
-	 *
-	 * @param httpConnection the connection from which a response is expected
-	 * @return the response (as a string) from the given HTTP connection
-	 * @throws CommunicationHandlerException if any errors occur whilst reading the response from
-	 *                                       the connection stream
-	 */
-	public static String readResponseFromHttpRequest(HttpURLConnection httpConnection)
-			throws CommunicationHandlerException {
-		BufferedReader bufferedReader;
-		try {
-			bufferedReader = new BufferedReader(new InputStreamReader(
-					httpConnection.getInputStream(), StandardCharsets.UTF_8));
-		} catch (IOException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"There is an issue with connecting the reader to the input stream at: " +
-					httpConnection.getURL();
-			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
-		}
-
-		String responseLine;
-		StringBuilder completeResponse = new StringBuilder();
-
-		try {
-			while ((responseLine = bufferedReader.readLine()) != null) {
-				completeResponse.append(responseLine);
-			}
-		} catch (IOException exception) {
-			String errorMsg = AgentConstants.LOG_APPENDER +
-					"Error occured whilst trying read from the connection stream at: " +
-					httpConnection.getURL();
-			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
-		}
-		try {
-			bufferedReader.close();
-		} catch (IOException exception) {
-			log.error(AgentConstants.LOG_APPENDER +
-					          "Could not succesfully close the bufferedReader to the connection " +
-					          "at: " + httpConnection.getURL());
-		}
-		return completeResponse.toString();
-	}
-
+        return decryptedMessage;
+    }
 }
