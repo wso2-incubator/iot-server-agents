@@ -1,6 +1,6 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport;
 
-public class CommunicationHandlerException extends Exception {
+public class TransportHandlerException extends Exception {
 	private static final long serialVersionUID = 2736466230451105440L;
 
 	private String errorMessage;
@@ -13,26 +13,26 @@ public class CommunicationHandlerException extends Exception {
 		this.errorMessage = errorMessage;
 	}
 
-	public CommunicationHandlerException(String msg, Exception nestedEx) {
+	public TransportHandlerException(String msg, Exception nestedEx) {
 		super(msg, nestedEx);
 		setErrorMessage(msg);
 	}
 
-	public CommunicationHandlerException(String message, Throwable cause) {
+	public TransportHandlerException(String message, Throwable cause) {
 		super(message, cause);
 		setErrorMessage(message);
 	}
 
-	public CommunicationHandlerException(String msg) {
+	public TransportHandlerException(String msg) {
 		super(msg);
 		setErrorMessage(msg);
 	}
 
-	public CommunicationHandlerException() {
+	public TransportHandlerException() {
 		super();
 	}
 
-	public CommunicationHandlerException(Throwable cause) {
+	public TransportHandlerException(Throwable cause) {
 		super(cause);
 	}
 }

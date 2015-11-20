@@ -575,7 +575,7 @@ public class AgentUI extends javax.swing.JFrame {
 
         jLabel7.setText("Data Push Interval:");
 
-        spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(1), null, Integer.valueOf(1)));
+        spinnerInterval.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(AgentManager.getInstance().getPushInterval()), Integer.valueOf(1), null, Integer.valueOf(1)));
         spinnerInterval.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerIntervalStateChanged(evt);

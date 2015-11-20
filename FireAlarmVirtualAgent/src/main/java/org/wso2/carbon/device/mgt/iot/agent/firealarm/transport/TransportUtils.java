@@ -1,23 +1,30 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramSocket;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class CommunicationUtils {
-	private static final Log log = LogFactory.getLog(CommunicationUtils.class);
+public class TransportUtils {
+	private static final Log log = LogFactory.getLog(TransportUtils.class);
 
 	public static final int MIN_PORT_NUMBER = 9000;
 	public static final int MAX_PORT_NUMBER = 11000;
@@ -27,10 +34,10 @@ public class CommunicationUtils {
 	 *
 	 * @param ipString a network endpoint in the format - '<PROTOCOL>://<HOST>:<PORT>'
 	 * @return a map with keys "Protocol", "Host" & "Port" for the related values from the ipString
-	 * @throws CommunicationHandlerException
+	 * @throws TransportHandlerException
 	 */
 	public static Map<String, String> getHostAndPort(String ipString)
-			throws CommunicationHandlerException {
+			throws TransportHandlerException {
 		Map<String, String> ipPortMap = new HashMap<String, String>();
 		String[] ipPortArray = ipString.split(":");
 
@@ -39,7 +46,7 @@ public class CommunicationUtils {
 					"The IP String - '" + ipString +
 							"' is invalid. It needs to be in format '<PROTOCOL>://<HOST>:<PORT>'.";
 			log.info(errorMsg);
-			throw new CommunicationHandlerException(errorMsg);
+			throw new TransportHandlerException(errorMsg);
 		}
 
 		ipPortMap.put("Protocol", ipPortArray[0]);
@@ -81,7 +88,7 @@ public class CommunicationUtils {
 	}
 
 
-	public static Map<String, String> getInterfaceIPMap() throws CommunicationHandlerException {
+	public static Map<String, String> getInterfaceIPMap() throws TransportHandlerException {
 
 		Map<String, String> interfaceToIPMap = new HashMap<String, String>();
 		Enumeration<NetworkInterface> networkInterfaces;
@@ -94,7 +101,7 @@ public class CommunicationUtils {
 			String errorMsg =
 					"Error encountered whilst trying to get the list of network-interfaces";
 			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
+			throw new TransportHandlerException(errorMsg, exception);
 		}
 
 		try {
@@ -116,7 +123,7 @@ public class CommunicationUtils {
 						log.debug("IP Address: " + ipAddress);
 					}
 
-					if (CommunicationUtils.validateIPv4(ipAddress)) {
+					if (TransportUtils.validateIPv4(ipAddress)) {
 						interfaceToIPMap.put(networkInterfaceName, ipAddress);
 					}
 				}
@@ -130,7 +137,7 @@ public class CommunicationUtils {
 					"Error encountered whilst trying to get the IP Addresses of the network " +
 							"interface: " + networkInterfaceName;
 			log.error(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, exception);
+			throw new TransportHandlerException(errorMsg, exception);
 		}
 
 		return interfaceToIPMap;
@@ -201,6 +208,84 @@ public class CommunicationUtils {
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * This is a utility method that creates and returns a HTTP connection object.
+	 *
+	 * @param urlString the URL pattern to which the connection needs to be created
+	 * @return an HTTPConnection object which cn be used to send HTTP requests
+	 * @throws TransportHandlerException if errors occur when creating the HTTP connection with
+	 *                                       the given URL string
+	 */
+	public static HttpURLConnection getHttpConnection(String urlString) throws
+	                                                                    TransportHandlerException {
+		URL connectionUrl;
+		HttpURLConnection httpConnection;
+
+		try {
+			connectionUrl = new URL(urlString);
+			httpConnection = (HttpURLConnection) connectionUrl.openConnection();
+		} catch (MalformedURLException e) {
+			String errorMsg = AgentConstants.LOG_APPENDER +
+					"Error occured whilst trying to form HTTP-URL from string: " + urlString;
+			log.error(errorMsg);
+			throw new TransportHandlerException(errorMsg, e);
+		} catch (IOException exception) {
+			String errorMsg =
+					AgentConstants.LOG_APPENDER + "Error occured whilst trying to open a" +
+							" connection to: " + urlString;
+			log.error(errorMsg);
+			throw new TransportHandlerException(errorMsg, exception);
+		}
+		return httpConnection;
+	}
+
+	/**
+	 * This is a utility method that reads and returns the response from a HTTP connection
+	 *
+	 * @param httpConnection the connection from which a response is expected
+	 * @return the response (as a string) from the given HTTP connection
+	 * @throws TransportHandlerException if any errors occur whilst reading the response from
+	 *                                       the connection stream
+	 */
+	public static String readResponseFromHttpRequest(HttpURLConnection httpConnection)
+			throws TransportHandlerException {
+		BufferedReader bufferedReader;
+		try {
+			bufferedReader = new BufferedReader(new InputStreamReader(
+					httpConnection.getInputStream(), StandardCharsets.UTF_8));
+		} catch (IOException exception) {
+			String errorMsg = AgentConstants.LOG_APPENDER +
+					"There is an issue with connecting the reader to the input stream at: " +
+					httpConnection.getURL();
+			log.error(errorMsg);
+			throw new TransportHandlerException(errorMsg, exception);
+		}
+
+		String responseLine;
+		StringBuilder completeResponse = new StringBuilder();
+
+		try {
+			while ((responseLine = bufferedReader.readLine()) != null) {
+				completeResponse.append(responseLine);
+			}
+		} catch (IOException exception) {
+			String errorMsg = AgentConstants.LOG_APPENDER +
+					"Error occured whilst trying read from the connection stream at: " +
+					httpConnection.getURL();
+			log.error(errorMsg);
+			throw new TransportHandlerException(errorMsg, exception);
+		}
+		try {
+			bufferedReader.close();
+		} catch (IOException exception) {
+			log.error(AgentConstants.LOG_APPENDER +
+					          "Could not succesfully close the bufferedReader to the connection " +
+					          "at: " + httpConnection.getURL());
+		}
+		return completeResponse.toString();
 	}
 
 }

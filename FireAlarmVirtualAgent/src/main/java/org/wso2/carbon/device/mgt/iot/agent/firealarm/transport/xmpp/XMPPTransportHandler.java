@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,8 +33,8 @@ import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.filter.ToContainsFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
 
 /**
  * This class contains the IoT-Server specific implementation for all the XMPP functionality.
@@ -42,17 +42,18 @@ import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.Communicatio
  * Setting listeners and filters on incoming XMPP messages and Sending XMPP replies for messages
  * received. Makes use of the 'Smack-XMPP' library provided by jivesoftware/igniterealtime.
  * <p/>
- * It is an abstract class that implements the common interface "CommunicationHandler". Whilst
+ * It is an abstract class that implements the common interface "TransportHandler". Whilst
  * providing some methods which handle key XMPP relevant tasks, this class implements only the
- * most generic methods of the "CommunicationHandler" interface. The rest of the methods are left
+ * most generic methods of the "TransportHandler" interface. The rest of the methods are left
  * for any extended concrete-class to implement as per its need.
  */
-public abstract class XMPPCommunicationHandler implements CommunicationHandler<Message> {
-	private static final Log log = LogFactory.getLog(XMPPCommunicationHandler.class);
+public abstract class XMPPTransportHandler implements TransportHandler<Message> {
+	private static final Log log = LogFactory.getLog(XMPPTransportHandler.class);
 
 	protected String server;
 	protected int timeoutInterval;    // millis
 
+	//TODO:: Shouldnt be hard-coded. Need to be read from configs
 	private static final int DEFAULT_XMPP_PORT = 5222;
 	private XMPPConnection connection;
 	private int port;
@@ -62,11 +63,11 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 
 
 	/**
-	 * Constructor for XMPPCommunicationHandler passing only the server-IP.
+	 * Constructor for XMPPTransportHandler passing only the server-IP.
 	 *
 	 * @param server the IP of the XMPP server.
 	 */
-	protected XMPPCommunicationHandler(String server) {
+	protected XMPPTransportHandler(String server) {
 		this.server = server;
 		this.port = DEFAULT_XMPP_PORT;
 		this.timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
@@ -74,12 +75,12 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	}
 
 	/**
-	 * Constructor for XMPPCommunicationHandler passing server-IP and the XMPP-port.
+	 * Constructor for XMPPTransportHandler passing server-IP and the XMPP-port.
 	 *
 	 * @param server the IP of the XMPP server.
 	 * @param port   the XMPP server's port to connect to. (default - 5222)
 	 */
-	protected XMPPCommunicationHandler(String server, int port) {
+	protected XMPPTransportHandler(String server, int port) {
 		this.server = server;
 		this.port = port;
 		this.timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
@@ -87,14 +88,14 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	}
 
 	/**
-	 * Constructor for XMPPCommunicationHandler passing server-IP, the XMPP-port and the
+	 * Constructor for XMPPTransportHandler passing server-IP, the XMPP-port and the
 	 * timeoutInterval used by listeners to the server and for reconnection schedules.
 	 *
 	 * @param server          the IP of the XMPP server.
 	 * @param port            the XMPP server's port to connect to. (default - 5222)
 	 * @param timeoutInterval the timeout interval to use for the connection and reconnection
 	 */
-	protected XMPPCommunicationHandler(String server, int port, int timeoutInterval) {
+	protected XMPPTransportHandler(String server, int port, int timeoutInterval) {
 		this.server = server;
 		this.port = port;
 		this.timeoutInterval = timeoutInterval;
@@ -128,8 +129,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 */
 	private void initXMPPClient() {
 		log.info(String.format("Initializing connection to XMPP Server at %1$s via port " +
-				                       "%2$d......",
-		                       server, port));
+				                       "%2$d.", server, port));
 		SmackConfiguration.setPacketReplyTimeout(timeoutInterval);
 		config = new ConnectionConfiguration(server, port);
 //		TODO:: Need to enable SASL-Authentication appropriately
@@ -138,13 +138,13 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 		connection = new XMPPConnection(config);
 	}
 
-
+//TODO:: Re-check all exception handling
 	/**
 	 * Connects to the XMPP-Server and if attempt unsuccessful, then throws exception.
 	 *
-	 * @throws CommunicationHandlerException in the event of 'Connecting to' the XMPP server fails.
+	 * @throws TransportHandlerException in the event of 'Connecting to' the XMPP server fails.
 	 */
-	protected void connectToServer() throws CommunicationHandlerException {
+	protected void connectToServer() throws TransportHandlerException {
 		try {
 			connection.connect();
 			log.info(String.format(
@@ -155,7 +155,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 					"Connection attempt to the XMPP Server at " + server + " via port " + port +
 							" failed.";
 			log.info(errorMsg);
-			throw new CommunicationHandlerException(errorMsg, xmppExcepion);
+			throw new TransportHandlerException(errorMsg, xmppExcepion);
 		}
 	}
 
@@ -167,10 +167,10 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 	 * @param password the password of the device's XMPP-Account.
 	 * @param resource the resource the resource, specific to the XMPP-Account to which the login
 	 *                 is made to
-	 * @throws CommunicationHandlerException in the event of 'Logging into' the XMPP server fails.
+	 * @throws TransportHandlerException in the event of 'Logging into' the XMPP server fails.
 	 */
 	protected void loginToServer(String username, String password, String resource)
-			throws CommunicationHandlerException {
+			throws TransportHandlerException {
 		if (isConnected()) {
 			try {
 				if (resource == null) {
@@ -188,16 +188,16 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 						"Login attempt to the XMPP Server at " + server + " with username - " +
 								username + " failed.";
 				log.info(errorMsg);
-				throw new CommunicationHandlerException(errorMsg, xmppException);
+				throw new TransportHandlerException(errorMsg, xmppException);
 			}
-		} else {
+		} else {//TODO:: Log not required
 			String errorMsg =
 					"Not connected to XMPP-Server to attempt Login. Please 'connectToServer' " +
 							"before Login";
 			if (log.isDebugEnabled()) {
 				log.debug(errorMsg);
 			}
-			throw new CommunicationHandlerException(errorMsg);
+			throw new TransportHandlerException(errorMsg);
 		}
 	}
 
@@ -347,7 +347,7 @@ public abstract class XMPPCommunicationHandler implements CommunicationHandler<M
 		connection.sendPacket(xmppMessage);
 		if (log.isDebugEnabled()) {
 			log.debug("Message: '" + xmppMessage.getBody() + "' sent to XMPP JID [" + JID +
-					          "] sent successfully");
+					          "] sent successfully.");
 		}
 	}
 

@@ -1,13 +1,13 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.http;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.http;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.http.HTTPCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.http.HTTPTransportHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
@@ -31,22 +31,22 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
-    private static final Log log = LogFactory.getLog(HTTPCommunicationHandlerImpl.class);
+public class FireAlarmHTTPCommincator extends HTTPTransportHandler {
+    private static final Log log = LogFactory.getLog(FireAlarmHTTPCommincator.class);
 
     private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> dataPushServiceHandler;
     private ScheduledFuture<?> connectorServiceHandler;
 
-    public HTTPCommunicationHandlerImpl() {
+    public FireAlarmHTTPCommincator() {
         super();
     }
 
-    public HTTPCommunicationHandlerImpl(int port) {
+    public FireAlarmHTTPCommincator(int port) {
         super(port);
     }
 
-    public HTTPCommunicationHandlerImpl(int port, int reconnectionInterval) {
+    public FireAlarmHTTPCommincator(int port, int reconnectionInterval) {
         super(port, reconnectionInterval);
     }
 
@@ -68,7 +68,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                     } catch (Exception e) {
                         if (log.isDebugEnabled()) {
                             log.warn("Unable to 'START' HTTP server. Will retry after " +
-                                     timeoutInterval / 1000 + " seconds.");
+                                             timeoutInterval / 1000 + " seconds.");
                         }
                     }
                 }
@@ -112,7 +112,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                     if (pathVariables.length != 3) {
                         httpServletResponse.getWriter().println(
                                 "Invalid BULB-control received by the device. Need to be in " +
-                                "'{host}:{port}/BULB/{ON|OFF}' format.");
+                                        "'{host}:{port}/BULB/{ON|OFF}' format.");
                         return;
                     }
 
@@ -126,7 +126,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                                 AgentConstants.CONTROL_ON);
                         agentManager.changeAlarmStatus(status);
                         httpServletResponse.getWriter().println("Bulb is " + (status ?
-                                                                              AgentConstants.CONTROL_ON : AgentConstants.CONTROL_OFF));
+                                AgentConstants.CONTROL_ON : AgentConstants.CONTROL_OFF));
                     }
                 } else {
                     httpServletResponse.getWriter().println(
@@ -176,10 +176,10 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
         HttpURLConnection httpConnection = null;
 
         try {
-            httpConnection = getHttpConnection(agentManager.getPushDataAPIEP());
+            httpConnection = TransportUtils.getHttpConnection(agentManager.getPushDataAPIEP());
             httpConnection.setRequestMethod(AgentConstants.HTTP_POST);
             httpConnection.setRequestProperty("Authorization", "Bearer " +
-                                                               agentManager.getAgentConfigs().getAuthToken());
+                    agentManager.getAgentConfigs().getAuthToken());
             httpConnection.setRequestProperty("Content-Type",
                                               AgentConstants.APPLICATION_JSON_TYPE);
 
@@ -194,50 +194,50 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
             httpConnection.disconnect();
 
             log.info(AgentConstants.LOG_APPENDER + "Message - '" + pushDataPayload +
-                     "' was published to server at: " + httpConnection.getURL());
+                             "' was published to server at: " + httpConnection.getURL());
 
         } catch (ProtocolException exception) {
             String errorMsg =
                     "Protocol specific error occurred when trying to set method to " +
-                    AgentConstants.HTTP_POST + " for:" + pushDataEndPointURL;
+                            AgentConstants.HTTP_POST + " for:" + pushDataEndPointURL;
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
 
         } catch (IOException exception) {
             String errorMsg =
                     "An IO error occurred whilst trying to get the response code from: " +
-                    pushDataEndPointURL + " for a " + AgentConstants.HTTP_POST +
-                    " " + "method.";
+                            pushDataEndPointURL + " for a " + AgentConstants.HTTP_POST +
+                            " " + "method.";
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
 
-        } catch (CommunicationHandlerException exception) {
+        } catch (TransportHandlerException exception) {
             log.error(AgentConstants.LOG_APPENDER +
-                      "Error encountered whilst trying to create HTTP-Connection " +
-                      "to IoT-Server EP at: " +
-                      pushDataEndPointURL);
+                              "Error encountered whilst trying to create HTTP-Connection " +
+                              "to IoT-Server EP at: " +
+                              pushDataEndPointURL);
         }
 
         if (responseCode == HttpStatus.CONFLICT_409 ||
-            responseCode == HttpStatus.PRECONDITION_FAILED_412) {
+                responseCode == HttpStatus.PRECONDITION_FAILED_412) {
             log.warn(AgentConstants.LOG_APPENDER +
-                     "DeviceIP is being Re-Registered due to Push-Data failure " +
-                     "with response code: " +
-                     responseCode);
+                             "DeviceIP is being Re-Registered due to Push-Data failure " +
+                             "with response code: " +
+                             responseCode);
             registerThisDevice();
 
         } else if (responseCode != HttpStatus.NO_CONTENT_204) {
             if (log.isDebugEnabled()) {
                 log.error(AgentConstants.LOG_APPENDER + "Status Code: " + responseCode +
-                          " encountered whilst trying to Push-Device-Data to IoT " +
-                          "Server at: " +
-                          agentManager.getPushDataAPIEP());
+                                  " encountered whilst trying to Push-Device-Data to IoT " +
+                                  "Server at: " +
+                                  agentManager.getPushDataAPIEP());
             }
             agentManager.updateAgentStatus(AgentConstants.SERVER_NOT_RESPONDING);
         }
 
         if (log.isDebugEnabled()) {
             log.debug(AgentConstants.LOG_APPENDER + "Push-Data call with payload - " +
-                      pushDataPayload + ", to IoT Server returned status " +
-                      responseCode);
+                              pushDataPayload + ", to IoT Server returned status " +
+                              responseCode);
         }
     }
 
@@ -253,15 +253,15 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                     } catch (Exception e) {
                         if (log.isDebugEnabled()) {
                             log.warn(AgentConstants.LOG_APPENDER +
-                                     "Unable to 'STOP' HTTP server at port: " + port);
+                                             "Unable to 'STOP' HTTP server at port: " + port);
                         }
 
                         try {
                             Thread.sleep(timeoutInterval);
                         } catch (InterruptedException e1) {
                             log.error(AgentConstants.LOG_APPENDER +
-                                      "HTTP-Termination: Thread Sleep Interrupt " +
-                                      "Exception");
+                                              "HTTP-Termination: Thread Sleep Interrupt " +
+                                              "Exception");
                         }
                     }
                 }
@@ -297,19 +297,19 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                             break;
                         } else {
                             log.error(AgentConstants.LOG_APPENDER +
-                                      "Device Registration with IoT Server at:" + " " +
-                                      agentManager.getIpRegistrationEP() +
-                                      " failed with response - '" + responseCode + ":" +
-                                      HttpStatus.getMessage(responseCode) + "'");
+                                              "Device Registration with IoT Server at:" + " " +
+                                              agentManager.getIpRegistrationEP() +
+                                              " failed with response - '" + responseCode + ":" +
+                                              HttpStatus.getMessage(responseCode) + "'");
                             agentManager.updateAgentStatus(AgentConstants.RETRYING_TO_REGISTER);
                         }
                     } catch (AgentCoreOperationException exception) {
                         log.error(AgentConstants.LOG_APPENDER +
-                                  "Error encountered whilst trying to register the " +
-                                  "Device's IP at: " +
-                                  agentManager.getIpRegistrationEP() +
-                                  ".\nCheck whether the network-interface provided is " +
-                                  "accurate");
+                                          "Error encountered whilst trying to register the " +
+                                          "Device's IP at: " +
+                                          agentManager.getIpRegistrationEP() +
+                                          ".\nCheck whether the network-interface provided is " +
+                                          "accurate");
                         agentManager.updateAgentStatus(AgentConstants.REGISTRATION_FAILED);
                     }
 
@@ -317,7 +317,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                         Thread.sleep(timeoutInterval);
                     } catch (InterruptedException e1) {
                         log.error(AgentConstants.LOG_APPENDER +
-                                  "Device Registration: Thread Sleep Interrupt Exception");
+                                          "Device Registration: Thread Sleep Interrupt Exception");
                     }
                 }
             }
@@ -352,7 +352,7 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
         if (deviceIPAddress == null) {
             throw new AgentCoreOperationException(
                     "An IP address could not be retrieved for the selected network interface - '" +
-                    networkInterface + ".");
+                            networkInterface + ".");
         }
 
         agentManager.setDeviceIP(deviceIPAddress);
@@ -361,21 +361,21 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
         String deviceIPRegistrationEP = agentManager.getIpRegistrationEP();
         String registerEndpointURLString =
                 deviceIPRegistrationEP + File.separator + deviceOwner + File.separator + deviceID +
-                File.separator + deviceIPAddress + File.separator + port;
+                        File.separator + deviceIPAddress + File.separator + port;
 
         if (log.isDebugEnabled()) {
             log.debug(AgentConstants.LOG_APPENDER + "DeviceIP Registration EndPoint: " +
-                      registerEndpointURLString);
+                              registerEndpointURLString);
         }
 
         HttpURLConnection httpConnection;
         try {
-            httpConnection = getHttpConnection(registerEndpointURLString);
-        } catch (CommunicationHandlerException e) {
+            httpConnection = TransportUtils.getHttpConnection(registerEndpointURLString);
+        } catch (TransportHandlerException e) {
             String errorMsg =
                     "Protocol specific error occurred when trying to fetch an HTTPConnection to:" +
-                    " " +
-                    registerEndpointURLString;
+                            " " +
+                            registerEndpointURLString;
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
             throw new AgentCoreOperationException();
         }
@@ -383,29 +383,29 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
         try {
             httpConnection.setRequestMethod(AgentConstants.HTTP_POST);
             httpConnection.setRequestProperty("Authorization", "Bearer " +
-                                                               agentManager.getAgentConfigs().getAuthToken());
+                    agentManager.getAgentConfigs().getAuthToken());
             httpConnection.setDoOutput(true);
             responseCode = httpConnection.getResponseCode();
 
         } catch (ProtocolException exception) {
             String errorMsg = "Protocol specific error occurred when trying to set method to " +
-                              AgentConstants.HTTP_POST + " for:" + registerEndpointURLString;
+                    AgentConstants.HTTP_POST + " for:" + registerEndpointURLString;
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
             throw new AgentCoreOperationException(errorMsg, exception);
 
         } catch (IOException exception) {
             String errorMsg = "An IO error occurred whilst trying to get the response code from:" +
-                              " " +
-                              registerEndpointURLString + " for a " + AgentConstants.HTTP_POST + " method.";
+                    " " +
+                    registerEndpointURLString + " for a " + AgentConstants.HTTP_POST + " method.";
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
             throw new AgentCoreOperationException(errorMsg, exception);
         }
 
         log.info(AgentConstants.LOG_APPENDER + "DeviceIP - " + deviceIPAddress +
-                 ", registration with IoT Server at : " +
-                 agentManager.getAgentConfigs().getHTTPS_ServerEndpoint() +
-                 " returned status " +
-                 responseCode);
+                         ", registration with IoT Server at : " +
+                         agentManager.getAgentConfigs().getHTTPS_ServerEndpoint() +
+                         " returned status " +
+                         responseCode);
 
         return responseCode;
     }
@@ -452,15 +452,15 @@ public class HTTPCommunicationHandlerImpl extends HTTPCommunicationHandler {
                     log.debug(AgentConstants.LOG_APPENDER + "IP Address: " + ipAddress);
                 }
 
-                if (CommunicationUtils.validateIPv4(ipAddress)) {
+                if (TransportUtils.validateIPv4(ipAddress)) {
                     return ipAddress;
                 }
             }
         } catch (SocketException | NullPointerException exception) {
             String errorMsg =
                     "Error encountered whilst trying to get IP Addresses of the network interface: " +
-                    networkInterfaceName +
-                    ".\nPlease check whether the name of the network interface used is correct";
+                            networkInterfaceName +
+                            ".\nPlease check whether the name of the network interface used is correct";
             log.error(AgentConstants.LOG_APPENDER + errorMsg);
             throw new AgentCoreOperationException(errorMsg, exception);
         }

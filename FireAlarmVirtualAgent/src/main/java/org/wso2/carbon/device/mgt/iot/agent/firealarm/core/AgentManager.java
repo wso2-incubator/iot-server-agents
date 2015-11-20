@@ -19,12 +19,14 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandler;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationUtils;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.http.HTTPCommunicationHandlerImpl;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.mqtt.MQTTCommunicationHandlerImpl;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.xmpp.XMPPCommunicationHandlerImpl;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.enrollment.EnrollmentManager;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportUtils;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.http.FireAlarmHTTPCommincator;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.mqtt.FireAlarmMQTTCommunicator;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp.FireAlarmXMPPCommunicator;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.virtual.VirtualHardwareManager;
 
 import java.util.ArrayList;
@@ -48,11 +50,12 @@ public class AgentManager {
 
     private String networkInterface;
     private List<String> interfaceList, protocolList;
-    private Map<String, CommunicationHandler> agentCommunicator;
+    private Map<String, TransportHandler> agentCommunicator;
 
     private AgentConfiguration agentConfigs;
 
     private String deviceIP;
+    private String enrollmentEP;
     private String ipRegistrationEP;
     private String pushDataAPIEP;
 
@@ -98,25 +101,25 @@ public class AgentManager {
 
         Map<String, String> xmppIPPortMap;
         try {
-            xmppIPPortMap = CommunicationUtils.getHostAndPort(agentConfigs.getXmppServerEndpoint
+            xmppIPPortMap = TransportUtils.getHostAndPort(agentConfigs.getXmppServerEndpoint
                     ());
 
             String xmppServer = xmppIPPortMap.get("Host");
             int xmppPort = Integer.parseInt(xmppIPPortMap.get("Port"));
-            CommunicationHandler xmppCommunicator = new XMPPCommunicationHandlerImpl(xmppServer,
+            TransportHandler xmppCommunicator = new FireAlarmXMPPCommunicator(xmppServer,
                                                                                      xmppPort);
             agentCommunicator.put(AgentConstants.XMPP_PROTOCOL, xmppCommunicator);
 
-        } catch (CommunicationHandlerException e) {
+        } catch (TransportHandlerException e) {
             log.error("XMPP Endpoint String - " + agentConfigs.getXmppServerEndpoint() +
-                      ", provided in the configuration file is invalid.");
+                              ", provided in the configuration file is invalid.");
         }
         String mqttTopic = String.format(AgentConstants.MQTT_SUBSCRIBE_TOPIC,
                                          agentConfigs.getDeviceOwner(),
                                          agentConfigs.getDeviceId());
 
-        CommunicationHandler httpCommunicator = new HTTPCommunicationHandlerImpl();
-        CommunicationHandler mqttCommunicator = new MQTTCommunicationHandlerImpl(
+        TransportHandler httpCommunicator = new FireAlarmHTTPCommincator();
+        TransportHandler mqttCommunicator = new FireAlarmMQTTCommunicator(
                 agentConfigs.getDeviceOwner(), agentConfigs.getDeviceId(),
                 agentConfigs.getMqttBrokerEndpoint(), mqttTopic);
 
@@ -124,9 +127,9 @@ public class AgentManager {
         agentCommunicator.put(AgentConstants.MQTT_PROTOCOL, mqttCommunicator);
 
         try {
-            interfaceList = new ArrayList<>(CommunicationUtils.getInterfaceIPMap().keySet());
+            interfaceList = new ArrayList<>(TransportUtils.getInterfaceIPMap().keySet());
             protocolList = new ArrayList<>(agentCommunicator.keySet());
-        } catch (CommunicationHandlerException e) {
+        } catch (TransportHandlerException e) {
             log.error("An error occurred whilst retrieving all NetworkInterface-IP mappings");
         }
 
@@ -145,6 +148,14 @@ public class AgentManager {
 
         //Start agent communication
         agentCommunicator.get(protocol).connect();
+
+        try {
+            EnrollmentManager.getInstance().beginEnrollmentFlow();
+        } catch (AgentCoreOperationException e) {
+            log.error("Device Enrollment Failed. Please refer error-log:\n");
+            e.printStackTrace();
+            System.exit(0);
+        }
     }
 
     private void switchCommunicator(String stopProtocol, String startProtocol) {
@@ -155,7 +166,7 @@ public class AgentManager {
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 log.info(AgentConstants.LOG_APPENDER +
-                         "Sleep error in 'Switch-Communicator' Thread's shutdown wait.");
+                                 "Sleep error in 'Switch-Communicator' Thread's shutdown wait.");
             }
         }
 
@@ -234,6 +245,14 @@ public class AgentManager {
         this.deviceIP = deviceIP;
     }
 
+    public String getEnrollmentEP() {
+        return enrollmentEP;
+    }
+
+    public void setEnrollmentEP(String enrollmentEP) {
+        this.enrollmentEP = enrollmentEP;
+    }
+
     public String getIpRegistrationEP() {
         return ipRegistrationEP;
     }
@@ -268,25 +287,25 @@ public class AgentManager {
 
     public void setPushInterval(int pushInterval) {
         this.pushInterval = pushInterval;
-        CommunicationHandler communicationHandler = agentCommunicator.get(protocol);
+        TransportHandler transportHandler = agentCommunicator.get(protocol);
 
         switch (protocol) {
             case AgentConstants.HTTP_PROTOCOL:
-                ((HTTPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
+                ((FireAlarmHTTPCommincator) transportHandler).getDataPushServiceHandler()
                         .cancel(true);
                 break;
             case AgentConstants.MQTT_PROTOCOL:
-                ((MQTTCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
+                ((FireAlarmMQTTCommunicator) transportHandler).getDataPushServiceHandler()
                         .cancel(true);
                 break;
             case AgentConstants.XMPP_PROTOCOL:
-                ((XMPPCommunicationHandlerImpl) communicationHandler).getDataPushServiceHandler()
+                ((FireAlarmXMPPCommunicator) transportHandler).getDataPushServiceHandler()
                         .cancel(true);
                 break;
             default:
                 log.warn("Unknown protocol " + protocol);
         }
-        communicationHandler.publishDeviceData(pushInterval);
+        transportHandler.publishDeviceData(pushInterval);
 
         if (log.isDebugEnabled()) {
             log.debug("The Data Publish Interval was changed to: " + pushInterval);

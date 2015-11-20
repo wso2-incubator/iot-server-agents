@@ -1,11 +1,11 @@
-package org.wso2.carbon.device.mgt.iot.agent.firealarm.utils.xmpp;
+package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jivesoftware.smack.packet.Message;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp.XMPPCommunicationHandler;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.xmpp.XMPPTransportHandler;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
-import org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.CommunicationHandlerException;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.transport.TransportHandlerException;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 
 import java.util.concurrent.Executors;
@@ -13,9 +13,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
+public class FireAlarmXMPPCommunicator extends XMPPTransportHandler {
 
-    private static final Log log = LogFactory.getLog(XMPPCommunicationHandlerImpl.class);
+    private static final Log log = LogFactory.getLog(FireAlarmXMPPCommunicator.class);
 
     private static final AgentManager agentManager = AgentManager.getInstance();
     private ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
@@ -28,15 +28,15 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
     private String xmppAdminJID;
     private String xmppDeviceJID;
 
-    public XMPPCommunicationHandlerImpl(String server) {
+    public FireAlarmXMPPCommunicator(String server) {
         super(server);
     }
 
-    public XMPPCommunicationHandlerImpl(String server, int port) {
+    public FireAlarmXMPPCommunicator(String server, int port) {
         super(server, port);
     }
 
-    public XMPPCommunicationHandlerImpl(String server, int port, int timeout) {
+    public FireAlarmXMPPCommunicator(String server, int port, int timeout) {
         super(server, port, timeout);
     }
 
@@ -65,7 +65,7 @@ public class XMPPCommunicationHandlerImpl extends XMPPCommunicationHandler {
                         setMessageFilterAndListener(xmppAdminJID, xmppDeviceJID, true);
                         publishDeviceData(agentManager.getPushInterval());
 
-                    } catch (CommunicationHandlerException e) {
+                    } catch (TransportHandlerException e) {
                         if (log.isDebugEnabled()) {
                             log.warn(AgentConstants.LOG_APPENDER +
                                              "Connection/Login to XMPP server at: " + server +
