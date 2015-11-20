@@ -2,17 +2,11 @@ package org.wso2.carbon.device.mgt.iot.agent.firealarm.enrollment;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -27,11 +21,11 @@ import org.jscep.client.verification.CertificateVerifier;
 import org.jscep.client.verification.OptimisticCertificateVerifier;
 import org.jscep.transaction.TransactionException;
 import org.jscep.transport.response.Capabilities;
+import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentConstants;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.core.AgentManager;
 import org.wso2.carbon.device.mgt.iot.agent.firealarm.exception.AgentCoreOperationException;
 import sun.security.x509.X509CertImpl;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,9 +40,7 @@ import java.security.Security;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
@@ -59,7 +51,6 @@ public class EnrollmentManager {
     private static final String KEY_PAIR_ALGORITHM = "RSA";
     private static final String PROVIDER = "BC";
     private static final String SIGNATURE_ALG = "SHA1withRSA";
-    private static final String CIPHER_PADDING = "RSA/ECB/PKCS1Padding";
     private static final int KEY_SIZE = 2048;
     // Seed to our PRNG. Make sure this is initialised randomly, NOT LIKE THIS
     private static final byte[] SEED = ")(*&^%$#@!".getBytes();
@@ -92,10 +83,10 @@ public class EnrollmentManager {
         this.privateKey = keyPair.getPrivate();
         this.publicKey = keyPair.getPublic();
 
-        log.info("----------------------------------\n");
-        log.info("DevicePrivateKey: " + privateKey + "\n");
-        log.info("----------------------------------\n");
-        log.info("DevicePublicKey: " + publicKey + "\n");
+        if (log.isDebugEnabled()) {
+            log.info(AgentConstants.LOG_APPENDER + "DevicePrivateKey:\n[\n" + privateKey + "\n]\n");
+            log.info(AgentConstants.LOG_APPENDER + "DevicePublicKey:\n[\n" + publicKey + "\n]\n");
+        }
 
         PKCS10CertificationRequest certSignRequest = generateCertSignRequest();
 
@@ -116,8 +107,8 @@ public class EnrollmentManager {
         X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(issuer, serial, fromDate, toDate,
                                                                             certSignRequest.getSubject(),
                                                                             certSignRequest.getSubjectPublicKeyInfo());
-        ContentSigner sigGen = null;
-        X509Certificate tmpCert = null;
+        ContentSigner sigGen;
+        X509Certificate tmpCert;
 
         try {
             sigGen = new JcaContentSignerBuilder(SIGNATURE_ALG).setProvider(PROVIDER).build(keyPair.getPrivate());
@@ -131,10 +122,6 @@ public class EnrollmentManager {
             log.error(errorMsg);
             throw new AgentCoreOperationException(errorMsg, e);
         }
-
-        log.info("----------------------------------\n");
-        log.info("TempCertPublicKey: " + tmpCert.getPublicKey() + "\n");
-
         /**
          *  -----------------------------------------------------------------------------------------------
          */
@@ -142,11 +129,10 @@ public class EnrollmentManager {
         this.SCEPCertificate = getSignedCertificateFromServer(tmpCert, certSignRequest);
         this.serverPublicKey = getPublicKeyOfServer();
 
-        log.info("----------------------------------\n");
-        log.info("SignedCertPublic: " + SCEPCertificate.getPublicKey() + "\n");
-        log.info("----------------------------------\n");
-        log.info("ServerPublicKey: " + serverPublicKey + "\n");
-        log.info("----------------------------------" + "\n");
+        if (log.isDebugEnabled()) {
+            log.info(AgentConstants.LOG_APPENDER + "TemporaryCertPublicKey:\n[\n" + tmpCert.getPublicKey() + "\n]\n");
+            log.info(AgentConstants.LOG_APPENDER + "ServerPublicKey:\n[\n" + serverPublicKey + "\n]\n");
+        }
 
     }
 
@@ -154,7 +140,7 @@ public class EnrollmentManager {
     private KeyPair generateKeyPair() throws AgentCoreOperationException {
 
         // Generate our key pair
-        KeyPairGenerator keyPairGenerator = null;
+        KeyPairGenerator keyPairGenerator;
         try {
             keyPairGenerator = KeyPairGenerator.getInstance(KEY_PAIR_ALGORITHM, PROVIDER);
             keyPairGenerator.initialize(KEY_SIZE, new SecureRandom(SEED));
@@ -183,7 +169,7 @@ public class EnrollmentManager {
 
         JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder(SIGNATURE_ALG).setProvider(
                 PROVIDER);
-        ContentSigner contentSigner = null;
+        ContentSigner contentSigner;
 
         try {
             contentSigner = contentSignerBuilder.build(this.privateKey);
@@ -195,8 +181,7 @@ public class EnrollmentManager {
 
         // Generate the certificate signing request (csr = PKCS10)
         PKCS10CertificationRequestBuilder reqBuilder = new JcaPKCS10CertificationRequestBuilder(principal, this.publicKey);
-        PKCS10CertificationRequest certSignRequest = reqBuilder.build(contentSigner);
-        return certSignRequest;
+        return reqBuilder.build(contentSigner);
     }
 
 
@@ -205,9 +190,9 @@ public class EnrollmentManager {
             throws AgentCoreOperationException {
 
         X509Certificate signedSCEPCertificate = null;
-        URL url = null;
-        EnrollmentResponse enrolResponse = null;
-        CertStore certStore = null;
+        URL url;
+        EnrollmentResponse enrolResponse;
+        CertStore certStore;
 
         try {
             // The URL where we are going to request our cert from
@@ -263,8 +248,8 @@ public class EnrollmentManager {
 
 
     private PublicKey getPublicKeyOfServer() throws AgentCoreOperationException {
-        URL url = null;
-        CertStore certStore = null;
+        URL url;
+        CertStore certStore;
         PublicKey serverCertPublicKey = null;
 
         try {
@@ -314,8 +299,6 @@ public class EnrollmentManager {
                     if (((X509CertImpl) cert).getBasicConstraintsExtension().isCritical()) {
                         serverCertPublicKey = cert.getPublicKey();
                     }
-
-                    serverCertPublicKey = cert.getPublicKey();
                 }
             }
 
