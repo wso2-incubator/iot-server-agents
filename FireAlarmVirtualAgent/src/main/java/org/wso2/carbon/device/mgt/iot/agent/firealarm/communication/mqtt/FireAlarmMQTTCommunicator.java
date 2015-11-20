@@ -77,8 +77,6 @@ public class FireAlarmMQTTCommunicator extends MQTTTransportHandler {
 
     @Override
     public void processIncomingMessage(MqttMessage message) {
-        log.info(AgentConstants.LOG_APPENDER + "Message " + message.toString() + " was received");
-
         String deviceOwner = agentManager.getAgentConfigs().getDeviceOwner();
         String deviceID = agentManager.getAgentConfigs().getDeviceId();
         String receivedMessage;
@@ -86,6 +84,7 @@ public class FireAlarmMQTTCommunicator extends MQTTTransportHandler {
 
         try {
             receivedMessage = AgentUtilOperations.extractMessageFromPayload(message.toString());
+            log.info(AgentConstants.LOG_APPENDER + "Message [" + receivedMessage + "] was received");
         } catch (AgentCoreOperationException e) {
             log.warn(AgentConstants.LOG_APPENDER + "Could not extract message from payload.", e);
             return;
@@ -117,7 +116,8 @@ public class FireAlarmMQTTCommunicator extends MQTTTransportHandler {
                     publishToQueue(tempPublishTopic, replyMessage);
                 } catch (TransportHandlerException e) {
                     log.error(AgentConstants.LOG_APPENDER +
-                                      "MQTT - Publishing, reply message to the MQTT Queue  at: "  + agentManager.getAgentConfigs().getMqttBrokerEndpoint() + " failed");
+                                      "MQTT - Publishing, reply message to the MQTT Queue  at: " +
+                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() + " failed");
                 }
                 break;
 
@@ -135,12 +135,14 @@ public class FireAlarmMQTTCommunicator extends MQTTTransportHandler {
                     publishToQueue(humidPublishTopic, replyMessage);
                 } catch (TransportHandlerException e) {
                     log.error(AgentConstants.LOG_APPENDER +
-                                      "MQTT - Publishing, reply message to the MQTT Queue at: " + agentManager.getAgentConfigs().getMqttBrokerEndpoint() + " failed");
+                                      "MQTT - Publishing, reply message to the MQTT Queue at: " +
+                                      agentManager.getAgentConfigs().getMqttBrokerEndpoint() + " failed");
                 }
                 break;
 
             default:
-                log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] + "' is invalid and not-supported for this device-type");
+                log.warn(AgentConstants.LOG_APPENDER + "'" + controlSignal[0] +
+                                 "' is invalid and not-supported for this device-type");
                 break;
         }
 
@@ -168,10 +170,9 @@ public class FireAlarmMQTTCommunicator extends MQTTTransportHandler {
                                                  agentManager.getAgentConfigs().getDeviceId());
 
                     publishToQueue(topic, pushMessage);
-                    log.info(AgentConstants.LOG_APPENDER + "Message: '" + pushMessage +
-                                     "' published to MQTT Queue at [" +
-                                     agentManager.getAgentConfigs().getMqttBrokerEndpoint() +
-                                     "] under topic [" + topic + "]");
+                    log.info(AgentConstants.LOG_APPENDER + "Message: '" + message + "' published to MQTT Queue at [" +
+                                     agentManager.getAgentConfigs().getMqttBrokerEndpoint() + "] under topic [" +
+                                     topic + "]");
 
                 } catch (TransportHandlerException e) {
                     log.warn(AgentConstants.LOG_APPENDER + "Data Publish attempt to topic - [" +
