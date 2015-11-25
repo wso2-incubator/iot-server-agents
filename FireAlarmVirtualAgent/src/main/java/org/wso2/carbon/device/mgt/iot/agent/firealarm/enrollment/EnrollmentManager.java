@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.enrollment;
 
 import org.apache.commons.logging.Log;
@@ -44,6 +62,19 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
+/**
+ * This class controls the entire SCEP enrolment process of the client. It is a singleton for any single client which
+ * has the agent code running in it. The main functionality of this class includes generating a Private-Public Key
+ * Pair for the enrollment flow, creating the Certificate-Sign-Request using the generated Public-Key to send to the
+ * SEP server, Contacting the SCEP server to receive the Signed Certificate and requesting for the server's public
+ * key for encrypting the payloads.
+ * The provider for all Cryptographic functions used in this class are "BouncyCastle" and the Asymmetric-Key pair
+ * algorithm used is "RSA" with a key size of 2048. The signature algorithm used is "SHA1withRSA".
+ * This class also holds the "SCEPUrl" (Server Url read from the configs file), the Private-Public Keys of the
+ * client, Signed SCEP certificate and the server's public certificate.
+ */
+
+//TODO: Need to save cert and keys after initial enrollment...
 public class EnrollmentManager {
     private static final Log log = LogFactory.getLog(EnrollmentManager.class);
     private static EnrollmentManager enrollmentManager;
@@ -52,6 +83,7 @@ public class EnrollmentManager {
     private static final String PROVIDER = "BC";
     private static final String SIGNATURE_ALG = "SHA1withRSA";
     private static final int KEY_SIZE = 2048;
+
     // Seed to our PRNG. Make sure this is initialised randomly, NOT LIKE THIS
     private static final byte[] SEED = ")(*&^%$#@!".getBytes();
     private static final int CERT_VALIDITY = 730;
@@ -64,10 +96,19 @@ public class EnrollmentManager {
     private X509Certificate SCEPCertificate;
 
 
+    /**
+     * Constructor of the EnrollmentManager. Initializes the SCEPUrl as read from the configuration file by the
+     * AgentManager.
+     */
     private EnrollmentManager() {
         this.SCEPUrl = AgentManager.getInstance().getEnrollmentEP();
     }
 
+    /**
+     * Method to return the current singleton instance of the EnrollmentManager.
+     *
+     * @return the current singleton instance if available and if not initializes a new instance and returns it.
+     */
     public static EnrollmentManager getInstance() {
         if (enrollmentManager == null) {
             enrollmentManager = new EnrollmentManager();
@@ -76,6 +117,17 @@ public class EnrollmentManager {
     }
 
 
+    /**
+     * Method to control the entire enrollment flow. This method calls the method to create the Private-Public Key
+     * Pair, calls the specific method to generate the Certificate-Sign-Request, creates a one time self signed
+     * certificate to present to the SCEP server with the initial CSR, calls the specific method to connect to the
+     * SCEP Server and to get the SCEP Certificate and also calls the method that requests the SCEP Server for its
+     * PublicKey for future payload encryption.
+     *
+     * @throws AgentCoreOperationException if the private method generateCertSignRequest() fails with an error or if
+     *                                     there is an error creating a self-sign certificate to present to the
+     *                                     server (whilst trying to get the CSR signed)
+     */
     public void beginEnrollmentFlow() throws AgentCoreOperationException {
         Security.addProvider(new BouncyCastleProvider());
 
@@ -92,9 +144,8 @@ public class EnrollmentManager {
 
         /**
          *  -----------------------------------------------------------------------------------------------
-         *  Generate an ephemeral self-signed certificate. This is needed to present to the CA in the SCEP
-         *  request. In the future, add proper EKU and attributes in the request
-         *  The CA does NOT have to honour any of this.
+         *  Generate an ephemeral self-signed certificate. This is needed to present to the CA in the SCEP request.
+         *  In the future, add proper EKU and attributes in the request. The CA does NOT have to honour any of this.
          *  -----------------------------------------------------------------------------------------------
          */
         X500Name issuer = new X500Name("CN=Temporary Issuer");
@@ -103,7 +154,6 @@ public class EnrollmentManager {
         Date toDate = new Date(System.currentTimeMillis() + (CERT_VALIDITY * 86400000L));
 
         // Build the self-signed cert using BC, sign it with our private key (self-signed)
-        // Equivalent of the old X509Util ephemeral certificate
         X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(issuer, serial, fromDate, toDate,
                                                                             certSignRequest.getSubject(),
                                                                             certSignRequest.getSubjectPublicKeyInfo());
@@ -127,7 +177,7 @@ public class EnrollmentManager {
          */
 
         this.SCEPCertificate = getSignedCertificateFromServer(tmpCert, certSignRequest);
-        this.serverPublicKey = getPublicKeyOfServer();
+        this.serverPublicKey = initPublicKeyOfServer();
 
         if (log.isDebugEnabled()) {
             log.info(AgentConstants.LOG_APPENDER + "TemporaryCertPublicKey:\n[\n" + tmpCert.getPublicKey() + "\n]\n");
@@ -137,6 +187,13 @@ public class EnrollmentManager {
     }
 
 
+    /**
+     * This method creates the Public-Private Key pair for the current client.
+     *
+     * @return the generated KeyPair object
+     * @throws AgentCoreOperationException when the given Security Provider does not exist or the Algorithmn used to
+     *                                     generate the key pair is invalid.
+     */
     private KeyPair generateKeyPair() throws AgentCoreOperationException {
 
         // Generate our key pair
@@ -158,17 +215,25 @@ public class EnrollmentManager {
     }
 
 
+    /**
+     * This method creates the PKCS10 Certificate Sign Request which is to be sent to the SCEP Server using the
+     * generated PublicKey of the client. The certificate parameters used here are the ones from the AgentManager
+     * which are the values read from the configurations file.
+     *
+     * @return the PKCS10CertificationRequest object created using the client specific configs and the generated
+     * PublicKey
+     * @throws AgentCoreOperationException if an error occurs when creating a content signer to sign the CSR.
+     */
     private PKCS10CertificationRequest generateCertSignRequest() throws AgentCoreOperationException {
-        // Build the CN for the cert we are requesting. Here, the CN contains my email address
+        // Build the CN for the cert we are requesting.
         X500NameBuilder nameBld = new X500NameBuilder(BCStyle.INSTANCE);
-        nameBld.addRDN(BCStyle.CN, "shabir@wso2.com");
-        nameBld.addRDN(BCStyle.OU, "Engineering");
-        nameBld.addRDN(BCStyle.O, "WSO2");
+        nameBld.addRDN(BCStyle.CN, AgentManager.getInstance().getAgentConfigs().getDeviceName());
+        nameBld.addRDN(BCStyle.O, AgentManager.getInstance().getAgentConfigs().getDeviceOwner());
+        nameBld.addRDN(BCStyle.OU, AgentManager.getInstance().getAgentConfigs().getDeviceOwner());
         nameBld.addRDN(BCStyle.UNIQUE_IDENTIFIER, AgentManager.getInstance().getAgentConfigs().getDeviceId());
         X500Name principal = nameBld.build();
 
-        JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder(SIGNATURE_ALG).setProvider(
-                PROVIDER);
+        JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder(SIGNATURE_ALG).setProvider(PROVIDER);
         ContentSigner contentSigner;
 
         try {
@@ -180,11 +245,23 @@ public class EnrollmentManager {
         }
 
         // Generate the certificate signing request (csr = PKCS10)
-        PKCS10CertificationRequestBuilder reqBuilder = new JcaPKCS10CertificationRequestBuilder(principal, this.publicKey);
+        PKCS10CertificationRequestBuilder reqBuilder = new JcaPKCS10CertificationRequestBuilder(principal,
+                                                                                                this.publicKey);
         return reqBuilder.build(contentSigner);
     }
 
 
+    /**
+     * This method connects to the SCEP Server to fetch the signed SCEP Certificate.
+     *
+     * @param tempCert        the temporary self-signed certificate of the client required for the initial CSR
+     *                        request against the SCEP Server.
+     * @param certSignRequest the PKCS10 Certificate-Sign-Request that is to be sent to the SCEP Server.
+     * @return the SCEP-Certificate for the client signed by the SCEP-Server.
+     * @throws AgentCoreOperationException if the SCEPUrl is invalid or if the flow of sending the CSR and getting
+     *                                     the signed certificate fails or if the signed certificate cannot be
+     *                                     retrieved from the reply from the server.
+     */
     private X509Certificate getSignedCertificateFromServer(X509Certificate tempCert,
                                                            PKCS10CertificationRequest certSignRequest)
             throws AgentCoreOperationException {
@@ -247,7 +324,16 @@ public class EnrollmentManager {
     }
 
 
-    private PublicKey getPublicKeyOfServer() throws AgentCoreOperationException {
+    /**
+     * Gets the Public Key of the SCEP-Server and initializes it for later use. This method contacts the SCEP Server
+     * and fetches its CA Cert and extracts the Public Key of the server from the received reply.
+     *
+     * @return the public key of the SCEP Server which is to be used to encrypt pyloads.
+     * @throws AgentCoreOperationException if the SCEPUrl is invalid or if the flow of sending the CSR and getting
+     *                                     the signed certificate fails or if the signed certificate cannot be
+     *                                     retrieved from the reply from the server.
+     */
+    private PublicKey initPublicKeyOfServer() throws AgentCoreOperationException {
         URL url;
         CertStore certStore;
         PublicKey serverCertPublicKey = null;
@@ -320,19 +406,34 @@ public class EnrollmentManager {
     }
 
 
-
+    /**
+     * Gets the Public-Key of the client.
+     * @return the public key of the client.
+     */
     public PublicKey getPublicKey() {
         return publicKey;
     }
 
+    /**
+     * Gets the Private-Key of the client.
+     * @return the private key of the client.
+     */
     public PrivateKey getPrivateKey() {
         return privateKey;
     }
 
+    /**
+     * Gets the SCEP-Certificate of the client.
+     * @return the SCEP Certificate of the client.
+     */
     public X509Certificate getSCEPCertificate() {
         return SCEPCertificate;
     }
 
+    /**
+     * Gets the Public-Key of the Server.
+     * @return the pubic key of the server.
+     */
     public PublicKey getServerPublicKey() {
         return serverPublicKey;
     }

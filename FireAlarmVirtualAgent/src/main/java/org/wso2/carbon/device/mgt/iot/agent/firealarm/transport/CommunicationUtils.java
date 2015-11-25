@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.transport;
 
 import org.apache.commons.codec.binary.Base64;
@@ -18,13 +36,29 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
+/**
+ * This is a utility class which contains methods common to the communication process of a client and the server. The
+ * methods include encryption/decryption of payloads and signing/verification of payloads received and to be sent.
+ */
 public class CommunicationUtils {
     private static final Log log = LogFactory.getLog(TransportUtils.class);
 
+    // The Signature Algorithm used.
     private static final String SIGNATURE_ALG = "SHA1withRSA";
+    // The Encryption Algorithm and the Padding used.
     private static final String CIPHER_PADDING = "RSA/ECB/PKCS1Padding";
-    
-public static String encryptMessage(String message, Key encryptionKey) throws AgentCoreOperationException {
+
+
+    /**
+     * Encrypts the message with the key that's passed in.
+     *
+     * @param message       the message to be encrypted.
+     * @param encryptionKey the key to use for the encryption of the message.
+     * @return the encrypted message in String format.
+     * @throws AgentCoreOperationException if an error occurs with the encryption flow which can be due to Padding
+     *                                     issues, encryption key being invalid or the algorithm used is unrecognizable.
+     */
+    public static String encryptMessage(String message, Key encryptionKey) throws AgentCoreOperationException {
         Cipher encrypter;
         byte[] cipherData;
 
@@ -59,7 +93,16 @@ public static String encryptMessage(String message, Key encryptionKey) throws Ag
     }
 
 
-    public static String signMessage(String encryptedData, PrivateKey signatureKey) throws AgentCoreOperationException {
+    /**
+     * Signed a given message using the PrivateKey that's passes in.
+     *
+     * @param message      the message to be signed. Ideally some encrypted payload.
+     * @param signatureKey the PrivateKey with which the message is to be signed.
+     * @return the Base64Encoded String of the signed payload.
+     * @throws AgentCoreOperationException if some error occurs with the signing process which may be related to the
+     *                                     signature algorithm used or the key used for signing.
+     */
+    public static String signMessage(String message, PrivateKey signatureKey) throws AgentCoreOperationException {
 
         Signature signature;
         String signedEncodedString;
@@ -67,13 +110,14 @@ public static String encryptMessage(String message, Key encryptionKey) throws Ag
         try {
             signature = Signature.getInstance(SIGNATURE_ALG);
             signature.initSign(signatureKey);
-            signature.update(Base64.decodeBase64(encryptedData));
+            signature.update(Base64.decodeBase64(message));
 
             byte[] signatureBytes = signature.sign();
             signedEncodedString = Base64.encodeBase64String(signatureBytes);
 
         } catch (NoSuchAlgorithmException e) {
-            String errorMsg = "Algorithm not found exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
+            String errorMsg =
+                    "Algorithm not found exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
             log.error(errorMsg);
             throw new AgentCoreOperationException(errorMsg, e);
         } catch (SignatureException e) {
@@ -90,6 +134,18 @@ public static String encryptMessage(String message, Key encryptionKey) throws Ag
     }
 
 
+    /**
+     * Verifies some signed-data against the a Public-Key to ensure that it was produced by the holder of the
+     * corresponding Private Key.
+     *
+     * @param data            the actual payoad which was signed by some Private Key.
+     * @param signedData      the signed data produced by signing the payload using a Private Key.
+     * @param verificationKey the corresponding Public Key which is an exact pair of the Private-Key with we expect
+     *                        the data to be signed by.
+     * @return true if the signed data verifies to be signed by the corresponding Private Key.
+     * @throws AgentCoreOperationException if some error occurs with the verification process which may be related to
+     *                                     the signature algorithm used or the key used for signing.
+     */
     public static boolean verifySignature(String data, String signedData, PublicKey verificationKey)
             throws AgentCoreOperationException {
 
@@ -104,7 +160,8 @@ public static String encryptMessage(String message, Key encryptionKey) throws Ag
             verified = signature.verify(Base64.decodeBase64(signedData));
 
         } catch (NoSuchAlgorithmException e) {
-            String errorMsg = "Algorithm not found exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
+            String errorMsg =
+                    "Algorithm not found exception occurred for Signature instance of [" + SIGNATURE_ALG + "]";
             log.error(errorMsg);
             throw new AgentCoreOperationException(errorMsg, e);
         } catch (SignatureException e) {
@@ -121,6 +178,15 @@ public static String encryptMessage(String message, Key encryptionKey) throws Ag
     }
 
 
+    /**
+     * Encrypts the message with the key that's passed in.
+     *
+     * @param encryptedMessage the encrypted message that is supposed to be decrypted.
+     * @param decryptKey       the key to use in the decryption process.
+     * @return the decrypted message in String format.
+     * @throws AgentCoreOperationException if an error occurs with the encryption flow which can be due to Padding
+     *                                     issues, encryption key being invalid or the algorithm used is unrecognizable.
+     */
     public static String decryptMessage(String encryptedMessage, Key decryptKey) throws AgentCoreOperationException {
 
         Cipher decrypter;
@@ -130,7 +196,8 @@ public static String encryptMessage(String message, Key encryptionKey) throws Ag
 
             decrypter = Cipher.getInstance(CIPHER_PADDING);
             decrypter.init(Cipher.DECRYPT_MODE, decryptKey);
-            decryptedMessage = new String(decrypter.doFinal(Base64.decodeBase64(encryptedMessage)), StandardCharsets.UTF_8);
+            decryptedMessage = new String(decrypter.doFinal(Base64.decodeBase64(encryptedMessage)),
+                                          StandardCharsets.UTF_8);
 
         } catch (NoSuchAlgorithmException e) {
             String errorMsg = "Algorithm not found exception occurred for Cipher instance of [" + CIPHER_PADDING + "]";

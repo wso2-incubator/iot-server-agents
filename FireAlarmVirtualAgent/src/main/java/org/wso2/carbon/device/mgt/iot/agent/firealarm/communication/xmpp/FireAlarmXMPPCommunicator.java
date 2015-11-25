@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.carbon.device.mgt.iot.agent.firealarm.communication.xmpp;
 
 import org.apache.commons.logging.Log;
@@ -88,14 +106,14 @@ public class FireAlarmXMPPCommunicator extends XMPPTransportHandler {
      * @param xmppMessage the xmpp message received by the listener.
      */
     @Override
-    public void processIncomingMessage(Message xmppMessage) {
+    public void processIncomingMessage(Message xmppMessage, String... messageParams) {
         String from = xmppMessage.getFrom();
         String message = xmppMessage.getBody();
         log.info(AgentConstants.LOG_APPENDER + "Received XMPP message [" + message + "] from " +
                          from);
 
         String replyMessage;
-        String[] controlSignal = message.toString().split(":");
+        String[] controlSignal = message.split(":");
         //message- "<SIGNAL_TYPE>:<SIGNAL_MODE>" format. (ex: "BULB:ON", "TEMPERATURE", "HUMIDITY")
 
 
@@ -108,8 +126,7 @@ public class FireAlarmXMPPCommunicator extends XMPPTransportHandler {
                     break;
                 }
 
-                agentManager.changeAlarmStatus(
-                        controlSignal[1].equals(AgentConstants.CONTROL_ON) ? true : false);
+                agentManager.changeAlarmStatus(controlSignal[1].equals(AgentConstants.CONTROL_ON));
                 log.info(AgentConstants.LOG_APPENDER + "Bulb was switched to state: '" +
                                  controlSignal[1] + "'");
                 break;
