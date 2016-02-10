@@ -19,7 +19,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-
 import org.wso2.carbon.iot.android.sense.events.input.DataReader;
 import org.wso2.carbon.iot.android.sense.util.DataMap;
 

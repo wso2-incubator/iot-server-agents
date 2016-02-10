@@ -14,10 +14,11 @@
 
 package org.wso2.carbon.iot.android.sense.events.input.battery;
 
-import java.util.Calendar;
-
 import android.content.Intent;
 import android.os.BatteryManager;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class BatteryData {
 
@@ -32,7 +33,7 @@ public class BatteryData {
     private String timestamp;
 
     BatteryData(Intent intent) {
-        timestamp = "" + Calendar.getInstance().getTimeInMillis();
+        timestamp = String.valueOf(new Date().getTime());;
         health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
         level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
         plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);

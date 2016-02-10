@@ -29,10 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +38,41 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManagerFactory;
-
-import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String, String>> {
 
-    private static List<String> cookies;
-    private Context context;
     private final static String TAG = "SenseService Client";
+    private static List<String> cookies;
+    public HostnameVerifier SERVER_HOST = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+//            HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
+            HttpsURLConnection.getDefaultHostnameVerifier();
+            return true;
+            //return hv.verify(allowHost, session);
+        }
+    };
+    String access_token;
+    String refresh_token;
+    TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                public void checkClientTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+
+                public void checkServerTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            }
+    };
+    private Context context;
+
 
     public SenseClientAsyncExecutor(Context context) {
         this.context = context;
@@ -57,34 +80,17 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
     }
 
     private HttpsURLConnection getTrustedConnection(HttpsURLConnection conn) {
-        HttpsURLConnection urlConnection = conn;
         try {
-            KeyStore localTrustStore;
 
-            localTrustStore = KeyStore.getInstance("BKS");
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            conn.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
-            InputStream in = context.getResources().openRawResource(
-                    R.raw.client_truststore);
+//            urlConnection.setSSLSocketFactory(sslCtx.getSocketFactory());
+            return conn;
+        } catch (KeyManagementException | NoSuchAlgorithmException e) {
 
-            localTrustStore.load(in, SenseConstants.TRUSTSTORE_PASSWORD.toCharArray());
-
-            TrustManagerFactory tmf;
-            tmf = TrustManagerFactory.getInstance(TrustManagerFactory
-                    .getDefaultAlgorithm());
-
-            tmf.init(localTrustStore);
-
-            SSLContext sslCtx;
-
-            sslCtx = SSLContext.getInstance("TLS");
-
-            sslCtx.init(null, tmf.getTrustManagers(), null);
-
-            urlConnection.setSSLSocketFactory(sslCtx.getSocketFactory());
-            return urlConnection;
-        } catch (KeyManagementException | NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
-
-            Log.e(SenseClientAsyncExecutor.class.getName(), "Invalid Certifcate");
+            Log.e(SenseClientAsyncExecutor.class.getName(), "Invalid Certificate");
             return null;
         }
 
@@ -94,16 +100,15 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
     protected Map<String, String> doInBackground(String... parameters) {
         if (android.os.Debug.isDebuggerConnected())
             android.os.Debug.waitForDebugger();
-        String response = null;
-        Map<String, String> response_params = new HashMap<String, String>();
-
+        String response;
+        Map<String, String> response_params = new HashMap<>();
 
         String endpoint = parameters[0];
         String body = parameters[1];
         String option = parameters[2];
         String jsonBody = parameters[3];
 
-        if(jsonBody!=null && !jsonBody.isEmpty()){
+        if (jsonBody != null && !jsonBody.isEmpty()) {
             body = jsonBody;
         }
 
@@ -118,14 +123,16 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
 
 
         HttpURLConnection conn = null;
-        HttpsURLConnection sConn = null;
+        HttpsURLConnection sConn;
         try {
 
             if (url.getProtocol().toLowerCase().equals("https")) {
 
                 sConn = (HttpsURLConnection) url.openConnection();
+
                 sConn = getTrustedConnection(sConn);
                 sConn.setHostnameVerifier(SERVER_HOST);
+
                 conn = sConn;
 
             } else {
@@ -148,25 +155,34 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
             conn.setUseCaches(false);
             conn.setFixedLengthStreamingMode(bytes.length);
             conn.setRequestMethod(option);
-            if(jsonBody!=null && !jsonBody.isEmpty()){
+            if (jsonBody != null && !jsonBody.isEmpty()) {
                 conn.setRequestProperty("Content-Type", "application/json");
-            }else {
+                conn.setRequestProperty("Authorization", "Bearer " + LocalRegister.getAccessToken());
+            } else {
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             }
             conn.setRequestProperty("Accept", "*/*");
             conn.setRequestProperty("Connection", "close");
 
             // post the request
-            int status = 0;
+            int status;
 
             if (!option.equals("DELETE")) {
                 OutputStream out = conn.getOutputStream();
                 out.write(bytes);
                 out.close();
                 // handle the response
+                conn.connect();
                 status = conn.getResponseCode();
+//                System.out.println(conn.getHeaderFields().toString());
+                access_token = conn.getHeaderField("access");
+                refresh_token = conn.getHeaderField("refresh");
+
+                LocalRegister.setAccessToken(access_token);
+                LocalRegister.setRefreshToken(refresh_token);
+
                 response_params.put("status", String.valueOf(status));
-                Log.v("Response Status", status + "");
+                Log.v("Response Status", status + "" + " access : " + LocalRegister.getAccessToken() + " refresh : " + LocalRegister.getRefreshToken());
 
                 List<String> receivedCookie = conn.getHeaderFields().get("Set-Cookie");
                 if(receivedCookie!=null){
@@ -178,17 +194,19 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                     InputStream inStream = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
                     StringBuilder builder = new StringBuilder();
-                    String line = null;
+                    String line;
                     try {
                         while ((line = reader.readLine()) != null) {
                             builder.append(line);
                             builder.append("\n"); // append a new line
                         }
                     } catch (IOException e) {
+                        e.printStackTrace();
                     } finally {
                         try {
                             inStream.close();
                         } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                     // System.out.println(builder.toString());
@@ -196,7 +214,6 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                     response_params.put("response", response);
                     Log.v("Response Message", response);
                 } catch (IOException ex) {
-
 
                 }
 
@@ -214,14 +231,4 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
         }
         return response_params;
     }
-
-    public HostnameVerifier SERVER_HOST = new HostnameVerifier() {
-        //String allowHost = LocalRegister.getServerHost(context);
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
-            return true;
-            //return hv.verify(allowHost, session);
-        }
-    };
 }

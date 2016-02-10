@@ -18,11 +18,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-
 import org.wso2.carbon.iot.android.sense.events.input.SenseDataCollector;
 import org.wso2.carbon.iot.android.sense.events.input.battery.BatteryDataReceiver;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
 import org.wso2.carbon.iot.android.sense.util.SenseWakeLock;
+//import org.wso2.carbon.iot.android.sense.util.SenseWakeLock;
 
 
 public class SenseService extends Service {
@@ -49,9 +49,13 @@ public class SenseService extends Service {
 
         SenseDataCollector Sensor = new SenseDataCollector(this, SenseDataCollector.DataType.SENSOR);
         SenseDataCollector Location = new SenseDataCollector(this, SenseDataCollector.DataType.LOCATION);
+//        UIUpdateService ui = new UIUpdateService();
+
         registerReceiver(new BatteryDataReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+
         //service will not be stopped until we manually stop the service
         return Service.START_NOT_STICKY;
+
     }
 
 

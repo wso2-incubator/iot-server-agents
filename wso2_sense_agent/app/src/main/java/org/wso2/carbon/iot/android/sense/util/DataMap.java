@@ -13,9 +13,12 @@
  */
 package org.wso2.carbon.iot.android.sense.util;
 
+import android.util.Log;
+
 import org.wso2.carbon.iot.android.sense.events.input.Location.LocationData;
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorData;
 import org.wso2.carbon.iot.android.sense.events.input.battery.BatteryData;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -28,21 +31,21 @@ public class DataMap {
 
     public static List<SensorData> getSensorDataMap(){
         if(sensorDataMap == null){
-            sensorDataMap = new CopyOnWriteArrayList<SensorData>();
+            sensorDataMap = new CopyOnWriteArrayList<>();
         }
         return sensorDataMap;
     }
 
     public static List<BatteryData> getBatteryDataMap(){
         if(batteryDataMap == null){
-            batteryDataMap = new CopyOnWriteArrayList<BatteryData>();
+            batteryDataMap = new CopyOnWriteArrayList<>();
         }
         return batteryDataMap;
     }
 
     public static List<LocationData> getLocationDataMap(){
         if(locationDataMap == null){
-            locationDataMap = new CopyOnWriteArrayList<LocationData>();
+            locationDataMap = new CopyOnWriteArrayList<>();
         }
         return locationDataMap;
     }

@@ -16,7 +16,6 @@ package org.wso2.carbon.iot.android.sense.events.input.battery;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
 import org.wso2.carbon.iot.android.sense.util.DataMap;
 
 import java.util.Vector;

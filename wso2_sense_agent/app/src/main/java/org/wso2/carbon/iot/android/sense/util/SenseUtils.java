@@ -29,9 +29,9 @@ public class SenseUtils {
         final TelephonyManager tm = (TelephonyManager) baseContext.getSystemService(Context.TELEPHONY_SERVICE);
 
         final String tmDevice, tmSerial, androidId;
-        tmDevice = "" + tm.getDeviceId();
-        tmSerial = "" + tm.getSimSerialNumber();
-        androidId = "" + android.provider.Settings.Secure.getString(contentResolver, android.provider.Settings.Secure.ANDROID_ID);
+        tmDevice = String.valueOf(tm.getDeviceId());
+        tmSerial = String.valueOf(tm.getSimSerialNumber());
+        androidId = String.valueOf(android.provider.Settings.Secure.getString(contentResolver, android.provider.Settings.Secure.ANDROID_ID));
 
         UUID deviceUuid = new UUID(androidId.hashCode(), ((long) tmDevice.hashCode() << 32) | tmSerial.hashCode());
         return deviceUuid.toString();
