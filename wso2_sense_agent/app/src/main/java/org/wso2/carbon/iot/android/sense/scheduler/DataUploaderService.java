@@ -29,6 +29,8 @@ import org.wso2.carbon.iot.android.sense.events.input.battery.BatteryData;
 import org.wso2.carbon.iot.android.sense.util.DataMap;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
 import org.wso2.carbon.iot.android.sense.util.SenseClient;
+//import org.wso2.carbon.iot.android.sense.util.SenseClient;
+
 import java.util.List;
 
 
@@ -71,8 +73,8 @@ public class DataUploaderService extends Service {
                     }
                     for (SensorData sensorData : sensorDataMap) {
                         JSONObject sensorJsonObject = new JSONObject();
-                        sensorJsonObject.put("time", "" + sensorData.getCollectTimestamp());
-                        sensorJsonObject.put("key", "" + sensorData.getSensorType());
+                        sensorJsonObject.put("time", sensorData.getTimestamp());
+                        sensorJsonObject.put("key",  sensorData.getSensorType());
                         sensorJsonObject.put("value", sensorData.getSensorValues());
                         sensorJsonArray.put(sensorJsonObject);
                     }
@@ -84,7 +86,7 @@ public class DataUploaderService extends Service {
                     }
                     for (BatteryData batteryData : batteryDataMap) {
                         JSONObject batteryJsonObject = new JSONObject();
-                        batteryJsonObject.put("time", "" + batteryData.getTimestamp());
+                        batteryJsonObject.put("time", batteryData.getTimestamp());
                         batteryJsonObject.put("key", "battery");
                         batteryJsonObject.put("value", batteryData.getLevel());
                         sensorJsonArray.put(batteryJsonObject);
@@ -97,7 +99,7 @@ public class DataUploaderService extends Service {
                     }
                     for (LocationData locationData : locationDataMap) {
                         JSONObject locationJsonObject = new JSONObject();
-                        locationJsonObject.put("time", "" + locationData.getTimeStamp());
+                        locationJsonObject.put("time", locationData.getTimeStamp());
                         locationJsonObject.put("key", "GPS");
                         locationJsonObject.put("value", locationData.getLatitude() + "," + locationData.getLongitude());
                         sensorJsonArray.put(locationJsonObject);
@@ -123,4 +125,6 @@ public class DataUploaderService extends Service {
 
         return Service.START_NOT_STICKY;
     }
+
+
 }

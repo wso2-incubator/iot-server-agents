@@ -31,6 +31,9 @@ public class LocalRegister {
     private static String deviceId;
     private static String serverURL;
 
+    private static String accessToken;
+    private static String refreshToken;
+
     public static boolean isExist(Context context){
         if(!exists) {
             SharedPreferences sharedpreferences = context.getSharedPreferences(SENSE_SHARED_PREFERENCES, Context.MODE_PRIVATE);
@@ -124,6 +127,22 @@ public class LocalRegister {
             //TODO Throw exception
         }
         return LocalRegister.serverURL;
+    }
+
+    public static void setAccessToken(String token){
+        accessToken = token != null?token:accessToken;
+    }
+
+    public static void setRefreshToken(String token) {
+        refreshToken = token != null?token:refreshToken;
+    }
+
+    public static String getAccessToken(){
+        return accessToken;
+    }
+
+    public static String getRefreshToken(){
+        return refreshToken;
     }
 
     public static String getServerHost(Context context){

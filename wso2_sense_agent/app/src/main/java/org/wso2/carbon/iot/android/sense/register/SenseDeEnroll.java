@@ -17,9 +17,9 @@ package org.wso2.carbon.iot.android.sense.register;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 
+import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderService;
+import org.wso2.carbon.iot.android.sense.service.SenseService;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
@@ -33,24 +33,19 @@ public class SenseDeEnroll extends Activity {
         if (!LocalRegister.isExist(getApplicationContext())) {
             Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
             startActivity(activity);
-
-
         }
 
-        setContentView(R.layout.activity_sense_settings);
-        Button deviceRegisterButton = (Button) findViewById(R.id.unregister);
-        deviceRegisterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        LocalRegister.removeUsername(getApplicationContext());
+        LocalRegister.removeDeviceId(getApplicationContext());
+        LocalRegister.removeServerURL(getApplicationContext());
+        LocalRegister.setExist(false);
 
-                LocalRegister.removeUsername(getApplicationContext());
-                LocalRegister.removeDeviceId(getApplicationContext());
-                LocalRegister.removeServerURL(getApplicationContext());
-                LocalRegister.setExist(false);
-                Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
-                startActivity(activity);
-            }
-        });
+        //Stop the current running background services.
+        stopService(new Intent(this, SenseService.class)); //Stop sensor reading service
+        stopService(new Intent(this, DataUploaderService.class)); //Stop data uploader service
+
+        Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
+        startActivity(activity);
     }
 
 

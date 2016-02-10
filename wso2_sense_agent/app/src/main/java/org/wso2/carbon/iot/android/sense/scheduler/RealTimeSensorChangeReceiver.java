@@ -13,22 +13,31 @@
  */
 package org.wso2.carbon.iot.android.sense.scheduler;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.wso2.carbon.iot.android.sense.util.SensorViewAdaptor;
+import org.wso2.carbon.iot.android.sense.util.TempStore;
 
-public class DataUploaderReceiver extends BroadcastReceiver {
+/**
+ * Get the user selected sensors from shared preferences.
+ * Put those to a list and return
+ */
+public class RealTimeSensorChangeReceiver extends BroadcastReceiver {
+
+    SensorViewAdaptor adaptor;
+
+    public void updateOnChange(SensorViewAdaptor adaptor) {
+        this.adaptor = adaptor;
+    }
+
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        AlarmManager service = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(context, DataUploaderService.class);
-        PendingIntent pending = PendingIntent.getService(context, 0, i, 0);
-        service.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30 * 1000, pending);
 
+        TempStore.realTimeSensors.clear();
+        TempStore.realTimeSensors.addAll(TempStore.sensorDataMap.values());
     }
 
 }

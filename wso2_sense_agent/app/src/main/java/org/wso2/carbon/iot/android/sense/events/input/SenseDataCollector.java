@@ -15,10 +15,8 @@
 package org.wso2.carbon.iot.android.sense.events.input;
 
 
-
+import android.app.Activity;
 import android.content.Context;
-
-import org.wso2.carbon.iot.android.sense.events.input.DataReader;
 import org.wso2.carbon.iot.android.sense.events.input.Location.LocationDataReader;
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorDataReader;
 

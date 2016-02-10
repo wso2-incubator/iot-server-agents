@@ -14,6 +14,7 @@
 package org.wso2.carbon.iot.android.sense.events.input.Location;
 
 import java.util.Calendar;
+import java.util.Date;
 
 
 public class LocationData {
@@ -24,7 +25,7 @@ public class LocationData {
     LocationData(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
-        TimeStamp = "" + Calendar.getInstance().getTimeInMillis();
+        TimeStamp = String.valueOf(new Date().getTime());
 
     }
 

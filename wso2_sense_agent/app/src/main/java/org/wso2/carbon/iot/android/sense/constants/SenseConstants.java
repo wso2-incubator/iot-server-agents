@@ -16,10 +16,21 @@ package org.wso2.carbon.iot.android.sense.constants;
 
 
 public class SenseConstants {
-    public final static String LOGIN_CONTEXT = "/store/apis/authenticate";
-    public final static String REGISTER_CONTEXT = "/android_sense/manager/device";
+    public final static String LOGIN_CONTEXT = "/devicemgt/api/user/authenticate";
+    public final static String REGISTER_CONTEXT = "/android_sense_mgt/manager/device";
     public final static String DATA_ENDPOINT = "/android_sense/controller/sensordata";
     public final static String TRUSTSTORE_PASSWORD = "wso2carbon";
+
+
+    //For set user selected sensors. Will be used by sensorDataMap reading and dialog
+    public static String SELECTED_SENSORS = "Selected";
+    public static String SELECTED_SENSORS_BY_USER = "userSelection";
+
+    //For setting the available sensors in the device in dialog and SupportedSensors
+    public static String AVAILABLE_SENSORS = "Sensors";
+    public static String GET_AVAILABLE_SENSORS = "getAvailableSensors";
+
+
 
     public final class Request {
         public final static String REQUEST_SUCCESSFUL = "200";
