@@ -19,6 +19,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.transport.TransportHandlerException;
+import org.wso2.carbon.iot.android.sense.transport.mqtt.AndroidSenseMQttTransportHandler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -174,7 +176,6 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                 // handle the response
                 conn.connect();
                 status = conn.getResponseCode();
-//                System.out.println(conn.getHeaderFields().toString());
                 access_token = conn.getHeaderField("access");
                 refresh_token = conn.getHeaderField("refresh");
 

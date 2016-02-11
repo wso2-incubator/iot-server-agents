@@ -16,6 +16,9 @@ package org.wso2.carbon.iot.android.sense.constants;
 
 
 public class SenseConstants {
+    public final static String DEVICE_TYPE = "android_sense";
+
+
     public final static String LOGIN_CONTEXT = "/devicemgt/api/user/authenticate";
     public final static String REGISTER_CONTEXT = "/android_sense_mgt/manager/device";
     public final static String DATA_ENDPOINT = "/android_sense/controller/sensordata";
