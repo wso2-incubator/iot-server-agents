@@ -56,19 +56,14 @@ public class RegisterActivity extends Activity {
         getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0).edit().clear().apply();
 
         if (LocalRegister.isExist(getApplicationContext())) {
-//            Intent activity = new Intent(getApplicationContext(), SenseDeEnroll.class);
-//            startActivity(activity);
             Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
             startActivity(intent);
-
-
         }
         setContentView(R.layout.activity_register);
         mUsernameView = (EditText) findViewById(R.id.username);
         mPasswordView = (EditText) findViewById(R.id.password);
         mHostView = (EditText) findViewById(R.id.hostname);
-        System.out.println(Build.BRAND+" "+Build.MODEL);
-//
+//        System.out.println(Build.BRAND+" "+Build.MODEL);
 
         SupportedSensors supportedSensors = new SupportedSensors(getApplicationContext());
         supportedSensors.setContent();

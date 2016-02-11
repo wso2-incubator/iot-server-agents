@@ -49,7 +49,6 @@ public class SenseService extends Service {
 
         SenseDataCollector Sensor = new SenseDataCollector(this, SenseDataCollector.DataType.SENSOR);
         SenseDataCollector Location = new SenseDataCollector(this, SenseDataCollector.DataType.LOCATION);
-//        UIUpdateService ui = new UIUpdateService();
 
         registerReceiver(new BatteryDataReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 

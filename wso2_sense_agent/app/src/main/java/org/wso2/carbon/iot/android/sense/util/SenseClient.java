@@ -19,6 +19,8 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.transport.TransportHandlerException;
+import org.wso2.carbon.iot.android.sense.transport.mqtt.AndroidSenseMQttTransportHandler;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -165,7 +167,7 @@ public class SenseClient {
             SenseClientAsyncExecutor senseClientAsyncExecutor = new SenseClientAsyncExecutor(context);
             return senseClientAsyncExecutor.execute(endpoint, body, option, jsonBody).get();
         } catch (InterruptedException e) {
-            Log.e("Send Sensor Data", "Thread Inturption for endpoint " + endpoint);
+            Log.e("Send Sensor Data", "Thread Interruption for endpoint " + endpoint);
         } catch (ExecutionException e) {
             Log.e("Send Sensor Data", "Failed to push data to the endpoint " + endpoint);
         }
