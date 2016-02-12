@@ -23,7 +23,7 @@ import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.Availabl
 import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
 
 /**
- * Put data in to a map
+ * This class reads the sensor values in real time.
  */
 public class RealTimeSensorReader implements SensorEventListener {
 

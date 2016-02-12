@@ -15,12 +15,30 @@ package org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor;
 
 import android.support.annotation.NonNull;
 
+/**
+ * The class to store the sensor data captured by the RealTimeSensorReader.
+ */
 public class RealTimeSensor implements Comparable {
 
-    //TODO : Add battery and location fields and methods
+
+    /**
+     * Name of the sensor.
+     */
     private String name;
+
+    /**
+     * The X value reading of the sensor.
+     */
     private String valueX;
+
+    /**
+     * The Y value reading of the sensor.
+     */
     private String valueY;
+
+    /**
+     * The Y value reading of the sensor.
+     */
     private String valueZ;
 
     public RealTimeSensor() {

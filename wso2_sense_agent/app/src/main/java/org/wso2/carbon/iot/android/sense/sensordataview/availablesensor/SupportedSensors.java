@@ -24,9 +24,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Class to save the list of sensors that are available in the device, which are supported by the iot server.
+ * This list will be saved in Shared preferences so that app can use this data when needed.
+ */
 public class SupportedSensors {
 
     private SharedPreferences sensorPreference;
+
+    /**
+     * The Android sensor manager which is used to get the sensors available in device.
+     */
     private SensorManager mSensorManager;
 
     public SupportedSensors(Context context) {
@@ -34,6 +42,10 @@ public class SupportedSensors {
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
     }
 
+    /**
+     * This method filters the pre defined sensor types from sensors available in device and sets them in Shared
+     * preferences.
+     */
     public void setContent() {
         AvailableSensors availableSensors = AvailableSensors.getInstance();
         List<String> sensor_List = availableSensors.getSensorList();

@@ -21,8 +21,8 @@ import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
 import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.TempStore;
 
 /**
- * Get the user selected sensors from shared preferences.
- * Put those to a list and return
+ * This class is to detect the sensor change event and update the sensor array list.
+ * And update the view adaptor which is used to show the sensors list in the Android List view.
  */
 public class RealTimeSensorChangeReceiver extends BroadcastReceiver {
 
@@ -34,8 +34,8 @@ public class RealTimeSensorChangeReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        TempStore.realTimeSensors.clear();
-        TempStore.realTimeSensors.addAll(TempStore.sensorDataMap.values());
+        TempStore.sensorArrayList.clear();
+        TempStore.sensorArrayList.addAll(TempStore.sensorDataMap.values());
     }
 
 }

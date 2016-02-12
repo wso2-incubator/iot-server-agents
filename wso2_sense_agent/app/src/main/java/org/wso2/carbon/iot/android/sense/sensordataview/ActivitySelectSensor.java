@@ -199,7 +199,7 @@ public class ActivitySelectSensor extends AppCompatActivity
          * Get the selected sensors
          * Register them
          * */
-        SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.realTimeSensors);
+        SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.sensorArrayList);
         adaptor1.notifyDataSetChanged();
 
         sensorReader = new RealTimeSensorReader(this, adaptor1);
@@ -218,7 +218,7 @@ public class ActivitySelectSensor extends AppCompatActivity
         try {
             Log.d("Update", "Set the values to Shared Preferences");
 
-            TempStore.realTimeSensors.clear();
+            TempStore.sensorArrayList.clear();
             TempStore.sensorDataMap.clear();
 
             SharedPreferences.Editor editor = sharedPreferences.edit();

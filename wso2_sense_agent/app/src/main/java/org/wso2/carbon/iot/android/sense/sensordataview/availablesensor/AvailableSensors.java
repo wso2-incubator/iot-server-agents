@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * class to store the supported sensorDataMap types.
+ * Class to store the supported sensorDataMap types.
  */
 public class AvailableSensors {
 
@@ -39,7 +39,10 @@ public class AvailableSensors {
     public static AvailableSensors getInstance() {
         return availableSensors;
     }
-    //List of supported sensors by the system
+
+    /**
+     * Set the supported sensor types by the IOT server.
+     */
     private void setList() {
         sensorList.add("Accelerometer");
         sensorList.add("Magnetometer");
@@ -51,6 +54,9 @@ public class AvailableSensors {
         sensorList.add("Proximity");
     }
 
+    /**
+     * Populate the hash map which has Sensor name as the key and the sensor type as the value.
+     */
     private void setSensorTypeMap() {
         sensorTypeMap.put("accelerometer", Sensor.TYPE_ACCELEROMETER);
         sensorTypeMap.put("magnetometer", Sensor.TYPE_MAGNETIC_FIELD);
@@ -62,6 +68,9 @@ public class AvailableSensors {
         sensorTypeMap.put("proximity", Sensor.TYPE_PROXIMITY);
     }
 
+    /**
+     * Populates the hash map which has Sensor type as the key and sensor name as the value.
+     */
     private void setTypeSensorMap() {
         typeSensorMap.put(Sensor.TYPE_ACCELEROMETER, "accelerometer");
         typeSensorMap.put(Sensor.TYPE_MAGNETIC_FIELD, "magnetometer");
@@ -73,16 +82,28 @@ public class AvailableSensors {
         typeSensorMap.put(Sensor.TYPE_PROXIMITY, "proximity");
     }
 
+    /**
+     * Method to get the supported sensor list.
+     * @return the list of sensors supported by the iot server.
+     */
     public List<String> getSensorList() {
         return sensorList;
     }
 
-    //Get the int type of the sensorDataMap
+
+    /**
+     * @param sensor The name of the sensor.
+     * @return The integer representing the type of the sensor,
+     */
     public int getType(String sensor) {
         return sensorTypeMap.get(sensor);
     }
 
-    //Get the string type of te sensorDataMap
+
+    /**
+     * @param type The type of the sensor.
+     * @return The sensor name related to the given sensor type.
+     */
     public String getType(int type) {
         return typeSensorMap.get(type);
     }
