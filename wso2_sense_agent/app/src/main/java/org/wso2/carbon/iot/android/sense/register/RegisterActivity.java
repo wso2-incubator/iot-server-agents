@@ -17,7 +17,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,12 +26,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-import org.wso2.carbon.iot.android.sense.ActivitySelectSensor;
+import org.wso2.carbon.iot.android.sense.sensordataview.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
 import org.wso2.carbon.iot.android.sense.util.SenseClient;
 import org.wso2.carbon.iot.android.sense.util.SenseUtils;
-import org.wso2.carbon.iot.android.sense.util.SupportedSensors;
+import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.SupportedSensors;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
@@ -45,7 +44,6 @@ public class RegisterActivity extends Activity {
     private EditText mUsernameView;
     private EditText mPasswordView;
     private EditText mHostView;
-    private Button deviceRegisterButton;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -63,12 +61,11 @@ public class RegisterActivity extends Activity {
         mUsernameView = (EditText) findViewById(R.id.username);
         mPasswordView = (EditText) findViewById(R.id.password);
         mHostView = (EditText) findViewById(R.id.hostname);
-//        System.out.println(Build.BRAND+" "+Build.MODEL);
 
         SupportedSensors supportedSensors = new SupportedSensors(getApplicationContext());
         supportedSensors.setContent();
 
-        deviceRegisterButton = (Button) findViewById(R.id.device_register_button);
+        Button deviceRegisterButton = (Button) findViewById(R.id.device_register_button);
 
 
         deviceRegisterButton.setOnClickListener(new OnClickListener() {
@@ -85,7 +82,6 @@ public class RegisterActivity extends Activity {
     }
 
     public void attemptLogin() {
-        Context context = this;
         showProgress(true);
         // Reset errors.
         mUsernameView.setError(null);

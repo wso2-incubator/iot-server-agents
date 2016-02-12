@@ -11,14 +11,13 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.util;
+package org.wso2.carbon.iot.android.sense.sensordataview.availablesensor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 
-import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 
 import java.util.HashSet;
@@ -36,12 +35,13 @@ public class SupportedSensors {
     }
 
     public void setContent() {
-        List<String> sensor_List = AvailableSensors.getList();
+        AvailableSensors availableSensors = AvailableSensors.getInstance();
+        List<String> sensor_List = availableSensors.getSensorList();
         Set<String> sensorSet = new HashSet<>();
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 
         for (String sen : sensor_List) {
-            if (sensors.contains(mSensorManager.getDefaultSensor(AvailableSensors.getType(sen.toLowerCase())))) {
+            if (sensors.contains(mSensorManager.getDefaultSensor(availableSensors.getType(sen.toLowerCase())))) {
                 sensorSet.add(sen);
             }
         }

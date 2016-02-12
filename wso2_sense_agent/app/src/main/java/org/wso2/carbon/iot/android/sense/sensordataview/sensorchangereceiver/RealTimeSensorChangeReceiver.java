@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.scheduler;
+package org.wso2.carbon.iot.android.sense.sensordataview.sensorchangereceiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.wso2.carbon.iot.android.sense.util.SensorViewAdaptor;
-import org.wso2.carbon.iot.android.sense.util.TempStore;
+import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
+import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.TempStore;
 
 /**
  * Get the user selected sensors from shared preferences.
@@ -32,10 +32,8 @@ public class RealTimeSensorChangeReceiver extends BroadcastReceiver {
         this.adaptor = adaptor;
     }
 
-
     @Override
     public void onReceive(Context context, Intent intent) {
-
         TempStore.realTimeSensors.clear();
         TempStore.realTimeSensors.addAll(TempStore.sensorDataMap.values());
     }

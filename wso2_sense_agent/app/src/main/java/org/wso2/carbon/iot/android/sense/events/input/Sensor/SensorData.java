@@ -16,9 +16,8 @@ package org.wso2.carbon.iot.android.sense.events.input.Sensor;
 
 import android.hardware.SensorEvent;
 
-import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
+import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
 
-import java.util.Calendar;
 import java.util.Date;
 
 public class SensorData {
@@ -29,22 +28,21 @@ public class SensorData {
     private int accuracyStatus;
     private String timestamp;
     private String collectTimestamp;
+    private AvailableSensors availableSensors = AvailableSensors.getInstance();
 
     SensorData(SensorEvent event) {
         sensorValues = "";
         for (int m = 0; m < event.values.length; m++) {
             sensorValues += event.values[m] + ",";
-
         }
         sensorValues = sensorValues.substring(0, sensorValues.length() - 1);
         accuracyStatus = event.accuracy;
 
         collectTimestamp = String.valueOf(event.timestamp);
         timestamp = String.valueOf(new Date().getTime());
-        sensorName = AvailableSensors.getType(event.sensor.getType()).toUpperCase();
+        sensorName = availableSensors.getType(event.sensor.getType()).toUpperCase();
         sensorVendor = event.sensor.getVendor();
         sensorType = event.sensor.getType();
-
     }
 
     public int getSensorType() {

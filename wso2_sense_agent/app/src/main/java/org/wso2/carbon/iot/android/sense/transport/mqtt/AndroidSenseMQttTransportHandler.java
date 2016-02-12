@@ -7,7 +7,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.transport.TransportHandlerException;
 
-import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 

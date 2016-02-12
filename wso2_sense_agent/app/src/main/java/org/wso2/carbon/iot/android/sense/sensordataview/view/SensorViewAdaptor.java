@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.util;
+package org.wso2.carbon.iot.android.sense.sensordataview.view;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -20,7 +20,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensor;
+import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.RealTimeSensor;
 
 import java.util.List;
 
@@ -34,16 +34,13 @@ import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 //TODO : Add the location and battery data sections.
 public class SensorViewAdaptor extends BaseAdapter {
 
-
     private Context context;
     private List<RealTimeSensor> data;
 
     public SensorViewAdaptor(Context context, List<RealTimeSensor> data) {
         this.context = context;
         this.data = data;
-
     }
-
 
     @Override
     public int getCount() {
@@ -60,10 +57,8 @@ public class SensorViewAdaptor extends BaseAdapter {
         return 0;
     }
 
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         ViewHolder holder;
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -92,7 +87,6 @@ public class SensorViewAdaptor extends BaseAdapter {
         return view;
 
     }
-
 
     private class ViewHolder {
         public TextView name;

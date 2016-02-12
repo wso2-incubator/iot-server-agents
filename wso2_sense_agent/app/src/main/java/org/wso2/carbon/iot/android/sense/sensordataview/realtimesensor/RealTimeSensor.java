@@ -11,14 +11,11 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.events.input.Sensor;
-
+package org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor;
 
 import android.support.annotation.NonNull;
 
-
 public class RealTimeSensor implements Comparable {
-
 
     //TODO : Add battery and location fields and methods
     private String name;
@@ -68,7 +65,6 @@ public class RealTimeSensor implements Comparable {
 
     @Override
     public int compareTo(@NonNull Object another) {
-
         return this.toString().contains(another.toString()) ? 1 : 0;
     }
 }
