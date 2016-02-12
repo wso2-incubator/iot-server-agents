@@ -14,8 +14,6 @@
 
 package org.wso2.carbon.iot.android.sense.events.input;
 
-
-import android.app.Activity;
 import android.content.Context;
 import org.wso2.carbon.iot.android.sense.events.input.Location.LocationDataReader;
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorDataReader;
@@ -23,7 +21,7 @@ import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorDataReader;
 public class SenseDataCollector {
 	public enum DataType {
 	    SENSOR ,LOCATION
-	};
+	}
 	
 	public SenseDataCollector(Context ctx, DataType dt) {
 
@@ -43,9 +41,7 @@ public class SenseDataCollector {
 			Thread DataCollector =new Thread(dr);
 			DataCollector.start();
 		}catch(NullPointerException e){
-			
-			
-			
+
 		}
 	}
 }

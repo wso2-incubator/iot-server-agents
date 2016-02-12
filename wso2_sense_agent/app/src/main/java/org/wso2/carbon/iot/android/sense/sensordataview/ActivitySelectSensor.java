@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense;
+package org.wso2.carbon.iot.android.sense.sensordataview;
 
 import android.content.Context;
 import android.content.Intent;
@@ -34,24 +34,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
-import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
+import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensorReader;
 import org.wso2.carbon.iot.android.sense.register.RegisterActivity;
-import org.wso2.carbon.iot.android.sense.register.SenseDeEnroll;
 import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
-import org.wso2.carbon.iot.android.sense.scheduler.RealTimeSensorChangeReceiver;
+import org.wso2.carbon.iot.android.sense.sensordataview.sensorchangereceiver.RealTimeSensorChangeReceiver;
+import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.RealTimeSensorReader;
+import org.wso2.carbon.iot.android.sense.sensordataview.view.SelectSensorDialog;
+import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
+import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.TempStore;
 import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
-import org.wso2.carbon.iot.android.sense.util.SensorViewAdaptor;
-import org.wso2.carbon.iot.android.sense.util.TempStore;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
-
 
 /**
  * Activity for selecting sensors available in the device
@@ -60,18 +59,16 @@ import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 public class ActivitySelectSensor extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SelectSensorDialog.SensorListListener {
 
-    SharedPreferences sharedPreferences;
-    SelectSensorDialog sensorDialog = new SelectSensorDialog();
-    Set<String> selectedSensorSet = new HashSet<>();
-    FloatingActionButton fbtnPublishData;
-    FloatingActionButton fbtnAddSensors;
-    ListView listView;
-    SensorManager sensorManager;
-    ArrayList<Sensor> sensors = new ArrayList<>();
-    boolean check;
+    private SharedPreferences sharedPreferences;
+    private SelectSensorDialog sensorDialog = new SelectSensorDialog();
+    private Set<String> selectedSensorSet = new HashSet<>();
+    private ListView listView;
+    private SensorManager sensorManager;
+    private ArrayList<Sensor> sensors = new ArrayList<>();
 
-    RealTimeSensorReader sensorReader = null;
-    RealTimeSensorChangeReceiver realTimeSensorChangeReceiver = new RealTimeSensorChangeReceiver();
+    private RealTimeSensorReader sensorReader = null;
+    private RealTimeSensorChangeReceiver realTimeSensorChangeReceiver = new RealTimeSensorChangeReceiver();
+    private AvailableSensors availableSensors = AvailableSensors.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,21 +83,21 @@ public class ActivitySelectSensor extends AppCompatActivity
         registerReceiver(realTimeSensorChangeReceiver, new IntentFilter("sensorDataMap"));
 
         //Publish data
-        fbtnPublishData = (FloatingActionButton) findViewById(R.id.publish);
+        FloatingActionButton fbtnPublishData = (FloatingActionButton) findViewById(R.id.publish);
 
         fbtnPublishData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Publishing data started", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                check = true;
+
                 DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
                 dataUploaderReceiver.clearAbortBroadcast();
                 dataUploaderReceiver.onReceive(getApplicationContext(), null);
             }
         });
 
-        fbtnAddSensors = (FloatingActionButton) findViewById(R.id.addSensors);
+        FloatingActionButton fbtnAddSensors = (FloatingActionButton) findViewById(R.id.addSensors);
         fbtnAddSensors.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,7 +199,7 @@ public class ActivitySelectSensor extends AppCompatActivity
          * Get the selected sensors
          * Register them
          * */
-        SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.realTimeSensors);
+        SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.sensorArrayList);
         adaptor1.notifyDataSetChanged();
 
         sensorReader = new RealTimeSensorReader(this, adaptor1);
@@ -211,7 +208,6 @@ public class ActivitySelectSensor extends AppCompatActivity
         for (Sensor s : sensors) {
             sensorManager.registerListener(sensorReader, s, SensorManager.SENSOR_DELAY_NORMAL);
         }
-
 
         realTimeSensorChangeReceiver.updateOnChange(adaptor1);
         listView.setAdapter(adaptor1);
@@ -222,7 +218,7 @@ public class ActivitySelectSensor extends AppCompatActivity
         try {
             Log.d("Update", "Set the values to Shared Preferences");
 
-            TempStore.realTimeSensors.clear();
+            TempStore.sensorArrayList.clear();
             TempStore.sensorDataMap.clear();
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -239,7 +235,7 @@ public class ActivitySelectSensor extends AppCompatActivity
     public void getSensors() {
         sensors.clear();
         for (String sensor : selectedSensorSet.toArray(new String[selectedSensorSet.size()])) {
-            sensors.add(sensorManager.getDefaultSensor(AvailableSensors.getType(sensor.toLowerCase())));
+            sensors.add(sensorManager.getDefaultSensor(availableSensors.getType(sensor.toLowerCase())));
         }
     }
 

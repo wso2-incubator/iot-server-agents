@@ -74,7 +74,7 @@
             <!-- </intent-filter> -->
         </activity>
         <activity
-            android:name="org.wso2.carbon.iot.android.sense.ActivitySelectSensor"
+            android:name="org.wso2.carbon.iot.android.sense.sensordataview.ActivitySelectSensor"
             android:label="My Sensors"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>

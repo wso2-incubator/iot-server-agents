@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense;
+package org.wso2.carbon.iot.android.sense.sensordataview.view;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -23,13 +23,12 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
-import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
+import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 
 /**
  * Functionality
@@ -39,9 +38,7 @@ import java.util.Set;
  * Put them in to shared preferences
  */
 
-
 public class SelectSensorDialog extends DialogFragment {
-
 
     protected boolean[] selections = new boolean[AvailableSensors.SUPPORTED_SENSOR_COUNT];
     Activity activity;
@@ -61,7 +58,6 @@ public class SelectSensorDialog extends DialogFragment {
 
         final boolean[] pos = new boolean[selections.length];
         final boolean[] neg = new boolean[selections.length];
-
 
         builder.setMultiChoiceItems(sequence, selections, new DialogInterface.OnMultiChoiceClickListener() {
             @Override

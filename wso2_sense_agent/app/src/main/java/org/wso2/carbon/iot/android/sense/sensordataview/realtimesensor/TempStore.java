@@ -11,17 +11,25 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.util;
-
-import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensor;
+package org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Class to store the real time sensor readings.
+ */
 public class TempStore {
 
+    /**
+     * Hash map which is used to store sensor values with the sensor names.
+     */
     public static ConcurrentMap<String, RealTimeSensor> sensorDataMap = new ConcurrentHashMap<>();
-    public static ArrayList<RealTimeSensor> realTimeSensors = new ArrayList<>();
+
+    /**
+     * Array List which is used to populate the List view.
+     */
+    public static ArrayList<RealTimeSensor> sensorArrayList = new ArrayList<>();
 
 }

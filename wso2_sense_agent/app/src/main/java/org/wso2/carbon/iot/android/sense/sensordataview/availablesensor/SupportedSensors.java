@@ -11,23 +11,30 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.util;
+package org.wso2.carbon.iot.android.sense.sensordataview.availablesensor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 
-import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Class to save the list of sensors that are available in the device, which are supported by the iot server.
+ * This list will be saved in Shared preferences so that app can use this data when needed.
+ */
 public class SupportedSensors {
 
     private SharedPreferences sensorPreference;
+
+    /**
+     * The Android sensor manager which is used to get the sensors available in device.
+     */
     private SensorManager mSensorManager;
 
     public SupportedSensors(Context context) {
@@ -35,13 +42,18 @@ public class SupportedSensors {
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
     }
 
+    /**
+     * This method filters the pre defined sensor types from sensors available in device and sets them in Shared
+     * preferences.
+     */
     public void setContent() {
-        List<String> sensor_List = AvailableSensors.getList();
+        AvailableSensors availableSensors = AvailableSensors.getInstance();
+        List<String> sensor_List = availableSensors.getSensorList();
         Set<String> sensorSet = new HashSet<>();
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 
         for (String sen : sensor_List) {
-            if (sensors.contains(mSensorManager.getDefaultSensor(AvailableSensors.getType(sen.toLowerCase())))) {
+            if (sensors.contains(mSensorManager.getDefaultSensor(availableSensors.getType(sen.toLowerCase())))) {
                 sensorSet.add(sen);
             }
         }
