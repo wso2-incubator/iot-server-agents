@@ -34,18 +34,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
+import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherReceiver;
+import org.wso2.carbon.iot.android.sense.event.SenseService;
+import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherService;
 import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
-import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-import org.wso2.carbon.iot.android.sense.register.RegisterActivity;
-import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.RegisterActivity;
 import org.wso2.carbon.iot.android.sense.sensordataview.sensorchangereceiver.RealTimeSensorChangeReceiver;
 import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.RealTimeSensorReader;
 import org.wso2.carbon.iot.android.sense.sensordataview.view.SelectSensorDialog;
 import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
 import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.TempStore;
-import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
-import org.wso2.carbon.iot.android.sense.util.LocalRegister;
-
+import org.wso2.carbon.iot.android.sense.event.SenseScheduleReceiver;
+import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
+import org.wso2.carbon.iot.android.sense.speech.detector.WordRecognitionActivity;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -90,10 +92,9 @@ public class ActivitySelectSensor extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Publishing data started", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-
-                DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
-                dataUploaderReceiver.clearAbortBroadcast();
-                dataUploaderReceiver.onReceive(getApplicationContext(), null);
+                DataPublisherReceiver dataPublisherReceiver = new DataPublisherReceiver();
+                dataPublisherReceiver.clearAbortBroadcast();
+                dataPublisherReceiver.onReceive(getApplicationContext(), null);
             }
         });
 
@@ -102,6 +103,15 @@ public class ActivitySelectSensor extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 sensorDialog.show(getFragmentManager(), "Sensor List");
+            }
+        });
+
+        FloatingActionButton fbtnSpeechRecongnizer = (FloatingActionButton) findViewById(R.id.speech);
+        fbtnSpeechRecongnizer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), WordRecognitionActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -150,18 +160,20 @@ public class ActivitySelectSensor extends AppCompatActivity
             unregisterSensors();
             unregisterReceivers();
 
-            if (!LocalRegister.isExist(getApplicationContext())) {
+            if (!LocalRegistry.isExist(getApplicationContext())) {
                 Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
                 startActivity(activity);
             }
 
-            LocalRegister.removeUsername(getApplicationContext());
-            LocalRegister.removeDeviceId(getApplicationContext());
-            LocalRegister.removeServerURL(getApplicationContext());
-            LocalRegister.setExist(false);
+            LocalRegistry.removeUsername(getApplicationContext());
+            LocalRegistry.removeDeviceId(getApplicationContext());
+            LocalRegistry.removeServerURL(getApplicationContext());
+            LocalRegistry.setExist(false);
+            //Stop the current running background services.
+            stopService(new Intent(this, SenseService.class)); //Stop sensor reading service
+            stopService(new Intent(this, DataPublisherService.class)); //Stop data uploader service
             Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
             startActivity(activity);
-
             return true;
         }
 

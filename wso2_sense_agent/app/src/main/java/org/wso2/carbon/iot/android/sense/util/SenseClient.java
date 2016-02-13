@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
-import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-import org.wso2.carbon.iot.android.sense.transport.TransportHandlerException;
-import org.wso2.carbon.iot.android.sense.transport.mqtt.AndroidSenseMQttTransportHandler;
+
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,12 +27,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-
+/**
+ * This Client is used for http communication with the server.
+ */
 public class SenseClient {
-
-
     private final static String TAG = "SenseService Client";
-    private final static String DEVICE_NAME = Build.MANUFACTURER +" "+ Build.MODEL;
+    private final static String DEVICE_NAME = Build.MANUFACTURER + " " + Build.MODEL;
 
     private Context context;
 
@@ -42,21 +41,26 @@ public class SenseClient {
         this.context = context;
     }
 
+    /**
+     * Check for authentication.
+     *
+     * @param username
+     * @param password
+     * @return
+     */
     public boolean isAuthenticate(String username, String password) {
         Map<String, String> params = new HashMap<>();
         params.put("username", username);
         params.put("password", password);
         String response;
         try {
-
-            String endpoint = LocalRegister.getServerURL(context) + SenseConstants.LOGIN_CONTEXT;
+            String endpoint = LocalRegistry.getServerURL(context) + SenseConstants.LOGIN_CONTEXT;
             response = sendWithTimeWait(endpoint, params, "POST", null).get("status");
-
             if (response.trim().contains(SenseConstants.Request.REQUEST_SUCCESSFUL)) {
-
                 return true;
             } else {
-                Toast.makeText(context, "Authentication failed, please check your credentials and try again.", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Authentication failed, please check your credentials and try again.",
+                        Toast.LENGTH_LONG).show();
 
                 return false;
             }
@@ -66,6 +70,14 @@ public class SenseClient {
         }
     }
 
+    /**
+     * Enroll the device.
+     *
+     * @param username
+     * @param password
+     * @param deviceId
+     * @return
+     */
     public boolean register(String username, String password, String deviceId) {
         Map<String, String> params = new HashMap<>();
         params.put("username", username);
@@ -75,7 +87,7 @@ public class SenseClient {
         params.put("deviceName", DEVICE_NAME);
 
         try {
-            String endpoint = LocalRegister.getServerURL(context) + SenseConstants.REGISTER_CONTEXT;
+            String endpoint = LocalRegistry.getServerURL(context) + SenseConstants.REGISTER_CONTEXT;
 //            Log.d("End Point", endpoint);
             Map<String, String> response = sendWithTimeWait(endpoint, params, "PUT", null);
 
@@ -130,15 +142,20 @@ public class SenseClient {
         return responseFinal;
     }
 
+    /**
+     * Send data to server.
+     *
+     * @param data
+     */
     public void sendSensorDataToServer(String data) {
         String urlString = null;
         try {
-            urlString = LocalRegister.getServerURL(context) + SenseConstants.DATA_ENDPOINT;
+            urlString = LocalRegistry.getServerURL(context) + SenseConstants.DATA_ENDPOINT;
             Log.i("SENDING DATAs", "SENDING JSON to " + urlString + " : " + data);
             sendWithTimeWait(urlString, null, "POST", data);
 
         } catch (Exception ex) {
-            Log.e("Send Sensor Data", "Failure to send data to "+ urlString);
+            Log.e("Send Sensor Data", "Failure to send data to " + urlString);
 
         }
 

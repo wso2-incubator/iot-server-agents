@@ -18,7 +18,7 @@ import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 
-import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 
 import java.util.HashSet;
 import java.util.List;

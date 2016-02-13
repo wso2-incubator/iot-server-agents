@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,13 @@ import java.util.UUID;
 
 public class SenseUtils {
 
-
+    /**
+     * this generate the device Id
+     *
+     * @param baseContext
+     * @param contentResolver
+     * @return
+     */
     //http://stackoverflow.com/questions/2785485/is-there-a-unique-android-device-id
     public static String generateDeviceId(Context baseContext, ContentResolver contentResolver) {
 

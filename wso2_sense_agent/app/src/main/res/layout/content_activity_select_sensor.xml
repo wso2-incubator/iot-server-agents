@@ -11,17 +11,10 @@
     tools:context="org.wso2.carbon.iot.android.sense.sensordataview.ActivitySelectSensor"
     android:id="@+id/parentContainer">
 
-
-    <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/data2"/>-->
-
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/senseListContainer">
-
     </ListView>
 
 </RelativeLayout>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-import org.wso2.carbon.iot.android.sense.transport.TransportHandlerException;
-import org.wso2.carbon.iot.android.sense.transport.mqtt.AndroidSenseMQttTransportHandler;
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -159,7 +157,7 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
             conn.setRequestMethod(option);
             if (jsonBody != null && !jsonBody.isEmpty()) {
                 conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("Authorization", "Bearer " + LocalRegister.getAccessToken());
+                conn.setRequestProperty("Authorization", "Bearer " + LocalRegistry.getAccessToken());
             } else {
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             }
@@ -179,18 +177,16 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                 access_token = conn.getHeaderField("access");
                 refresh_token = conn.getHeaderField("refresh");
 
-                LocalRegister.setAccessToken(access_token);
-                LocalRegister.setRefreshToken(refresh_token);
+                LocalRegistry.setAccessToken(access_token);
+                LocalRegistry.setRefreshToken(refresh_token);
 
                 response_params.put("status", String.valueOf(status));
-                Log.v("Response Status", status + "" + " access : " + LocalRegister.getAccessToken() + " refresh : " + LocalRegister.getRefreshToken());
+                Log.v("Response Status", status + "" + " access : " + LocalRegistry.getAccessToken() + " refresh : " + LocalRegistry.getRefreshToken());
 
                 List<String> receivedCookie = conn.getHeaderFields().get("Set-Cookie");
-                if(receivedCookie!=null){
-                    cookies=receivedCookie;
-
+                if (receivedCookie != null) {
+                    cookies = receivedCookie;
                 }
-
                 try {
                     InputStream inStream = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
@@ -202,27 +198,24 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                             builder.append("\n"); // append a new line
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Log.e(TAG, "failed to read the response.");
                     } finally {
                         try {
                             inStream.close();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, "failed to close.");
                         }
                     }
                     // System.out.println(builder.toString());
                     response = builder.toString();
                     response_params.put("response", response);
-                    Log.v("Response Message", response);
+                    Log.v(TAG, response);
                 } catch (IOException ex) {
-
+                    Log.e(TAG, "failed to retireve the input stream.");
                 }
-
             } else {
                 status = Integer.valueOf(SenseConstants.Request.REQUEST_SUCCESSFUL);
             }
-
-
         } catch (Exception e) {
             return null;
         } finally {

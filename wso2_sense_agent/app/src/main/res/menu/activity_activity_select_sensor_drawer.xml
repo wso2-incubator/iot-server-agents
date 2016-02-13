@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
-        <item android:id="@+id/select" android:icon="@android:drawable/ic_menu_agenda"
-            android:title="Select Sensors" />
+    <item android:id="@+id/select" android:icon="@android:drawable/ic_menu_agenda"
+          android:title="Sensors" />
+    <item android:id="@+id/speech_recognizer" android:icon="@android:drawable/ic_menu_agenda"
+          android:title="Speech Recognizer" />
+    <!--<group android:checkableBehavior="single">-->
+        <!-- -->
 
-    </group>
+    <!--</group>-->
 
     <!--<item android:title="Communicate">-->
         <!--<menu>-->

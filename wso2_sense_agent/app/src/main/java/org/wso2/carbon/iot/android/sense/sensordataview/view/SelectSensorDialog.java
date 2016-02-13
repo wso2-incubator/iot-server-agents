@@ -24,7 +24,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
-import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 
 import java.util.Arrays;
 import java.util.HashSet;
