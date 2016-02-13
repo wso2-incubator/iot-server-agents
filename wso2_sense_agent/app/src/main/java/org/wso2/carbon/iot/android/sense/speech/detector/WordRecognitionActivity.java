@@ -48,19 +48,7 @@ public class WordRecognitionActivity extends ListeningActivity {
                 startActivity(intent);
             }
         });
-        setDefaultWords();
-
-        //Set default word list for testing
         startListening(); // starts listening
-    }
-
-    private void setDefaultWords(){
-        List<String> wordList = new ArrayList<>();
-        wordList.add("testing");
-        wordList.add("mobile");
-        wordList.add("analytics");
-        ProcessWords.addWords(wordList);
-
     }
 
 
@@ -103,7 +91,6 @@ public class WordRecognitionActivity extends ListeningActivity {
                 String thresholdString = ((EditText) findViewById(R.id.editThreashold)).getText().toString();
                 try{
                     ProcessWords.setThreshold(Integer.parseInt(thresholdString));
-                    Toast.makeText(WordRecognitionActivity.this, "Threshold is set - " + thresholdString, Toast.LENGTH_SHORT).show();
                 } catch (NumberFormatException e) {
                     Toast.makeText(WordRecognitionActivity.this, "Invalid Threshold - " + thresholdString, Toast.LENGTH_SHORT).show();
                 }

@@ -20,6 +20,7 @@ import android.widget.EditText;
 import org.wso2.carbon.iot.android.sense.event.streams.Location.LocationData;
 import org.wso2.carbon.iot.android.sense.util.SenseDataHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +41,10 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
         this.activity = activity;
     }
 
+    /**
+     * Add the list of words which are used for reference.
+     * @param wordlist that needs to be looked upon in the speech
+     */
     public static void addWords(List<String> wordlist) {
         for (String word : wordlist) {
             if (!wordDataMap.keySet().contains(word) && !word.isEmpty()) {
@@ -48,6 +53,10 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
         }
     }
 
+    /**
+     * Process the recognized word list.
+     * @param voiceCommands word lists.
+     */
     private void processTexts(String... voiceCommands) {
         for (String requiredWord : wordDataMap.keySet()) {
             int maxOccurunce = 0;
@@ -70,7 +79,11 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
         }
     }
 
-
+    /**
+     * Check for distance between the referenced and recognized words.
+     * @param params
+     * @return
+     */
     @Override
     protected String doInBackground(String... params) {
         processTexts(params);
@@ -78,6 +91,10 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
         return "";
     }
 
+    /**
+     * update it in the UI.
+     * @param values words list.
+     */
     @Override
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
@@ -87,27 +104,47 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
             text = text + key + " - " + ProcessWords.wordDataMap.get(key).getOccurences() + "\n";
         }
         content.setText(text);
+        EditText thresholdText = (EditText) activity.findViewById(R.id.editThreashold);
+        thresholdText.setText("" + threshold);
     }
 
+    /**
+     * set the threshold to determine the distance.
+     * @param threshold to determine the distance.
+     */
     public static synchronized void setThreshold(int threshold) {
         ProcessWords.threshold = threshold;
     }
 
+    /**
+     *
+     * @param sessionId for each listening session.
+     */
     public static synchronized void setSessionId(String sessionId) {
         ProcessWords.sessionId = sessionId;
     }
 
+    /**
+     * @param word that is used for refrerence.
+     */
     public static synchronized void addWord(String word) {
         if (!wordDataMap.keySet().contains(word) && !word.isEmpty()) {
             wordDataMap.put(word, new WordData(sessionId, word, 0, ""));
         }
     }
 
+    /**
+     *
+     * @param word that needs to be removed from the reference list.
+     */
     public static synchronized void removeWord(String word) {
         cleanAndPushToWordMap();
         wordDataMap.remove(word);
     }
 
+    /**
+     * clean in memory content and pubish it to the server.
+     */
     public static synchronized void cleanAndPushToWordMap() {
         for (String word : wordDataMap.keySet()) {
             WordData wordData = wordDataMap.get(word);
@@ -115,6 +152,7 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
             wordDataMap.put(word, new WordData(sessionId, word, 0, ""));
         }
     }
+
 
 
 }

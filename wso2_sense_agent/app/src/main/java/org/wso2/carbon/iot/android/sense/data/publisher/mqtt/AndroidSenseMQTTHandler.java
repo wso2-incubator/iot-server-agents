@@ -53,7 +53,7 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
      * Default constructor for the AndroidSenseMQTTHandler.
      */
     public AndroidSenseMQTTHandler(Context context) {
-        super(iotServerSubscriber, SenseConstants.DEVICE_TYPE, context);
+        super(context);
     }
 
     /**
@@ -101,7 +101,7 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
     public void processIncomingMessage(MqttMessage mqttMessage, String... messageParams) {
         if (messageParams.length != 0) {
             // owner and the deviceId are extracted from the MQTT topic to which the message was received.
-            // <Topic> = [ServerName/Owner/DeviceType/DeviceId/"publisher"]
+            // <Topic> = [ServerName/Owner/DeviceType/DeviceId/#]
             String topic = messageParams[0];
             String[] topicParams = topic.split("/");
             String owner = topicParams[1];
@@ -121,12 +121,9 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
             } else if (topic.contains("words")) {
 
                 if (topic.contains("remove")) {
-                    String msgs[] = msg.split(":");
-                    if (msgs.length == 2) {
-                        String words[] = msgs[1].split(" ");
-                        for (String word: words) {
-                            ProcessWords.removeWord(word);
-                        }
+                    String words[] = msg.split(" ");
+                    for (String word: words) {
+                        ProcessWords.removeWord(word);
                     }
                 } else {
                     String words[] = msg.split(" ");
@@ -147,9 +144,9 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
      */
     @Override
     public void publishDeviceData(String... publishData) throws TransportHandlerException {
-        if (publishData.length != 4) {
+        if (publishData.length != 3) {
             String errorMsg = "Incorrect number of arguments received to SEND-MQTT Message. " +
-                    "Need to be [owner, deviceId, resource{BULB/TEMP}, state{ON/OFF or null}]";
+                    "Need to be [owner, deviceId, content]";
             Log.e(TAG, errorMsg);
             throw new TransportHandlerException(errorMsg);
         }

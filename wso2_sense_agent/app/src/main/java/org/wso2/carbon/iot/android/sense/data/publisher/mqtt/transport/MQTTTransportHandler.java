@@ -71,17 +71,16 @@ public abstract class MQTTTransportHandler implements MqttCallback, TransportHan
     /**
      * Constructor for the MQTTTransportHandler which takes in the owner, type of the device and the MQTT Broker URL
      * and the topic to subscribe.
-     *
-     * @param deviceOwner        the owner of the device.
-     * @param deviceType         the CDMF Device-Type of the device.
      * @param context activity context.
      */
-    protected MQTTTransportHandler(String deviceOwner, String deviceType, Context context) {
-        this.clientId = deviceOwner + ":" + deviceType;
-        this.subscribeTopic = "wso2/"+deviceOwner+"/" + SenseConstants.DEVICE_TYPE + "/" + LocalRegistry.getDeviceId
-                (context) + "/#";
-        this.clientWillTopic = DISCONNECTION_WILL_TOPIC_PREFIX + deviceType;
-        this.mqttBrokerEndPoint = "tcp://" + LocalRegistry.getServerHost(context) + SenseConstants.MQTT_BROKER_PORT;
+    protected MQTTTransportHandler(Context context) {
+        String username = LocalRegistry.getUsername(context);
+        String deviceId = LocalRegistry.getDeviceId(context);
+        this.clientId = deviceId + ":" + SenseConstants.DEVICE_TYPE;
+        this.subscribeTopic = "wso2/"+ username +"/" + SenseConstants.DEVICE_TYPE + "/" + deviceId + "/#";
+        this.clientWillTopic = DISCONNECTION_WILL_TOPIC_PREFIX + SenseConstants.DEVICE_TYPE;
+        this.mqttBrokerEndPoint = "tcp://" + LocalRegistry.getServerHost(context) + ":" + SenseConstants
+                .MQTT_BROKER_PORT;
         this.timeoutInterval = DEFAULT_TIMEOUT_INTERVAL;
         this.initMQTTClient();
     }

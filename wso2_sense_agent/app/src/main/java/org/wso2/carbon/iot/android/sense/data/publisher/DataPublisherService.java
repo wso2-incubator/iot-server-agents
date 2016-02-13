@@ -23,6 +23,8 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.AndroidSenseMQTTHandler;
+import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.MQTTTransportHandler;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.TransportHandlerException;
 import org.wso2.carbon.iot.android.sense.event.streams.Location.LocationData;
 import org.wso2.carbon.iot.android.sense.event.streams.Sensor.SensorData;
@@ -59,22 +61,11 @@ public class DataPublisherService extends Service {
             @Override
             public void run() {
                 try {
-                    JSONObject jsonMsgObject = new JSONObject();
-                    JSONArray sensorJsonArray = new JSONArray();
-                    String user = LocalRegistry.getUsername(context);
-                    String deviceId = LocalRegistry.getDeviceId(context);
-                    jsonMsgObject.put("owner", user);
-                    jsonMsgObject.put("deviceId", deviceId);
 
-                    boolean isSensorDataAvailable = false;
-                    boolean isBatteryDataAvailable = false;
-                    boolean isLocationDataAvailable = false;
-                    boolean isWordDataAvailable = false;
+                    JSONArray sensorJsonArray = new JSONArray();
+
                     //retreive sensor data.
                     List<SensorData> sensorDataMap = SenseDataHolder.getSensorDataHolder();
-                    if (sensorDataMap.size() > 0) {
-                        isSensorDataAvailable = true;
-                    }
                     for (SensorData sensorData : sensorDataMap) {
                         JSONObject sensorJsonObject = new JSONObject();
                         sensorJsonObject.put(TIME_TAG, sensorData.getTimestamp());
@@ -86,9 +77,6 @@ public class DataPublisherService extends Service {
 
                     //retreive batter data.
                     List<BatteryData> batteryDataMap = SenseDataHolder.getBatteryDataHolder();
-                    if (batteryDataMap.size() > 0) {
-                        isBatteryDataAvailable = true;
-                    }
                     for (BatteryData batteryData : batteryDataMap) {
                         JSONObject batteryJsonObject = new JSONObject();
                         batteryJsonObject.put(TIME_TAG, batteryData.getTimestamp());
@@ -99,9 +87,6 @@ public class DataPublisherService extends Service {
                     SenseDataHolder.resetBatteryDataHolder();
                     //retreive location data.
                     List<LocationData> locationDataMap = SenseDataHolder.getLocationDataHolder();
-                    if (locationDataMap.size() > 0) {
-                        isLocationDataAvailable = true;
-                    }
                     for (LocationData locationData : locationDataMap) {
                         JSONObject locationJsonObject = new JSONObject();
                         locationJsonObject.put(TIME_TAG, locationData.getTimeStamp());
@@ -114,9 +99,6 @@ public class DataPublisherService extends Service {
                     //retreive words
                     ProcessWords.cleanAndPushToWordMap();
                     List<WordData> wordDatMap = SenseDataHolder.getWordDataHolder();
-                    if (wordDatMap.size() > 0) {
-                        isWordDataAvailable = true;
-                    }
                     for (WordData wordData : wordDatMap) {
                         if(wordData.getOccurences() == 0) {
                             continue;
@@ -132,10 +114,20 @@ public class DataPublisherService extends Service {
                     SenseDataHolder.resetWordDataHolder();
 
                     //publish the data
-                    jsonMsgObject.put("values", sensorJsonArray);
-                    if (isSensorDataAvailable || isBatteryDataAvailable || isLocationDataAvailable ||
-                            isWordDataAvailable) {
-                        LocalRegistry.getMqttTransportHandler().publishDeviceData(user, deviceId, jsonMsgObject.toString());
+                    if (sensorJsonArray.length() > 0) {
+                        JSONObject jsonMsgObject = new JSONObject();
+                        String user = LocalRegistry.getUsername(context);
+                        String deviceId = LocalRegistry.getDeviceId(context);
+                        jsonMsgObject.put("owner", user);
+                        jsonMsgObject.put("deviceId", deviceId);
+                        jsonMsgObject.put("values", sensorJsonArray);
+                        MQTTTransportHandler mqttTransportHandler = LocalRegistry.getMqttTransportHandler();
+                        if (mqttTransportHandler == null) {
+                            mqttTransportHandler = new AndroidSenseMQTTHandler(context);
+                            LocalRegistry.setMqttTransportHandler(mqttTransportHandler);
+                            mqttTransportHandler.connect();
+                        }
+                        mqttTransportHandler.publishDeviceData(user, deviceId, jsonMsgObject.toString());
                     }
                 } catch (JSONException e) {
                     Log.e(TAG, "Json Data Parsing Exception", e);
