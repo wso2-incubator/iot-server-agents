@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,37 +18,30 @@ import android.content.Context;
 import android.os.PowerManager;
 import android.util.Log;
 
+/**
+ * It doesnt let the phone goto sleep.
+ */
 public class SenseWakeLock {
 
     private static PowerManager.WakeLock wakeLock;
+    private static String TAG = "Wake Lock";
 
     public static void acquireWakeLock(Context context) {
-
         Log.i(SenseWakeLock.class.getSimpleName(), "Acquire CPU wakeup lock start");
-
         if (wakeLock == null) {
-
-            Log.i(SenseWakeLock.class.getSimpleName(),"CPU wakeUp log is not null");
-
+            Log.i(TAG, "CPU wakeUp log is not null");
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"SenseWakeLock");
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SenseWakeLock");
         }
-
         wakeLock.acquire();
-
     }
 
     public static void releaseCPUWakeLock() {
-
         if (wakeLock != null) {
-
-
             wakeLock.release();
             wakeLock = null;
         }
-
-        Log.i(SenseWakeLock.class.getSimpleName(),"Release  wakeup");
-
+        Log.i(TAG, "Release  wakeup");
     }
 
 }
