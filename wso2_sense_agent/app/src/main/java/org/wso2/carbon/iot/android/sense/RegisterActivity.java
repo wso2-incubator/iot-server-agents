@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.AndroidSenseMQTTHandler;
+import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.MQTTTransportHandler;
 import org.wso2.carbon.iot.android.sense.sensordataview.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
@@ -132,7 +133,9 @@ public class RegisterActivity extends Activity {
                 if (registerStatus) {
                     LocalRegistry.addUsername(getApplicationContext(), username);
                     LocalRegistry.addDeviceId(getApplicationContext(), deviceId);
-                    LocalRegistry.setMqttTransportHandler(new AndroidSenseMQTTHandler(this));
+                    MQTTTransportHandler mqttTransportHandler = new AndroidSenseMQTTHandler(this);
+                    LocalRegistry.setMqttTransportHandler(mqttTransportHandler);
+                    mqttTransportHandler.connect();
 
 //                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
 //                    senseScheduleReceiver.clearAbortBroadcast();
