@@ -36,6 +36,7 @@ import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedS
 import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
 import org.wso2.carbon.iot.android.sense.util.SenseClient;
 import org.wso2.carbon.iot.android.sense.util.SenseUtils;
+
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
 
@@ -120,6 +121,7 @@ public class RegisterActivity extends Activity {
         } else {
             SenseClient client = new SenseClient(getApplicationContext());
             LocalRegistry.addServerURL(getBaseContext(), hostname);
+            <<<<<<<HEAD
             //TODO API SECURITY need to be added.
             String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
             boolean registerStatus = client.register(username, password, deviceId);
@@ -129,53 +131,63 @@ public class RegisterActivity extends Activity {
                 MQTTTransportHandler mqttTransportHandler = AndroidSenseMQTTHandler.getInstance(this);
                 if (!mqttTransportHandler.isConnected()) {
                     mqttTransportHandler.connect();
+                    //TODO API SECURITY need to be added.
+                    String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
+                    boolean registerStatus = client.register(username, password, deviceId);
+                    if (registerStatus) {
+                        LocalRegistry.addUsername(getApplicationContext(), username);
+                        LocalRegistry.addDeviceId(getApplicationContext(), deviceId);
+                        MQTTTransportHandler mqttTransportHandler = AndroidSenseMQTTHandler.getInstance(this);
+                        if (!mqttTransportHandler.isConnected()) {
+                            mqttTransportHandler.connect();
+                        }
+                        SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
+                        senseScheduleReceiver.clearAbortBroadcast();
+                        senseScheduleReceiver.onReceive(this, null);
+
+                        DataPublisherReceiver dataUploaderReceiver = new DataPublisherReceiver();
+                        dataUploaderReceiver.clearAbortBroadcast();
+                        dataUploaderReceiver.onReceive(this, null);
+
+                        Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
+                        startActivity(intent);
+                    }
                 }
-                SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
-                senseScheduleReceiver.clearAbortBroadcast();
-                senseScheduleReceiver.onReceive(this, null);
-
-                DataPublisherReceiver dataUploaderReceiver = new DataPublisherReceiver();
-                dataUploaderReceiver.clearAbortBroadcast();
-                dataUploaderReceiver.onReceive(this, null);
-
-                Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
-                startActivity(intent);
+                showProgress(false);
             }
-            showProgress(false);
+        }
+
+        @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+        public void showProgress ( final boolean show){
+            // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+            // for very easy animations. If available, use these APIs to fade-in
+            // the progress spinner.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+                int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+                mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+                        show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                    }
+                });
+
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                mProgressView.animate().setDuration(shortAnimTime).alpha(
+                        show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                    }
+                });
+            } else {
+                // The ViewPropertyAnimator APIs are not available, so simply show
+                // and hide the relevant UI components.
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
         }
     }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-    }
-}
 
