@@ -161,12 +161,4 @@ public class LocalRegistry {
         }
     }
 
-    public static MQTTTransportHandler getMqttTransportHandler() {
-        return mqttTransportHandler;
-    }
-
-    public static void setMqttTransportHandler(MQTTTransportHandler mqttTransportHandler) {
-        LocalRegistry.mqttTransportHandler = mqttTransportHandler;
-    }
-
 }
