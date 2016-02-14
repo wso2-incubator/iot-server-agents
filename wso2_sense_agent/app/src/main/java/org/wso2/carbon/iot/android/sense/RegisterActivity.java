@@ -133,10 +133,10 @@ public class RegisterActivity extends Activity {
                 if (registerStatus) {
                     LocalRegistry.addUsername(getApplicationContext(), username);
                     LocalRegistry.addDeviceId(getApplicationContext(), deviceId);
-                    MQTTTransportHandler mqttTransportHandler = new AndroidSenseMQTTHandler(this);
-                    LocalRegistry.setMqttTransportHandler(mqttTransportHandler);
-                    mqttTransportHandler.connect();
-
+                    MQTTTransportHandler mqttTransportHandler = AndroidSenseMQTTHandler.getInstance(this);
+                    if(!mqttTransportHandler.isConnected()) {
+                        mqttTransportHandler.connect();
+                    }
 //                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
 //                    senseScheduleReceiver.clearAbortBroadcast();
 //                    senseScheduleReceiver.onReceive(this, null);

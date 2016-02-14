@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -48,10 +49,7 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
     public HostnameVerifier SERVER_HOST = new HostnameVerifier() {
         @Override
         public boolean verify(String hostname, SSLSession session) {
-//            HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
-            HttpsURLConnection.getDefaultHostnameVerifier();
             return true;
-            //return hv.verify(allowHost, session);
         }
     };
     String access_token;
@@ -81,15 +79,11 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
 
     private HttpsURLConnection getTrustedConnection(HttpsURLConnection conn) {
         try {
-
             SSLContext sc = SSLContext.getInstance("SSL");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            conn.setDefaultSSLSocketFactory(sc.getSocketFactory());
-
-//            urlConnection.setSSLSocketFactory(sslCtx.getSocketFactory());
+            conn.setSSLSocketFactory(sc.getSocketFactory());
             return conn;
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
-
             Log.e(SenseClientAsyncExecutor.class.getName(), "Invalid Certificate");
             return null;
         }
@@ -120,21 +114,15 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
         }
 
         Log.v(TAG, "post'" + body + "'to" + url);
-
-
         HttpURLConnection conn = null;
         HttpsURLConnection sConn;
         try {
 
             if (url.getProtocol().toLowerCase().equals("https")) {
-
                 sConn = (HttpsURLConnection) url.openConnection();
-
                 sConn = getTrustedConnection(sConn);
                 sConn.setHostnameVerifier(SERVER_HOST);
-
                 conn = sConn;
-
             } else {
                 conn = (HttpURLConnection) url.openConnection();
             }
@@ -149,7 +137,6 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                 return null;
 
             }
-
             byte[] bytes = body.getBytes();
             conn.setDoOutput(true);
             conn.setUseCaches(false);
@@ -166,7 +153,6 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
 
             // post the request
             int status;
-
             if (!option.equals("DELETE")) {
                 OutputStream out = conn.getOutputStream();
                 out.write(bytes);
@@ -216,7 +202,11 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
             } else {
                 status = Integer.valueOf(SenseConstants.Request.REQUEST_SUCCESSFUL);
             }
-        } catch (Exception e) {
+        } catch (ProtocolException e) {
+            Log.e(TAG, "Failed creating ssl connection");
+            return null;
+        } catch (IOException e) {
+            Log.e(TAG, "Failed creating the connection with the server.");
             return null;
         } finally {
             if (conn != null) {

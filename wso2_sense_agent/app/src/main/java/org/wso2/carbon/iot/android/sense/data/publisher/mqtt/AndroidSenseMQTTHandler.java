@@ -47,12 +47,30 @@ import java.util.UUID;
  */
 public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
     private static final String TAG = "AndroidSenseMQTTHandler";
-    private static String iotServerSubscriber = UUID.randomUUID().toString().substring(0, 5);
+    private static volatile AndroidSenseMQTTHandler mInstance;
+
+
+    /**
+     * return a sigleton Instance
+     * @param context is the android context object.
+     * @return AndroidSenseMQTTHandler.
+     */
+    public static AndroidSenseMQTTHandler getInstance(Context context) {
+        if (mInstance == null) {
+            Class clazz = AndroidSenseMQTTHandler.class;
+            synchronized (clazz) {
+                if (mInstance == null) {
+                    mInstance = new AndroidSenseMQTTHandler(context);
+                }
+            }
+        }
+        return mInstance;
+    }
 
     /**
      * Default constructor for the AndroidSenseMQTTHandler.
      */
-    public AndroidSenseMQTTHandler(Context context) {
+    private AndroidSenseMQTTHandler(Context context) {
         super(context);
     }
 
@@ -73,6 +91,7 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
                         try {
                             Thread.sleep(timeoutInterval);
                         } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
                             Log.e(TAG, "MQTT-Connector: Thread Sleep Interrupt Exception.", ex);
                         }
                     }
@@ -119,15 +138,12 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
                     Log.e(TAG, "Invalid threshold value " + msg);
                 }
             } else if (topic.contains("words")) {
-
-                if (topic.contains("remove")) {
-                    String words[] = msg.split(" ");
-                    for (String word: words) {
-                        ProcessWords.removeWord(word);
-                    }
-                } else {
-                    String words[] = msg.split(" ");
-                    ProcessWords.addWords(Arrays.asList(words));
+                String words[] = msg.split(" ");
+                ProcessWords.addWords(Arrays.asList(words));
+            } else if (topic.contains("remove")) {
+                String words[] = msg.split(" ");
+                for (String word: words) {
+                    ProcessWords.removeWord(word);
                 }
             }
         } else {
@@ -156,7 +172,7 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
         String resource = publishData[2];
 
         MqttMessage pushMessage = new MqttMessage();
-        String publishTopic = "wso2/" + deviceOwner + "/" + SenseConstants.DEVICE_TYPE + "/" + deviceId;
+        String publishTopic = "wso2/" + deviceOwner + "/" + SenseConstants.DEVICE_TYPE + "/" + deviceId + "/data";
         String actualMessage = resource;
         pushMessage.setPayload(actualMessage.getBytes(StandardCharsets.UTF_8));
         pushMessage.setQos(DEFAULT_MQTT_QUALITY_OF_SERVICE);
@@ -183,6 +199,7 @@ public class AndroidSenseMQTTHandler extends MQTTTransportHandler {
                         try {
                             Thread.sleep(timeoutInterval);
                         } catch (InterruptedException e1) {
+                            Thread.currentThread().interrupt();
                             Log.e(TAG, "MQTT-Terminator: Thread Sleep Interrupt Exception at device-type - " +
                                     SenseConstants.DEVICE_TYPE, e1);
                         }

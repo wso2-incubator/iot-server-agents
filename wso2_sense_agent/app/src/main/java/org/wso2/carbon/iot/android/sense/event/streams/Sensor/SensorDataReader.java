@@ -78,6 +78,7 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
         try {
             TimeUnit.MILLISECONDS.sleep(1000);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             Log.e(SensorDataReader.class.getName(), e.getMessage());
         }
         collectSensorData();

@@ -94,9 +94,7 @@ public class SenseClient {
             String responseStatus = response.get("status");
 
             if (responseStatus.trim().contains(SenseConstants.Request.REQUEST_SUCCESSFUL)) {
-
                 Toast.makeText(context, "Device Registered", Toast.LENGTH_LONG).show();
-
                 return true;
             } else if (responseStatus.trim().contains(SenseConstants.Request.REQUEST_CONFLICT)) {
                 Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show();
@@ -182,8 +180,10 @@ public class SenseClient {
 
         try {
             SenseClientAsyncExecutor senseClientAsyncExecutor = new SenseClientAsyncExecutor(context);
-            return senseClientAsyncExecutor.execute(endpoint, body, option, jsonBody).get();
+            senseClientAsyncExecutor.execute(endpoint, body, option, jsonBody);
+            return senseClientAsyncExecutor.get();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             Log.e("Send Sensor Data", "Thread Interruption for endpoint " + endpoint);
         } catch (ExecutionException e) {
             Log.e("Send Sensor Data", "Failed to push data to the endpoint " + endpoint);
