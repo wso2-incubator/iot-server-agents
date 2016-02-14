@@ -11,7 +11,9 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor;
+package org.wso2.carbon.iot.android.sense.realtimeviewer.datastore;
+
+import org.wso2.carbon.iot.android.sense.realtimeviewer.event.realtimesensor.RealTimeSensor;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;

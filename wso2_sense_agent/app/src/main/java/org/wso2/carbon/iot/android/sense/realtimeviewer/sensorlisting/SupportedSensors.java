@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview.availablesensor;
+package org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting;
 
 import android.hardware.Sensor;
 
@@ -22,22 +22,30 @@ import java.util.List;
 /**
  * Class to store the supported sensorDataMap types.
  */
-public class AvailableSensors {
+public class SupportedSensors {
+
+    //For set user selected sensors. Will be used by sensorDataMap reading and dialog
+    public static String SELECTED_SENSORS = "Selected";
+    public static String SELECTED_SENSORS_BY_USER = "userSelection";
+
+    //For setting the available sensors in the device in dialog and AvailableSensorsInDevice
+    public static String AVAILABLE_SENSORS = "Sensors";
+    public static String GET_AVAILABLE_SENSORS = "getAvailableSensors";
 
     public static final int SUPPORTED_SENSOR_COUNT = 10;
     private static List<String> sensorList = new ArrayList<>();
     private static HashMap<String, Integer> sensorTypeMap = new HashMap<>();
     private static HashMap<Integer, String> typeSensorMap = new HashMap<>();
-    private static AvailableSensors availableSensors = new AvailableSensors();
+    private static SupportedSensors supportedSensors = new SupportedSensors();
 
-    private AvailableSensors() {
+    private SupportedSensors() {
         this.setList();
         this.setSensorTypeMap();
         this.setTypeSensorMap();
     }
 
-    public static AvailableSensors getInstance() {
-        return availableSensors;
+    public static SupportedSensors getInstance() {
+        return supportedSensors;
     }
 
     /**
@@ -84,6 +92,7 @@ public class AvailableSensors {
 
     /**
      * Method to get the supported sensor list.
+     *
      * @return the list of sensors supported by the iot server.
      */
     public List<String> getSensorList() {

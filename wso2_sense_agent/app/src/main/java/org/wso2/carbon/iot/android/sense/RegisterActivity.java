@@ -28,12 +28,13 @@ import android.widget.EditText;
 
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.AndroidSenseMQTTHandler;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.MQTTTransportHandler;
-import org.wso2.carbon.iot.android.sense.sensordataview.ActivitySelectSensor;
-import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.ActivitySelectSensor;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.AvailableSensorsInDevice;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
 import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
 import org.wso2.carbon.iot.android.sense.util.SenseClient;
 import org.wso2.carbon.iot.android.sense.util.SenseUtils;
-import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.SupportedSensors;
+
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
 
@@ -52,7 +53,7 @@ public class RegisterActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0).edit().clear().apply();
+        getSharedPreferences(SupportedSensors.SELECTED_SENSORS, 0).edit().clear().apply();
 
         if (LocalRegistry.isExist(getApplicationContext())) {
             Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
@@ -63,8 +64,8 @@ public class RegisterActivity extends Activity {
         mPasswordView = (EditText) findViewById(R.id.password);
         mHostView = (EditText) findViewById(R.id.hostname);
 
-        SupportedSensors supportedSensors = new SupportedSensors(getApplicationContext());
-        supportedSensors.setContent();
+        AvailableSensorsInDevice availableSensorsInDevice = new AvailableSensorsInDevice(getApplicationContext());
+        availableSensorsInDevice.setContent();
 
         Button deviceRegisterButton = (Button) findViewById(R.id.device_register_button);
 
@@ -127,16 +128,16 @@ public class RegisterActivity extends Activity {
 //            boolean auth = client.isAuthenticate(username, password);
 
 //            if (auth) {
-                //TODO API SECURITY need to be added.
-                String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
-                boolean registerStatus = client.register(username, password, deviceId);
-                if (registerStatus) {
-                    LocalRegistry.addUsername(getApplicationContext(), username);
-                    LocalRegistry.addDeviceId(getApplicationContext(), deviceId);
-                    MQTTTransportHandler mqttTransportHandler = AndroidSenseMQTTHandler.getInstance(this);
-                    if(!mqttTransportHandler.isConnected()) {
-                        mqttTransportHandler.connect();
-                    }
+            //TODO API SECURITY need to be added.
+            String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
+            boolean registerStatus = client.register(username, password, deviceId);
+            if (registerStatus) {
+                LocalRegistry.addUsername(getApplicationContext(), username);
+                LocalRegistry.addDeviceId(getApplicationContext(), deviceId);
+                MQTTTransportHandler mqttTransportHandler = AndroidSenseMQTTHandler.getInstance(this);
+                if (!mqttTransportHandler.isConnected()) {
+                    mqttTransportHandler.connect();
+                }
 //                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
 //                    senseScheduleReceiver.clearAbortBroadcast();
 //                    senseScheduleReceiver.onReceive(this, null);
@@ -145,10 +146,10 @@ public class RegisterActivity extends Activity {
 //                    dataUploaderReceiver.clearAbortBroadcast();
 //                    dataUploaderReceiver.onReceive(this, null);
 
-                    Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
-                    startActivity(intent);
+                Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
+                startActivity(intent);
 
-                }
+            }
 //            }
             showProgress(false);
         }
