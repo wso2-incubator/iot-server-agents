@@ -19,13 +19,6 @@ public class SenseConstants {
     public final static String REGISTER_CONTEXT = "/android_sense_mgt/manager/device";
     public final static String DATA_ENDPOINT = "/android_sense/controller/sensordata";
 
-    //For set user selected sensors. Will be used by sensorDataMap reading and dialog
-    public static String SELECTED_SENSORS = "Selected";
-    public static String SELECTED_SENSORS_BY_USER = "userSelection";
-
-    //For setting the available sensors in the device in dialog and SupportedSensors
-    public static String AVAILABLE_SENSORS = "Sensors";
-    public static String GET_AVAILABLE_SENSORS = "getAvailableSensors";
     public static final String MQTT_BROKER_PORT = "1883";
 
     public final class Request {

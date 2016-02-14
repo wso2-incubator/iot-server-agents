@@ -21,9 +21,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.event.streams.DataReader;
-import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
 import org.wso2.carbon.iot.android.sense.util.SenseDataHolder;
 
 import java.util.ArrayList;
@@ -43,12 +42,13 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
     private Vector<SensorData> sensorVector = new Vector<>();
     Context ctx;
     private List<Sensor> sensorList = new ArrayList<>();
-    private AvailableSensors availableSensors = AvailableSensors.getInstance();
+    private SupportedSensors supportedSensors = SupportedSensors.getInstance();
 
     public SensorDataReader(Context context) {
         ctx = context;
-        SharedPreferences sharedPreferences = ctx.getSharedPreferences(SenseConstants.SELECTED_SENSORS, Context.MODE_MULTI_PROCESS);
-        Set<String> selectedSet = sharedPreferences.getStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, null);
+        SharedPreferences sharedPreferences = ctx.getSharedPreferences(SupportedSensors.SELECTED_SENSORS, Context
+                .MODE_MULTI_PROCESS);
+        Set<String> selectedSet = sharedPreferences.getStringSet(SupportedSensors.SELECTED_SENSORS_BY_USER, null);
         mSensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
         selectedSensorList(selectedSet);
         for (Sensor sensor : sensorList) {
@@ -107,7 +107,7 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
         if (set != null) {
             String[] sensorsSet = set.toArray(new String[set.size()]);
             for (String s : sensorsSet) {
-                sensorList.add(mSensorManager.getDefaultSensor(availableSensors.getType(s.toLowerCase())));
+                sensorList.add(mSensorManager.getDefaultSensor(supportedSensors.getType(s.toLowerCase())));
             }
         }
     }

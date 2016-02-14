@@ -16,7 +16,7 @@ package org.wso2.carbon.iot.android.sense.event.streams.Sensor;
 
 import android.hardware.SensorEvent;
 
-import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
 
 import java.util.Date;
 
@@ -32,7 +32,7 @@ public class SensorData {
     private int accuracyStatus;
     private String timestamp;
     private String collectTimestamp;
-    private AvailableSensors availableSensors = AvailableSensors.getInstance();
+    private SupportedSensors supportedSensors = SupportedSensors.getInstance();
 
     SensorData(SensorEvent event) {
         sensorValues = "";
@@ -44,7 +44,7 @@ public class SensorData {
 
         collectTimestamp = String.valueOf(event.timestamp);
         timestamp = String.valueOf(new Date().getTime());
-        sensorName = availableSensors.getType(event.sensor.getType()).toUpperCase();
+        sensorName = supportedSensors.getType(event.sensor.getType()).toUpperCase();
         sensorVendor = event.sensor.getVendor();
         sensorType = event.sensor.getType();
     }
