@@ -121,10 +121,8 @@ public class DataPublisherService extends Service {
                         jsonMsgObject.put("owner", user);
                         jsonMsgObject.put("deviceId", deviceId);
                         jsonMsgObject.put("values", sensorJsonArray);
-                        MQTTTransportHandler mqttTransportHandler = LocalRegistry.getMqttTransportHandler();
-                        if (mqttTransportHandler == null) {
-                            mqttTransportHandler = new AndroidSenseMQTTHandler(context);
-                            LocalRegistry.setMqttTransportHandler(mqttTransportHandler);
+                        MQTTTransportHandler mqttTransportHandler = AndroidSenseMQTTHandler.getInstance(context);
+                        if(!mqttTransportHandler.isConnected()) {
                             mqttTransportHandler.connect();
                         }
                         mqttTransportHandler.publishDeviceData(user, deviceId, jsonMsgObject.toString());
