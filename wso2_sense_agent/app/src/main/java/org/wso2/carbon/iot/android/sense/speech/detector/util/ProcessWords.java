@@ -17,13 +17,14 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.widget.EditText;
 
+import org.apache.commons.codec.language.Soundex;
 import org.wso2.carbon.iot.android.sense.event.streams.Location.LocationData;
 import org.wso2.carbon.iot.android.sense.util.SenseDataHolder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.tartarus.snowball.ext.englishStemmer;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
@@ -32,9 +33,10 @@ import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
  * certain threshold.
  */
 public class ProcessWords extends AsyncTask<String, Void, String> {
-    private static volatile double threshold = 70;
+    private static volatile double threshold = 80;
     private static volatile Map<String, WordData> wordDataMap = new ConcurrentHashMap<>();
     private static String sessionId = "default";
+    private static Soundex soundex = new Soundex();
     Activity activity;
 
     public ProcessWords(Activity activity) {
@@ -65,6 +67,15 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
                 for (String word : command.split(" ")) {
                     if (StringSimilarity.similarity(requiredWord, word) > threshold) {
                         occurence++;
+                        continue;
+                    }
+                    if (StringSimilarity.similarity(soundex.encode(requiredWord),(soundex.encode(word))) > threshold) {
+                        occurence++;
+                        continue;
+                    }
+                    if (StringSimilarity.similarity(requiredWord, stem(word)) > threshold) {
+                        occurence++;
+                        continue;
                     }
                 }
                 if (maxOccurunce < occurence) {
@@ -153,6 +164,22 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
         }
     }
 
+    /**
+     * apply porter stem algorithm
+     * @param word to be stemmed.
+     * @return
+     */
+    private static String stem(String word)
+    {
+        englishStemmer stemmer = new englishStemmer();
+        stemmer.setCurrent(word);
+        boolean result = stemmer.stem();
+        if (!result)
+        {
+            return word;
+        }
+        return stemmer.getCurrent();
+    }
 
 
 }
