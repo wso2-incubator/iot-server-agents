@@ -73,9 +73,9 @@ public class RegisterActivity extends Activity {
         deviceRegisterButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-//                attemptLogin();
-                Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
-                startActivity(intent);
+                attemptLogin();
+//                Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
+//                startActivity(intent);
             }
         });
 
