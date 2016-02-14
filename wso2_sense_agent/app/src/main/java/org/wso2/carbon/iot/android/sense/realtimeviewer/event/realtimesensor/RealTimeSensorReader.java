@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor;
+package org.wso2.carbon.iot.android.sense.realtimeviewer.event.realtimesensor;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,8 +19,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
-import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
-import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.datastore.TempStore;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.view.adaptor.SensorViewAdaptor;
 
 /**
  * This class reads the sensor values in real time.
@@ -29,7 +30,7 @@ public class RealTimeSensorReader implements SensorEventListener {
 
     private Context context;
     private SensorViewAdaptor adaptor;
-    private AvailableSensors availableSensors = AvailableSensors.getInstance();
+    private SupportedSensors supportedSensors = SupportedSensors.getInstance();
 
     public RealTimeSensorReader(Context context, SensorViewAdaptor adaptor) {
         this.context = context;
@@ -39,13 +40,13 @@ public class RealTimeSensorReader implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         RealTimeSensor realTimeSensor = new RealTimeSensor();
-        realTimeSensor.setName(availableSensors.getType(event.sensor.getType()).toUpperCase());
+        realTimeSensor.setName(supportedSensors.getType(event.sensor.getType()).toUpperCase());
 
         realTimeSensor.setValueX(event.values[0] + "");
         realTimeSensor.setValueY(event.values[1] + "");
         realTimeSensor.setValueZ(event.values[2] + "");
 
-        TempStore.sensorDataMap.put(availableSensors.getType(event.sensor.getType()), realTimeSensor);
+        TempStore.sensorDataMap.put(supportedSensors.getType(event.sensor.getType()), realTimeSensor);
 
         Intent intent = new Intent();
         intent.setAction("sensorDataMap");

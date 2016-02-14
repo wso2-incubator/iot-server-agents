@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview.view;
+package org.wso2.carbon.iot.android.sense.realtimeviewer.view.adaptor;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -20,7 +20,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.RealTimeSensor;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.event.realtimesensor.RealTimeSensor;
 
 import java.util.List;
 

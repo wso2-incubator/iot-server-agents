@@ -11,13 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.wso2.carbon.iot.android.sense.sensordataview.ActivitySelectSensor;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.speech.detector.util.ListeningActivity;
 import org.wso2.carbon.iot.android.sense.speech.detector.util.ProcessWords;
 import org.wso2.carbon.iot.android.sense.speech.detector.util.VoiceRecognitionListener;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
@@ -77,7 +75,7 @@ public class WordRecognitionActivity extends ListeningActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_deEnroll) {
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview.view;
+package org.wso2.carbon.iot.android.sense.realtimeviewer.view.sensor.selector;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -23,8 +23,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
-import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
-import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -40,7 +39,7 @@ import java.util.Set;
 
 public class SelectSensorDialog extends DialogFragment {
 
-    protected boolean[] selections = new boolean[AvailableSensors.SUPPORTED_SENSOR_COUNT];
+    protected boolean[] selections = new boolean[SupportedSensors.SUPPORTED_SENSOR_COUNT];
     Activity activity;
     SensorListListener sensorListListener;
     private Set<String> selectedSensorSet = new HashSet<>();
@@ -51,9 +50,10 @@ public class SelectSensorDialog extends DialogFragment {
         builder.setTitle("Select Sensors");
         activity = getActivity();
 
-        SharedPreferences preferences = getActivity().getSharedPreferences(SenseConstants.AVAILABLE_SENSORS, Context.MODE_MULTI_PROCESS);
+        SharedPreferences preferences = getActivity().getSharedPreferences(SupportedSensors.AVAILABLE_SENSORS, Context.
+                MODE_MULTI_PROCESS);
 
-        Set<String> set = preferences.getStringSet(SenseConstants.GET_AVAILABLE_SENSORS, null);
+        Set<String> set = preferences.getStringSet(SupportedSensors.GET_AVAILABLE_SENSORS, null);
         final CharSequence[] sequence = getSequence(set);
 
         final boolean[] pos = new boolean[selections.length];
@@ -87,7 +87,7 @@ public class SelectSensorDialog extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.d("Click", "Cancel");
-                for (int i = 0; i < AvailableSensors.SUPPORTED_SENSOR_COUNT; i++) {
+                for (int i = 0; i < SupportedSensors.SUPPORTED_SENSOR_COUNT; i++) {
 
                     if (pos[i])
                         selections[i] = false;

@@ -11,14 +11,12 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview.availablesensor;
+package org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-
-import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +26,7 @@ import java.util.Set;
  * Class to save the list of sensors that are available in the device, which are supported by the iot server.
  * This list will be saved in Shared preferences so that app can use this data when needed.
  */
-public class SupportedSensors {
+public class AvailableSensorsInDevice {
 
     private SharedPreferences sensorPreference;
 
@@ -37,8 +35,8 @@ public class SupportedSensors {
      */
     private SensorManager mSensorManager;
 
-    public SupportedSensors(Context context) {
-        this.sensorPreference = context.getSharedPreferences(SenseConstants.AVAILABLE_SENSORS, 0);
+    public AvailableSensorsInDevice(Context context) {
+        this.sensorPreference = context.getSharedPreferences(SupportedSensors.AVAILABLE_SENSORS, 0);
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
     }
 
@@ -47,19 +45,19 @@ public class SupportedSensors {
      * preferences.
      */
     public void setContent() {
-        AvailableSensors availableSensors = AvailableSensors.getInstance();
-        List<String> sensor_List = availableSensors.getSensorList();
+        SupportedSensors supportedSensors = SupportedSensors.getInstance();
+        List<String> sensor_List = supportedSensors.getSensorList();
         Set<String> sensorSet = new HashSet<>();
         List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 
         for (String sen : sensor_List) {
-            if (sensors.contains(mSensorManager.getDefaultSensor(availableSensors.getType(sen.toLowerCase())))) {
+            if (sensors.contains(mSensorManager.getDefaultSensor(supportedSensors.getType(sen.toLowerCase())))) {
                 sensorSet.add(sen);
             }
         }
 
         SharedPreferences.Editor editor = this.sensorPreference.edit();
-        editor.putStringSet(SenseConstants.GET_AVAILABLE_SENSORS, sensorSet);
+        editor.putStringSet(SupportedSensors.GET_AVAILABLE_SENSORS, sensorSet);
         editor.apply();
     }
 

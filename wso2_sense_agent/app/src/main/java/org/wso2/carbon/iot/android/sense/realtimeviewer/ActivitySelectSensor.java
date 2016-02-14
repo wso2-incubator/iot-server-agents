@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-package org.wso2.carbon.iot.android.sense.sensordataview;
+package org.wso2.carbon.iot.android.sense.realtimeviewer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -34,20 +34,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
-import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherReceiver;
-import org.wso2.carbon.iot.android.sense.event.SenseService;
-import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherService;
-import org.wso2.carbon.iot.android.sense.sensordataview.availablesensor.AvailableSensors;
-import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.RegisterActivity;
-import org.wso2.carbon.iot.android.sense.sensordataview.sensorchangereceiver.RealTimeSensorChangeReceiver;
-import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.RealTimeSensorReader;
-import org.wso2.carbon.iot.android.sense.sensordataview.view.SelectSensorDialog;
-import org.wso2.carbon.iot.android.sense.sensordataview.view.SensorViewAdaptor;
-import org.wso2.carbon.iot.android.sense.sensordataview.realtimesensor.TempStore;
+import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherReceiver;
+import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherService;
 import org.wso2.carbon.iot.android.sense.event.SenseScheduleReceiver;
-import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
+import org.wso2.carbon.iot.android.sense.event.SenseService;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.datastore.TempStore;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.event.RealTimeSensorChangeReceiver;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.event.realtimesensor.RealTimeSensorReader;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.view.adaptor.SensorViewAdaptor;
+import org.wso2.carbon.iot.android.sense.realtimeviewer.view.sensor.selector.SelectSensorDialog;
 import org.wso2.carbon.iot.android.sense.speech.detector.WordRecognitionActivity;
+import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,7 +70,7 @@ public class ActivitySelectSensor extends AppCompatActivity
 
     private RealTimeSensorReader sensorReader = null;
     private RealTimeSensorChangeReceiver realTimeSensorChangeReceiver = new RealTimeSensorChangeReceiver();
-    private AvailableSensors availableSensors = AvailableSensors.getInstance();
+    private SupportedSensors supportedSensors = SupportedSensors.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +115,7 @@ public class ActivitySelectSensor extends AppCompatActivity
             }
         });
 
-        sharedPreferences = getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0);
+        sharedPreferences = getSharedPreferences(SupportedSensors.SELECTED_SENSORS, 0);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -152,7 +152,7 @@ public class ActivitySelectSensor extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_deEnroll) {
 
             /**
              * unregister the sensors and broadcast receivers.
@@ -172,8 +172,10 @@ public class ActivitySelectSensor extends AppCompatActivity
             //Stop the current running background services.
             stopService(new Intent(this, SenseService.class)); //Stop sensor reading service
             stopService(new Intent(this, DataPublisherService.class)); //Stop data uploader service
+
             Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
             startActivity(activity);
+            finish();
             return true;
         }
 
@@ -226,38 +228,31 @@ public class ActivitySelectSensor extends AppCompatActivity
 
     }
 
-    public boolean update() {
-        try {
-            Log.d("Update", "Set the values to Shared Preferences");
+    public void update() {
+        Log.d("Update", "Set the values to Shared Preferences");
 
-            TempStore.sensorArrayList.clear();
-            TempStore.sensorDataMap.clear();
+        TempStore.sensorArrayList.clear();
+        TempStore.sensorDataMap.clear();
 
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, selectedSensorSet);
-            editor.apply();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet(SupportedSensors.SELECTED_SENSORS_BY_USER, selectedSensorSet);
+        editor.apply();
     }
 
     public void getSensors() {
         sensors.clear();
         for (String sensor : selectedSensorSet.toArray(new String[selectedSensorSet.size()])) {
-            sensors.add(sensorManager.getDefaultSensor(availableSensors.getType(sensor.toLowerCase())));
+            sensors.add(sensorManager.getDefaultSensor(supportedSensors.getType(sensor.toLowerCase())));
         }
     }
 
     /**
      * This method will unregister all the registered sensors.
-     * */
-    public void unregisterSensors(){
-        if (sensors.size()>0){
+     */
+    public void unregisterSensors() {
+        if (sensors.size() > 0) {
             for (Sensor s : sensors) {
-                System.out.println(s.getName() +" Unregistered!");
+                System.out.println(s.getName() + " Unregistered!");
                 sensorManager.unregisterListener(sensorReader, s);
             }
         }
@@ -265,8 +260,8 @@ public class ActivitySelectSensor extends AppCompatActivity
 
     /**
      * This method unregisters the real-time broadcast receiver.
-     * */
-    public void unregisterReceivers(){
+     */
+    public void unregisterReceivers() {
         unregisterReceiver(realTimeSensorChangeReceiver);
     }
 }
