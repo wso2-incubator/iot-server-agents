@@ -26,15 +26,16 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherReceiver;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.AndroidSenseMQTTHandler;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.MQTTTransportHandler;
+import org.wso2.carbon.iot.android.sense.event.SenseScheduleReceiver;
 import org.wso2.carbon.iot.android.sense.realtimeviewer.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.AvailableSensorsInDevice;
 import org.wso2.carbon.iot.android.sense.realtimeviewer.sensorlisting.SupportedSensors;
 import org.wso2.carbon.iot.android.sense.util.LocalRegistry;
 import org.wso2.carbon.iot.android.sense.util.SenseClient;
 import org.wso2.carbon.iot.android.sense.util.SenseUtils;
-
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
 
@@ -93,7 +94,6 @@ public class RegisterActivity extends Activity {
         String username = mUsernameView.getText().toString();
         String password = mPasswordView.getText().toString();
         String hostname = mHostView.getText().toString();
-
         boolean cancel = false;
         View focusView = null;
 
@@ -103,14 +103,12 @@ public class RegisterActivity extends Activity {
             focusView = mPasswordView;
             //cancel = true;
         }
-
         // Check for a valid username .
         if (TextUtils.isEmpty(username)) {
             mUsernameView.setError(getString(R.string.error_field_required));
             focusView = mUsernameView;
             cancel = true;
         }
-
         if (TextUtils.isEmpty(username)) {
             mHostView.setError(getString(R.string.error_field_required));
             focusView = mHostView;
@@ -118,16 +116,10 @@ public class RegisterActivity extends Activity {
         }
 
         if (cancel) {
-
             focusView.requestFocus();
         } else {
-
-
             SenseClient client = new SenseClient(getApplicationContext());
             LocalRegistry.addServerURL(getBaseContext(), hostname);
-//            boolean auth = client.isAuthenticate(username, password);
-
-//            if (auth) {
             //TODO API SECURITY need to be added.
             String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
             boolean registerStatus = client.register(username, password, deviceId);
@@ -138,22 +130,19 @@ public class RegisterActivity extends Activity {
                 if (!mqttTransportHandler.isConnected()) {
                     mqttTransportHandler.connect();
                 }
-//                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
-//                    senseScheduleReceiver.clearAbortBroadcast();
-//                    senseScheduleReceiver.onReceive(this, null);
-//
-//                    DataPublisherReceiver dataUploaderReceiver = new DataPublisherReceiver();
-//                    dataUploaderReceiver.clearAbortBroadcast();
-//                    dataUploaderReceiver.onReceive(this, null);
+                SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
+                senseScheduleReceiver.clearAbortBroadcast();
+                senseScheduleReceiver.onReceive(this, null);
+
+                DataPublisherReceiver dataUploaderReceiver = new DataPublisherReceiver();
+                dataUploaderReceiver.clearAbortBroadcast();
+                dataUploaderReceiver.onReceive(this, null);
 
                 Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
                 startActivity(intent);
-
             }
-//            }
             showProgress(false);
         }
-
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -188,7 +177,5 @@ public class RegisterActivity extends Activity {
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-
-
 }
 
