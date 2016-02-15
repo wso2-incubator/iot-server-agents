@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -190,5 +191,29 @@ public class RegisterActivity extends Activity {
     }
 
 
+//    @Override
+//    public void onBackPressed() {
+//        loadHomeScreen();
+//    }
+//
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if (keyCode == KeyEvent.KEYCODE_BACK) {
+//            loadHomeScreen();
+//            return true;
+//        } else if (keyCode == KeyEvent.KEYCODE_HOME) {
+//            loadHomeScreen();
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
+//
+//
+//    private void loadHomeScreen() {
+//        Intent i = new Intent();
+//        i.setAction(Intent.ACTION_MAIN);
+//        i.addCategory(Intent.CATEGORY_HOME);
+//        this.startActivity(i);
+//    }
 }
 
