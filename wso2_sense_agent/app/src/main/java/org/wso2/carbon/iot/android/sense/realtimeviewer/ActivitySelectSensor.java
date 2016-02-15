@@ -94,6 +94,7 @@ public class ActivitySelectSensor extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Publishing data started", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
                 DataPublisherReceiver dataPublisherReceiver = new DataPublisherReceiver();
                 dataPublisherReceiver.clearAbortBroadcast();
                 dataPublisherReceiver.onReceive(getApplicationContext(), null);
@@ -184,8 +185,9 @@ public class ActivitySelectSensor extends AppCompatActivity
             stopService(new Intent(this, SenseService.class)); //Stop sensor reading service
             stopService(new Intent(this, DataPublisherService.class)); //Stop data uploader service
 
-            Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
-            startActivity(activity);
+            Intent registerActivity = new Intent(getApplicationContext(), RegisterActivity.class);
+            registerActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(registerActivity);
             finish();
             return true;
         }
