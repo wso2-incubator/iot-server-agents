@@ -3,6 +3,8 @@ package org.wso2.carbon.iot.android.sense.speech.detector;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,10 +13,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.realtimeviewer.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.speech.detector.util.ListeningActivity;
 import org.wso2.carbon.iot.android.sense.speech.detector.util.ProcessWords;
 import org.wso2.carbon.iot.android.sense.speech.detector.util.VoiceRecognitionListener;
+import org.wso2.carbon.iot.android.sense.speech.detector.util.WordData;
+import org.wso2.carbon.iot.android.sense.util.SenseDataHolder;
 
 import java.util.UUID;
 
@@ -35,20 +40,29 @@ public class WordRecognitionActivity extends ListeningActivity {
         addListenerOnSetThreasholdButton();
         addListenerOnAddWordButton();
         addListenerOnRemoveWordButton();
-        ProcessWords.setSessionId(UUID.randomUUID().toString());
+        String sessionId = getIntent().getStringExtra("sessionId");
+        ProcessWords.setSessionId(sessionId);
         FloatingActionButton fbtnSpeechRecongnizer = (FloatingActionButton) findViewById(R.id.sensorChange);
         fbtnSpeechRecongnizer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ProcessWords.setSessionId(UUID.randomUUID().toString());
+                Long tsLong = System.currentTimeMillis() / 1000;
+                WordData wordData = new WordData(ProcessWords.getSessionId(), SenseConstants.EVENT_LISTENER_FINISHED, 1, ""+tsLong);
+                SenseDataHolder.getWordDataHolder().add(wordData);
                 stopListening();
                 Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
                 startActivity(intent);
             }
         });
+        Long tsLong = System.currentTimeMillis() / 1000;
+        WordData wordData = new WordData(sessionId, SenseConstants.EVENT_LISTENER_STARTED, 1, ""+tsLong);
+        SenseDataHolder.getWordDataHolder().add(wordData);
         startListening(); // starts listening
     }
 
+    @Override
+    public void onBackPressed() {
+    }
 
     @Override
     public void processVoiceCommands(String... voiceCommands) {

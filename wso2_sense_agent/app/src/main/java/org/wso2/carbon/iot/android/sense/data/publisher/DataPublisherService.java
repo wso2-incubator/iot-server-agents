@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.AndroidSenseMQTTHandler;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.MQTTTransportHandler;
 import org.wso2.carbon.iot.android.sense.data.publisher.mqtt.transport.TransportHandlerException;
+import org.wso2.carbon.iot.android.sense.event.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.event.streams.Location.LocationData;
 import org.wso2.carbon.iot.android.sense.event.streams.Sensor.SensorData;
 import org.wso2.carbon.iot.android.sense.event.streams.battery.BatteryData;
@@ -106,8 +107,14 @@ public class DataPublisherService extends Service {
                         JSONObject wordJsonObject = new JSONObject();
                         wordJsonObject.put(TIME_TAG, System.currentTimeMillis());
                         wordJsonObject.put(KEY_TAG, "word");
-                        String wordValue = wordData.getSessionId() + "," + wordData.getWord() + "," + wordData
-                                .getOccurences() + "," + wordData.getTimestamps();
+                        String word = wordData.getWord();
+                        String status = word;
+                        if ((!word.equals(SenseConstants.EVENT_LISTENER_STARTED)) && (!word.equals(SenseConstants
+                                .EVENT_LISTENER_FINISHED))) {
+                            status = SenseConstants.EVENT_LISTENER_ONGOING;
+                        }
+                        String wordValue = wordData.getSessionId() + "," + word + "," + wordData
+                                .getOccurences() + "," + status + "," + wordData.getTimestamps();
                         wordJsonObject.put(VALUE_TAG, wordValue);
                         sensorJsonArray.put(wordJsonObject);
                     }

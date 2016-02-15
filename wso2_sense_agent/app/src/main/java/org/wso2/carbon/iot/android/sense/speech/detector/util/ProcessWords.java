@@ -69,7 +69,7 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
                         occurence++;
                         continue;
                     }
-                    if (StringSimilarity.similarity(soundex.encode(requiredWord),(soundex.encode(word))) > threshold) {
+                    if (soundex.encode(requiredWord).equals(soundex.encode(word))) {
                         occurence++;
                         continue;
                     }
@@ -133,6 +133,14 @@ public class ProcessWords extends AsyncTask<String, Void, String> {
      */
     public static synchronized void setSessionId(String sessionId) {
         ProcessWords.sessionId = sessionId;
+    }
+
+    /**
+     *
+     * retrieve sessionId for each listening session.
+     */
+    public static synchronized String getSessionId() {
+        return ProcessWords.sessionId;
     }
 
     /**
