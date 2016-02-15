@@ -32,7 +32,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.wso2.carbon.iot.android.sense.RegisterActivity;
 import org.wso2.carbon.iot.android.sense.data.publisher.DataPublisherReceiver;
@@ -111,8 +113,17 @@ public class ActivitySelectSensor extends AppCompatActivity
         fbtnSpeechRecongnizer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), WordRecognitionActivity.class);
-                startActivity(intent);
+                EditText sessionIdText = (EditText) findViewById(R.id.sessionId);
+                String sessionId = sessionIdText.getText().toString();
+                if (!sessionId.isEmpty()) {
+                    Intent intent = new Intent(getApplicationContext(), WordRecognitionActivity.class);
+                    intent.putExtra("sessionId", sessionId);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(ActivitySelectSensor.this, "Please type a session id value", Toast.LENGTH_SHORT)
+                            .show();
+                }
+
             }
         });
 

@@ -20,6 +20,9 @@ public class SenseConstants {
     public final static String DATA_ENDPOINT = "/android_sense/controller/sensordata";
 
     public static final String MQTT_BROKER_PORT = "1883";
+    public static final String EVENT_LISTENER_STARTED = "xxStartedxx";
+    public static final String EVENT_LISTENER_FINISHED = "xxFinishedxx";
+    public static final String EVENT_LISTENER_ONGOING = "xxOngoingxx";
 
     public final class Request {
         public final static String REQUEST_SUCCESSFUL = "200";
